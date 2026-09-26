@@ -1,6 +1,8 @@
 """Compile anchored plans for the parameterized avatar; approval is content-bound."""
 import hashlib
 import json
+
+import motion_data
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,8 +41,8 @@ def approved(example, refs):
 
 
 def compile_timeline(construction, refs):
-    available = json.loads((ROOT / 'data/asl_lex_params.json').read_text())['signs']
-    custom = json.loads(CUSTOM_MOTIONS.read_text())['signs']
+    available = motion_data.lex_signs()
+    custom = motion_data.custom_signs()
     signs = {s['id']: s for s in refs['signs']}
     profiles = {p['id']: p for p in refs['profiles']}
     clips, spans, issues, offset = [], [], [], 0
@@ -66,8 +68,10 @@ def compile_timeline(construction, refs):
             issues.append(f'Missing compatible motion: {step.sign_id}')
             continue
         clip = asset['clip_id']
-        source = available if asset['format'] == 'asl-lex-procedural-v1' else custom
-        duration = max(1250, int((source[clip]['duration_ms'] or 600) * 2.1 + .5))
+        # A planned timeline is connected signing, not isolated display. The
+        # previous 2.1x isolated stretch made the live avatar wade through a
+        # lecture; motion_data keeps this in step with the renderer.
+        duration = motion_data.clip_duration_ms(clip, 'continuous')
         clips.append({'anchor': step.id, 'sign_id': step.sign_id, 'clip_id': clip,
                       'start_ms': offset, 'end_ms': offset + duration,
                       'realization': asset['format']})

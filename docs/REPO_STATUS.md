@@ -56,8 +56,22 @@ Browser fallback is expected to work best in current Chrome and Edge releases. I
 - Candidate motion sequences remain visibly labelled as experimental.
 - Unsupported or failed translations retain their English captions.
 - The avatar uses bounded finger/thumb/wrist motion, acceleration-damped arm
-  targets, a torso-safe signing plane, complete onset/hold/release timing, and a
-  short cross-sign coarticulation blend.
+  targets, angular-velocity limits, a torso-clearance field, complete
+  onset/hold/release timing, and continuous cross-sign coarticulation.
+- Procedural poses now include location/sign-specific elbow planes and
+  conservative clavicle participation so raised hands do not leave the shoulder
+  girdle frozen in a mannequin pose.
+- The renderer calibrates finger flexion independently for each mirrored hand,
+  fixing the rig-axis mismatch that made one hand curl away from its own palm.
+- Forearm pronation and wrist swing are composed in skeleton hierarchy order;
+  this fixes outward/inward pointing targets that previously remained upright.
+- Palm, pointing, and elbow directions use spherical interpolation, preventing
+  opposite orientation vectors from collapsing and flipping the wrist during a
+  transition.
+- Core motion candidates use tighter B-family handshapes, smaller path scales,
+  raised passive-hand rest positions, and focused overrides for `HELLO`,
+  `THANK_YOU`, `YES`, `NO`, `PLEASE`, `NAME`, `ME`, `YOU`, `HELP`, `AGAIN`,
+  `UNDERSTAND`, and `BATHROOM`.
 
 ### Learning Studio
 
@@ -76,20 +90,82 @@ Browser fallback is expected to work best in current Chrome and Edge releases. I
 ### Phrase Library and Review
 
 - Searchable phrase catalog with provenance and validation metadata.
-- SQLite now indexes all 103 playable procedural motions, producing 104
+- SQLite now indexes all 1,285 playable procedural motions, producing 1,286
   searchable rows after overlap with the original phrase seed.
 - `GET /api/health` verifies that SQLite animation keys and planner motion IDs
   remain a complete two-way match; the Classroom displays `SQL linked` when the
   integrity check passes.
-- The runtime planning catalog contains 103 motion entries and 74 candidate
+- The runtime planning catalog contains 1,285 motion entries and 74 candidate
   sentence examples.
 - SQLite catalog by default, with optional MongoDB support.
-- Procedural motion data derived partly from ASL-LEX descriptors.
+- 1,279 of the 1,285 motions are parameterised from ASL-LEX 2.0 phonological
+  descriptors. `scripts/extract_asl_lex.py` maps the curated catalog ids by hand
+  and then auto-expands to every clean lemma rated at or above 4.0 on ASL-LEX's
+  own `SignFrequency(M)` scale, excluding English function words that ASL does
+  not lexicalise. Nineteen are documented approximate mappings; six entries are
+  application-authored because no plausible lemma exists, and are flagged
+  `app_authored` so the UI and the audit report say so.
+- 119 entries carry a full ASL-LEX morpheme sequence, so a compound such as
+  `LEARN` plays as two articulations rather than holding the first.
+- Handshapes are composed from a base form plus modifiers and refined by the
+  ASL-LEX Flexion, Spread, ThumbPosition, ThumbContact and SelectedFingers
+  columns, covering all 58 handshapes the database uses. `Contact` and
+  `UlnarRotation` are also read. All 37 minor locations have anchors.
+- Two-handed contact relations are derived from the licensed contact surface
+  rather than authored per sign.
+- Isolated display and connected signing use separate tempo schedules; onset and
+  release are fixed-millisecond rather than proportional to clip length.
+- Non-manual grammar includes a head-shake channel for negation, and the
+  WH-furrow and yes/no-raise markers are never both asserted.
 - Review packets can be exported with `scripts/export_asl_review.py`.
 - Review-gated playback support exists, but no approved constructions are bundled.
 - Reviewer workflow and playback contract are documented in [ASL_PLAYBACK_AND_REVIEW.md](ASL_PLAYBACK_AND_REVIEW.md).
 - Rendering research, the captured-motion migration contract, and quality gates
   are documented in [AVATAR_MOTION_PIPELINE.md](AVATAR_MOTION_PIPELINE.md).
+
+### Motion Audit
+
+- A **Motion audit** view renders all 103 motions on the real rig at their hold
+  frame and captures a contact sheet with provenance badges. The catalog could
+  previously only be inspected one sign at a time, which is how two defects
+  shipped unnoticed: three distinct handshapes resolved to identical poses, and
+  19 of the 26 fingerspelled letters shared a shape with another letter.
+- `npm --prefix frontend run audit` is the numeric half. It reports pose
+  distinctness, vocabulary coverage and provenance, and exits non-zero if any two
+  handshapes or letters become indistinguishable.
+- `backend/tests/test_motion_data.py` asserts the data-side invariants, including
+  that every handshape resolves to a base form and every location has an anchor.
+  A descriptor value with no renderer entry does not crash, it silently degrades,
+  so these are checked rather than observed.
+
+### Offline and Degraded Operation
+
+- `POST /api/plan` is what lets the avatar sign anything outside the catalog.
+  When it is unreachable, `frontend/src/offlinePlan.ts` reproduces the fallback
+  locally: it matches registered signs word by word, drops function words and
+  fingerspells the remainder. Previously an unreachable planner produced an
+  empty selection and the avatar simply stood still with nothing in the UI
+  explaining why.
+- The Classroom shows an explicit notice while the planner is unreachable,
+  rather than silently reducing coverage.
+
+### Avatar Rendering
+
+- Finger flexion and abduction directions are MEASURED on the loaded skeleton
+  rather than derived from the palm normal. The Biped hands are mirrored, and a
+  derived sign depends on three conventions agreeing at once; when one was
+  inverted the non-negative flexion clamp drove the joints into extension and
+  the fingers hyperextended into a claw. Flexion is now identified as the
+  rotation that brings the fingertip closer to the wrist, which holds on either
+  hand whatever the local bone axes are.
+- `applyFinger` enforces anatomical joint coupling: the DIP is tendon-coupled to
+  the PIP and cannot lead it. No pose data, authored or later imported from
+  capture, can put the hand outside human range.
+- The neutral stance hangs the arms at roughly 35 degrees of elbow flexion. The
+  previous rest held them at about 74 degrees, which read as a person waiting
+  with their hands up rather than standing at ease.
+- The default camera is a three-quarter view and the shadow frustum is fitted to
+  the figure, so the hands' self-shadow on the torso reads as contact.
 
 ### ASL to English Recognition
 
@@ -118,8 +194,12 @@ Verified on September 26, 2026:
 - Backend test suite: **30 passed**.
 - Frontend development server: returned HTTP `200`.
 - Backend API documentation: returned HTTP `200`.
-- Browser smoke test: idle, `HELP`, `YES`, and a multi-sign classroom request
-  rendered without runtime exceptions; the head and signing space remained in frame.
+- Browser smoke test: idle, `HELLO`, `HELP`, `YES`, and a seven-sign classroom
+  sequence rendered without runtime exceptions; the head and signing space
+  remained in frame.
+- Timeline boundary audit: position and handshape deltas across all six
+  transitions in `HELLO THANK_YOU YES NO PLEASE HELP ME` were effectively zero
+  (below `1e-8` in normalized pose space).
 - Learning Studio webcam startup: manually verified in Chrome; the bundled tracker initialized, the camera entered `LIVE` state, and the `I'm ready` action appeared.
 - Git whitespace check: passed.
 
@@ -144,9 +224,10 @@ Live microphone transcription still requires a real browser permission grant and
 - Browser speech recognition is not supported consistently across all browsers and may depend on a vendor service.
 - OpenAI transcription requires a valid key, model access, internet connectivity, and available API quota.
 - Speech transcripts may contain errors, especially with names, technical terms, accents, background noise, or overlapping speakers.
-- Procedural avatar motion now blends transitions and enforces conservative
-  joint limits, but still lacks captured human trajectories, contact constraints,
-  classifiers, complete facial grammar, and signer-reviewed fingerspelling.
+- Procedural avatar motion now blends transitions, moves the shoulder girdle,
+  and enforces conservative joint/velocity limits, but still lacks captured
+  human trajectories, contact constraints, complete facial grammar, and
+  signer-reviewed fingerspelling.
 - The torso-safe signing plane prevents gross body penetration; it is not a full
   hand/body or two-hand collision solver.
 - The Learning Studio tracks limited hand and finger properties rather than complete sign language production.

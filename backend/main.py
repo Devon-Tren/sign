@@ -150,17 +150,40 @@ def pcm_rms(chunk: bytes) -> float:
     return (sum(x*x for x in samples) / max(1, len(samples))) ** .5 / 32768
 
 
+#: Phrases auto-registered from the ASL-LEX expansion carry this category.
+#: Curated classroom entries carry a real one (Greeting, Classroom, ...).
+AUTO_CATEGORY = 'Motion Catalog'
+
+
 def transcription_keywords(limit: int = 100) -> list[str]:
-    """Literal catalog hints for classroom transcription, ordered by specificity."""
-    values: list[str] = []
+    """Literal catalog hints for classroom transcription, ordered by specificity.
+
+    Curated classroom vocabulary is offered before the auto-expanded ASL-LEX
+    lemmas. Ranking purely by phrase length used to work when the catalog held
+    ~100 curated entries; once the extract expanded to ~1,280 general lemmas,
+    long incidental entries such as "going through a hard time" crowded out
+    "Good morning". These hints steer live transcription, so they should bias
+    toward the vocabulary this application is actually built around.
+    """
+    curated: list[str] = []
+    general: list[str] = []
     for phrase in get_phrases(app.state.db):
-        values.extend([phrase['english'], *(phrase.get('aliases') or '').split('|')])
-    values.extend(filter(None, os.getenv('SIGN_TRANSCRIPTION_KEYWORDS', '').split('|')))
-    safe = {
-        ' '.join(value.split()) for value in values
-        if value.strip() and len(value) <= 64 and not any(char in value for char in '<>\r\n')
-    }
-    return sorted(safe, key=lambda value: (-len(value.split()), -len(value), value.casefold()))[:limit]
+        bucket = general if phrase.get('category') == AUTO_CATEGORY else curated
+        bucket.extend([phrase['english'], *(phrase.get('aliases') or '').split('|')])
+    configured = list(filter(None, os.getenv('SIGN_TRANSCRIPTION_KEYWORDS', '').split('|')))
+
+    def clean(values: list[str]) -> list[str]:
+        safe = {
+            ' '.join(value.split()) for value in values
+            if value.strip() and len(value) <= 64 and not any(char in value for char in '<>\r\n')
+        }
+        return sorted(safe, key=lambda value: (-len(value.split()), -len(value), value.casefold()))
+
+    ordered: list[str] = []
+    for value in [*clean(configured), *clean(curated), *clean(general)]:
+        if value not in ordered:
+            ordered.append(value)
+    return ordered[:limit]
 
 @app.websocket('/ws/live')
 async def live_audio(websocket: WebSocket):

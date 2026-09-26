@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import json
+
+import motion_data
 import logging
 import os
 from copy import deepcopy
@@ -20,25 +22,33 @@ _backend = 'json'
 
 def _seed_catalog() -> dict:
     catalog = json.loads(CATALOG_FILE.read_text())
-    custom = json.loads(CUSTOM_MOTIONS_FILE.read_text())['signs']
     phrases = json.loads(PHRASE_SEED_FILE.read_text())
     demo = json.loads(DEMO_UTTERANCES_FILE.read_text())
     signs = {entry['id']: entry for entry in catalog['signs']}
-    for clip_id in custom:
+    # Register every descriptor-backed motion, not just the app-authored ones.
+    # This loop used to read asl_custom_motions.json alone, so a sign described
+    # by the licensed ASL-LEX extract was invisible to the planner unless it had
+    # also been hand-authored. See backend/motion_data.py.
+    for clip_id in motion_data.all_signs():
         sign_id = clip_id.upper()
         existing = signs.get(sign_id, {})
         expressions = list(dict.fromkeys([
             *existing.get('english_expressions', []), clip_id.replace('_', ' '),
         ]))
+        licensed = clip_id in motion_data.lex_signs()
         signs[sign_id] = {
             **existing,
             'id': sign_id,
             'meaning': existing.get('meaning', clip_id.replace('_', ' ')),
             'english_expressions': expressions,
-            'variant': 'Application-authored procedural candidate',
+            'variant': ('Procedural candidate parameterised from ASL-LEX descriptors'
+                        if licensed else 'Application-authored procedural candidate'),
             'review_status': 'candidate',
-            'motion_asset': {'format': 'custom-procedural-v1', 'clip_id': clip_id},
-            'provenance': {'source': '../asl_custom_motions.json', 'fidelity': 'candidate'},
+            'motion_asset': {
+                'format': motion_data.format_for(clip_id),
+                'clip_id': clip_id,
+            },
+            'provenance': motion_data.provenance_for(clip_id),
         }
     catalog['signs'] = list(signs.values())
     profiles = {entry['id']: entry for entry in catalog['profiles']}

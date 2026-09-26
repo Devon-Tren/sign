@@ -55,18 +55,34 @@ const _gazeTarget = new THREE.Vector3()
 const _eyeA = new THREE.Vector3()
 const _eyeB = new THREE.Vector3()
 
-/** Normalised body-frame position -> world. */
-function toWorld(rig: SignerRig, n: Vec3, out: THREE.Vector3) {
+/**
+ * Normalised body-frame position -> world.
+ *
+ * `contact` carries the ASL-LEX Contact=1 descriptor. The clearance field below
+ * exists because procedural anchors are approximate and a hand that drifts
+ * behind the torso plane phases through clothing - but roughly 1,694 of the
+ * 2,723 ASL-LEX entries are coded Contact=1, and those signs are SUPPOSED to
+ * reach the body. HELLO touches the forehead; PLEASE and SORRY circle on the
+ * chest. Applying the same push-off to them fought the descriptor, so a
+ * contacting sign keeps only a thin skin offset.
+ */
+function toWorld(rig: SignerRig, n: Vec3, out: THREE.Vector3, contact = false) {
   rig.left.upper.getWorldPosition(_shL)
   rig.right.upper.getWorldPosition(_shR)
   _mid.addVectors(_shL, _shR).multiplyScalar(0.5)
   const reach = rig.right.upperLen + rig.right.foreLen
+  // An elliptical torso clearance field is more useful than one flat z-plane:
+  // central, waist-height targets need more room for fingers and clothing,
+  // while lateral and head-level signs may naturally sit closer to the body.
+  const center = 1 - THREE.MathUtils.clamp(Math.abs(n[0]) / 0.58, 0, 1)
+  const torsoBand = 1 - THREE.MathUtils.clamp(Math.abs(n[1] + 0.22) / 0.46, 0, 1)
+  // A contacting sign still needs the wrist clear of the mesh surface, just not
+  // held out in neutral space.
+  const minForward = contact ? 0.15 : 0.22 + center * torsoBand * 0.13
   return out.set(
     _mid.x + n[0] * DOMINANT_X * reach,
     _mid.y + n[1] * reach,
-    // Procedural anchors are approximate, so keep them in front of the torso
-    // plane rather than allowing a hand to phase through clothing.
-    _mid.z + Math.max(n[2], 0.22) * reach,
+    _mid.z + Math.max(n[2], minForward) * reach,
   )
 }
 
@@ -157,18 +173,18 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
     // Spine first: the arms hang off it, so IK must see the updated shoulders.
     applySpine(rig.face, pose.torso, breathAt(elapsed.current) * 0.018, dt)
 
-    const drive = (a: ArmChain, sign: number, arm: Vec3[] | null, fallback: Vec3[]) => {
-      const [target, palm, point] = arm ?? fallback
-      toWorld(rig, target, _t)
-      solveArmIK(a, smoothTarget(a, _t, dt), sign, dt)
-      setHandOrientation(a, toDir(palm, _p), toDir(point, _q), dt)
+    const drive = (a: ArmChain, sign: number, arm: Pose['rightArm'], fallback: NonNullable<Pose['rightArm']>) => {
+      const resolved = arm ?? fallback
+      toWorld(rig, resolved.target, _t, resolved.contact === true)
+      const pole = resolved.elbow ? toDir(resolved.elbow, _q) : undefined
+      solveArmIK(a, smoothTarget(a, _t, dt), sign, dt, pole)
+      setHandOrientation(a, toDir(resolved.palm, _p), toDir(resolved.point, _q), dt, resolved.wristMax)
     }
-    const unpack = (a: Pose['rightArm']): Vec3[] | null => (a ? [a.target, a.palm, a.point] : null)
-    const idleR = unpack(idle.rightArm)!
-    const idleL = unpack(idle.leftArm)!
+    const idleR = idle.rightArm!
+    const idleL = idle.leftArm!
 
-    drive(rig.right, DOMINANT_X, unpack(pose.rightArm), idleR)
-    drive(rig.left, -DOMINANT_X, unpack(pose.leftArm), idleL)
+    drive(rig.right, DOMINANT_X, pose.rightArm, idleR)
+    drive(rig.left, -DOMINANT_X, pose.leftArm, idleL)
 
     applyHand(rig.right, pose.rightHand.fingers, pose.rightHand.thumb, dt)
     applyHand(rig.left, pose.leftHand.fingers, pose.leftHand.thumb, dt)
@@ -214,10 +230,17 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
     // driven together, so blinking runs purely on the authored ARKit shapes.
     setMorphDirect(rig, 'AK_09_EyeBlinkLeft', closed)
     setMorphDirect(rig, 'AK_10_EyeBlinkRight', closed)
+    // Negation in ASL is marked on the HEAD, not the hands: a side-to-side shake
+    // co-occurring with the sign. Without it NO and NOT are missing their
+    // grammar, however correct the manual articulation is. ~3.1 Hz is inside the
+    // range reported for natural negative headshake.
+    const shake = pose.headShake > 0
+      ? Math.sin(elapsed.current * Math.PI * 2 * 3.1) * pose.headShake * 0.16
+      : 0
     // Head follows gaze slightly and lags it, which is how real gaze shifts read.
     applyHead(rig.face,
       pose.head[0] + L.gaze.pitch * 0.3 + glance * 0.08,
-      pose.head[1] + L.gaze.yaw * 0.35,
+      pose.head[1] + L.gaze.yaw * 0.35 + shake,
       pose.head[2], dt)
 
     // Non-manual markers, on the model's FACS action units.
@@ -257,22 +280,41 @@ export default function Avatar({ clipId, paused = false, speed = 1, compact = fa
     >
       <Canvas
         shadows
-        camera={{ position: [0, compact ? 0.58 : 0.38, compact ? 3.15 : 3.65], fov: 38 }}
+        /**
+         * A three-quarter default, not a frontal one. ASL uses movement toward
+         * and away from the body, and a dead-on camera flattens exactly that
+         * axis; the partial occlusion of a 3/4 view is what lets the eye read
+         * hand depth and handshape at the same time. ~18 degrees off axis keeps
+         * palm orientation toward the viewer readable. OrbitControls still lets
+         * a learner rotate to frontal.
+         */
+        camera={{
+          position: compact ? [-0.90, 0.60, 2.78] : [-0.98, 0.52, 3.02],
+          fov: 38,
+        }}
         gl={{ alpha: true, antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
         dpr={[1, 1.75]}
         onCreated={({ gl }) => { gl.shadowMap.type = THREE.PCFSoftShadowMap }}
       >
         <Suspense fallback={null}>
           <hemisphereLight args={['#f2f8f3', '#8d9a91', 0.95]} />
+          {/*
+            The mesh both casts and receives, so the hands already shadow the
+            torso - that self-shadow is the strongest available depth cue for
+            how far a hand sits from the chest. It was being wasted on a 6x6
+            unit shadow frustum covering mostly empty space. Tightening it to
+            the figure roughly doubles the effective shadow resolution, which is
+            what makes a hand-on-chest contact read as contact.
+          */}
           <directionalLight
             position={[3.2, 5.4, 4.2]}
             intensity={2.0}
             castShadow
             shadow-mapSize={[2048, 2048]}
-            shadow-bias={-0.0009}
-            shadow-normalBias={0.02}
+            shadow-bias={-0.0006}
+            shadow-normalBias={0.014}
           >
-            <orthographicCamera attach="shadow-camera" args={[-3, 3, 3.6, -2.4, 0.5, 16]} />
+            <orthographicCamera attach="shadow-camera" args={[-1.8, 1.8, 2.4, -2.0, 0.5, 12]} />
           </directionalLight>
           <directionalLight position={[-4.2, 2.4, -2.6]} color="#9accb3" intensity={0.9} />
           <directionalLight position={[-1.4, 2.6, -4.4]} color="#ffffff" intensity={1.25} />
@@ -295,7 +337,7 @@ export default function Avatar({ clipId, paused = false, speed = 1, compact = fa
 
           <Signer clipId={clipId} paused={paused} speed={speed} timeline={timeline} onComplete={onComplete} />
           <OrbitControls
-            target={[0, compact ? 0.58 : 0.38, 0]}
+            target={[0, compact ? 0.60 : 0.52, 0]}
             enablePan={false}
             minDistance={1.4}
             maxDistance={6}

@@ -165,7 +165,17 @@ def lexical_steps(source_words: list[str], refs: dict) -> list[Sign]:
                 expressions[tokens] = sign['id']
     expressions.update({('i',): 'ME', ('my',): 'ME', ('mine',): 'ME', ('your',): 'YOU'})
     max_span = max((len(key) for key in expressions), default=1)
-    helpers = {'a', 'an', 'the', 'is', 'are', 'am', 'do', 'does', 'did', 'to', 'of', 'and'}
+    # English function words that ASL does not lexicalise. Spelling one letter by
+    # letter is worse than omitting it: F-S-O-N asserts a lexical item that is
+    # not there, and the avatar visibly spells a preposition. Kept in step with
+    # FUNCTION_WORDS in scripts/extract_asl_lex.py, which excludes the same set
+    # from the auto-expanded vocabulary. A word here is still only dropped when
+    # no registered expression matched it first.
+    helpers = {
+        'a', 'an', 'the', 'is', 'are', 'am', 'was', 'were', 'be', 'been', 'being',
+        'do', 'does', 'did', 'to', 'of', 'and', 'for', 'but', 'so', 'as',
+        'at', 'by', 'from', 'in', 'into', 'on', 'with', 'it', 'its',
+    }
     steps: list[Sign] = []
     index = 0
     while index < len(source_words) and len(steps) < 16:

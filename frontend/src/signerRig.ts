@@ -76,6 +76,10 @@ export type FingerChain = {
   bones: THREE.Bone[]
   /** Flexion axis in each bone's own local space. */
   curlAxis: THREE.Vector3[]
+  /** Direction that bends this mirrored chain toward its own palm. */
+  curlSign: 1 | -1
+  /** Direction that abducts this chain toward the little-finger side. */
+  spreadSign: 1 | -1
   restQ: THREE.Quaternion[]
   /** Abduction axis (spread) for the first joint only. */
   spreadAxis: THREE.Vector3
@@ -84,6 +88,7 @@ export type FingerChain = {
 }
 
 export type ArmChain = {
+  clavicle?: THREE.Bone
   upper: THREE.Bone
   fore: THREE.Bone
   hand: THREE.Bone
@@ -92,9 +97,9 @@ export type ArmChain = {
   thumb: FingerChain
   upperLen: number
   foreLen: number
-  restQ: { upper: THREE.Quaternion; fore: THREE.Quaternion; hand: THREE.Quaternion }
+  restQ: { clavicle?: THREE.Quaternion; upper: THREE.Quaternion; fore: THREE.Quaternion; hand: THREE.Quaternion }
   /** Direction each bone points in its own local frame, at rest. */
-  axis: { upper: THREE.Vector3; fore: THREE.Vector3 }
+  axis: { clavicle?: THREE.Vector3; upper: THREE.Vector3; fore: THREE.Vector3 }
   /** Forearm aim target from the IK, before pronation is folded in. */
   foreAim: THREE.Quaternion
   /** Critically-damped follower for the IK target, see smoothTarget. */
@@ -150,6 +155,8 @@ function buildFinger(root: THREE.Object3D, side: 'L' | 'R', id: string): FingerC
   return {
     bones,
     curlAxis: bones.map(() => new THREE.Vector3(0, 0, 1)),
+    curlSign: 1,
+    spreadSign: 1,
     restQ: bones.map((b) => b.quaternion.clone()),
     spreadAxis: new THREE.Vector3(0, 1, 0),
     longAxis: localAxisToChild(bones[0]),
@@ -184,7 +191,78 @@ function basisQuaternion(along: THREE.Vector3, palmNormal: THREE.Vector3, out: T
   return out.setFromRotationMatrix(_bm)
 }
 
+/**
+ * Which rotation direction actually FLEXES a finger chain.
+ *
+ * The 3ds Max Biped hands are mirrored, so a single global curl direction bends
+ * one hand's fingers backwards. The previous calibration derived the answer
+ * from a dot product against the palm normal, which depends on getting three
+ * sign conventions right at once - which way `across` runs, which way the cross
+ * product points, and which side the palm normal faces after the left-hand
+ * flip. Get any one backwards and every finger hyperextends into a claw.
+ *
+ * So do not derive it. MEASURE it, using a fact with no sign convention in it:
+ * flexion is the motion that brings the fingertip CLOSER TO THE WRIST. That is
+ * true of every finger, on either hand, whatever the local bone axes are.
+ * Rotate the chain both ways, keep whichever shortens that distance, and put
+ * the skeleton back.
+ */
+function calibrateCurlSign(chain: FingerChain, wrist: THREE.Bone): 1 | -1 {
+  const tip = chain.bones[chain.bones.length - 1]
+  const wristPos = wrist.getWorldPosition(new THREE.Vector3())
+  const saved = chain.bones.map((b) => b.quaternion.clone())
+  const probe = new THREE.Quaternion()
+  const tipPos = new THREE.Vector3()
+
+  const reach = (sign: 1 | -1) => {
+    chain.bones.forEach((b, i) => {
+      probe.setFromAxisAngle(chain.curlAxis[i], 0.6 * sign)
+      b.quaternion.copy(chain.restQ[i]).multiply(probe)
+    })
+    wrist.updateMatrixWorld(true)
+    return tip.getWorldPosition(tipPos).distanceTo(wristPos)
+  }
+
+  const positive = reach(1)
+  const negative = reach(-1)
+  chain.bones.forEach((b, i) => b.quaternion.copy(saved[i]))
+  wrist.updateMatrixWorld(true)
+  return positive <= negative ? 1 : -1
+}
+
+/**
+ * Which rotation direction abducts toward the little-finger side.
+ *
+ * Measured the same way and for the same reason: the two hands mirror, so a
+ * shared spread direction splays one hand's fingers the wrong way and crosses
+ * them. Positive spread moves a digit AWAY from its neighbour across the palm -
+ * a finger away from the thumb, the thumb away from the index - so probe and
+ * keep the sign that increases that distance. `reference` must be the OTHER
+ * side of the hand: measuring the thumb against its own base is degenerate,
+ * because abduction swings the tip in an arc at constant radius.
+ */
+function calibrateSpreadSign(chain: FingerChain, wrist: THREE.Bone, reference: THREE.Vector3): 1 | -1 {
+  const tip = chain.bones[chain.bones.length - 1]
+  const saved = chain.bones[0].quaternion.clone()
+  const probe = new THREE.Quaternion()
+  const tipPos = new THREE.Vector3()
+
+  const gap = (sign: 1 | -1) => {
+    probe.setFromAxisAngle(chain.spreadAxis, 0.3 * sign)
+    chain.bones[0].quaternion.copy(chain.restQ[0]).multiply(probe)
+    wrist.updateMatrixWorld(true)
+    return tip.getWorldPosition(tipPos).distanceTo(reference)
+  }
+
+  const positive = gap(1)
+  const negative = gap(-1)
+  chain.bones[0].quaternion.copy(saved)
+  wrist.updateMatrixWorld(true)
+  return positive >= negative ? 1 : -1
+}
+
 function buildArm(root: THREE.Object3D, side: 'L' | 'R'): ArmChain {
+  const clavicle = bone(root, `Bip01_${side}_Clavicle`)
   const upper = bone(root, `Bip01_${side}_UpperArm`)!
   const fore = bone(root, `Bip01_${side}_Forearm`)!
   const hand = bone(root, `Bip01_${side}_Hand`)!
@@ -220,23 +298,43 @@ function buildArm(root: THREE.Object3D, side: 'L' | 'R'): ArmChain {
     })
     chain.bones[0].getWorldQuaternion(tmpQ).invert()
     chain.spreadAxis = palmNormal.clone().applyQuaternion(tmpQ).normalize()
+
   }
   fingers.forEach(setAxes)
   setAxes(thumb)
+
+  // Axes first, then measure which way each chain actually bends. This runs on
+  // the rest pose and restores the skeleton after probing. Fingers are measured
+  // against the thumb base and the thumb against the index base, so each digit
+  // is probed against the opposite side of the hand.
+  const thumbBase = thumb.bones[0].getWorldPosition(new THREE.Vector3())
+  const indexBase = fingers[0].bones[0].getWorldPosition(new THREE.Vector3())
+  for (const chain of fingers) {
+    chain.curlSign = calibrateCurlSign(chain, hand)
+    chain.spreadSign = calibrateSpreadSign(chain, hand, thumbBase)
+  }
+  thumb.curlSign = calibrateCurlSign(thumb, hand)
+  thumb.spreadSign = calibrateSpreadSign(thumb, hand, indexBase)
 
   const handRestWorldQ = hand.getWorldQuaternion(new THREE.Quaternion())
   const restBasisQ = new THREE.Quaternion()
   basisQuaternion(along, palmNormal, restBasisQ)
 
   return {
-    upper, fore, hand, fingers, thumb,
+    clavicle, upper, fore, hand, fingers, thumb,
     handRestWorldQ, restBasisQ,
     upperLen: wUpper.distanceTo(wFore),
     foreLen: wFore.distanceTo(wHand),
-    restQ: { upper: upper.quaternion.clone(), fore: fore.quaternion.clone(), hand: hand.quaternion.clone() },
+    restQ: {
+      clavicle: clavicle?.quaternion.clone(),
+      upper: upper.quaternion.clone(), fore: fore.quaternion.clone(), hand: hand.quaternion.clone(),
+    },
     foreAim: fore.quaternion.clone(),
     smooth: { pos: new THREE.Vector3(), vel: new THREE.Vector3(), started: false },
-    axis: { upper: localAxisToChild(upper), fore: localAxisToChild(fore) },
+    axis: {
+      clavicle: clavicle ? localAxisToChild(clavicle) : undefined,
+      upper: localAxisToChild(upper), fore: localAxisToChild(fore),
+    },
     palmNormal, across, along,
   }
 }
@@ -365,6 +463,9 @@ const _wr = new THREE.Vector3()
 const _dir = new THREE.Vector3()
 const _pole = new THREE.Vector3()
 const _bend = new THREE.Vector3()
+const _claviclePos = new THREE.Vector3()
+const _clavicleRest = new THREE.Vector3()
+const _clavicleTarget = new THREE.Vector3()
 
 const damp = (t: number, lambda: number) => 1 - Math.exp(-lambda * t)
 
@@ -377,6 +478,27 @@ const damp = (t: number, lambda: number) => 1 - Math.exp(-lambda * t)
 const ARM_LAMBDA = 7.5
 const WRIST_LAMBDA = 9
 const FINGER_LAMBDA = 12
+const ARM_MAX_RAD_S = 7
+const WRIST_MAX_RAD_S = 9
+const FINGER_MAX_RAD_S = 14
+
+/** Exponential response with a hard angular-velocity ceiling. Damping alone is
+ * frame-rate independent, but a large target change can still rotate most of
+ * a joint in one rendered frame. The cap preserves the response while making
+ * dropped frames and abrupt sign changes physically calmer. */
+function slerpLimited(
+  current: THREE.Quaternion,
+  target: THREE.Quaternion,
+  dt: number,
+  lambda: number,
+  maxRadiansPerSecond: number,
+) {
+  const angle = current.angleTo(target)
+  if (angle < 1e-6) return
+  const response = damp(dt, lambda)
+  const velocityLimit = (maxRadiansPerSecond * dt) / angle
+  current.slerp(target, Math.min(response, velocityLimit, 1))
+}
 
 /**
  * Local quaternion that points `b`'s local `axis` along world direction `dir`.
@@ -395,9 +517,17 @@ function aimQuaternion(b: THREE.Bone, axis: THREE.Vector3, restQ: THREE.Quaterni
 }
 
 /** Rotate `b` so that its local `axis` points along world direction `dir`. */
-function aimBone(b: THREE.Bone, axis: THREE.Vector3, restQ: THREE.Quaternion, dir: THREE.Vector3, dt: number, lambda = 13) {
+function aimBone(
+  b: THREE.Bone,
+  axis: THREE.Vector3,
+  restQ: THREE.Quaternion,
+  dir: THREE.Vector3,
+  dt: number,
+  lambda = 13,
+  maxRadiansPerSecond = ARM_MAX_RAD_S,
+) {
   aimQuaternion(b, axis, restQ, dir, _want)
-  b.quaternion.slerp(_want, damp(dt, lambda))
+  slerpLimited(b.quaternion, _want, dt, lambda, maxRadiansPerSecond)
   b.updateMatrixWorld(true)
 }
 
@@ -435,7 +565,30 @@ export function smoothTarget(arm: ArmChain, raw: THREE.Vector3, dt: number, omeg
  * Two-bone IK in world space. Solves elbow and wrist positions analytically,
  * then aims each bone at the next, which keeps it rig-agnostic.
  */
-export function solveArmIK(arm: ArmChain, targetWorld: THREE.Vector3, side: number, dt: number) {
+export function solveArmIK(
+  arm: ArmChain,
+  targetWorld: THREE.Vector3,
+  side: number,
+  dt: number,
+  poleDirection?: THREE.Vector3,
+) {
+  // Share high/reaching motion with the shoulder girdle. A two-bone arm alone
+  // leaves the clavicle frozen and produces the mannequin-like 90-degree pose
+  // most visible in head-level signs. Only a conservative fraction follows so
+  // the chest does not collapse toward the hand.
+  if (arm.clavicle && arm.axis.clavicle && arm.restQ.clavicle) {
+    arm.clavicle.getWorldPosition(_claviclePos)
+    arm.clavicle.parent?.getWorldQuaternion(_pq)
+    _rw.copy(_pq).multiply(arm.restQ.clavicle)
+    _clavicleRest.copy(arm.axis.clavicle).applyQuaternion(_rw).normalize()
+    _clavicleTarget.subVectors(targetWorld, _claviclePos).normalize()
+    const lift = THREE.MathUtils.clamp((_clavicleTarget.y + 0.05) * 0.20, 0, 0.18)
+    const lateral = THREE.MathUtils.clamp(Math.abs(_clavicleTarget.x) * 0.08, 0, 0.06)
+    _clavicleTarget.lerp(_clavicleRest, 1 - lift - lateral).normalize()
+    aimBone(arm.clavicle, arm.axis.clavicle, arm.restQ.clavicle,
+      _clavicleTarget, dt, ARM_LAMBDA * 0.72, ARM_MAX_RAD_S * 0.45)
+  }
+
   arm.upper.getWorldPosition(_sh)
   const l1 = arm.upperLen
   const l2 = arm.foreLen
@@ -447,7 +600,8 @@ export function solveArmIK(arm: ArmChain, targetWorld: THREE.Vector3, side: numb
   const offset = Math.acos(THREE.MathUtils.clamp(cosS, -1, 1))
 
   // Elbow pole: down, outward, slightly back, so arms clear the torso.
-  _pole.set(side * 0.32, -1, -0.20).normalize()
+  if (poleDirection) _pole.copy(poleDirection).normalize()
+  else _pole.set(side * 0.32, -1, -0.20).normalize()
   _bend.crossVectors(_dir, _pole)
   if (_bend.lengthSq() < 1e-6) _bend.set(side, 0, 0)
   _bend.normalize()
@@ -509,7 +663,12 @@ function swingTwist(q: THREE.Quaternion, axis: THREE.Vector3) {
   else _twist.normalize()
   canonicalise(_twist)
   _inv.copy(_twist).invert()
-  _swing.copy(_canon).multiply(_inv)
+  // The twist is applied to the parent (forearm) and the residual to its child
+  // (hand), so their world-space product must be twist * residual = q. The old
+  // q * twist^-1 residual used the standard same-joint decomposition but then
+  // applied the factors on two different bones in reverse order. Large pointing
+  // changes consequently missed their requested direction.
+  _swing.copy(_inv).multiply(_canon)
   canonicalise(_swing)
 }
 
@@ -522,7 +681,13 @@ function swingTwist(q: THREE.Quaternion, axis: THREE.Vector3) {
  * hand into the body. Instead the required rotation is split: the twist goes to
  * the forearm as pronation, and only the clamped swing reaches the wrist.
  */
-export function setHandOrientation(arm: ArmChain, palm: THREE.Vector3, point: THREE.Vector3, dt: number) {
+export function setHandOrientation(
+  arm: ArmChain,
+  palm: THREE.Vector3,
+  point: THREE.Vector3,
+  dt: number,
+  maxWristSwing = MAX_WRIST_SWING,
+) {
   // Desired hand orientation, in world space.
   basisQuaternion(point, palm, _want)
   _rw.copy(arm.restBasisQ).invert()
@@ -542,42 +707,65 @@ export function setHandOrientation(arm: ArmChain, palm: THREE.Vector3, point: TH
   // Pronation belongs to the forearm: the radius rotating over the ulna is what
   // turns your palm over, not the wrist. Fold it into the aim and commit once.
   _foreTarget.copy(arm.foreAim).multiply(_twist)
-  arm.fore.quaternion.slerp(_foreTarget, damp(dt, ARM_LAMBDA))
+  slerpLimited(arm.fore.quaternion, _foreTarget, dt, ARM_LAMBDA, ARM_MAX_RAD_S)
   arm.fore.updateMatrixWorld(true)
 
   // Whatever remains is wrist bend, clamped to a human range. Without this the
   // wrist folds backwards through the forearm and the hand enters the body.
   const angle = 2 * Math.acos(THREE.MathUtils.clamp(_swing.w, -1, 1))
-  if (angle > MAX_WRIST_SWING) {
+  const safeWristSwing = THREE.MathUtils.clamp(maxWristSwing, 0.65, 1.22)
+  if (angle > safeWristSwing) {
     _swingAxis.set(_swing.x, _swing.y, _swing.z)
     if (_swingAxis.lengthSq() > 1e-8) {
       _swingAxis.normalize()
-      _swing.setFromAxisAngle(_swingAxis, MAX_WRIST_SWING)
+      _swing.setFromAxisAngle(_swingAxis, safeWristSwing)
     }
   }
-  arm.hand.quaternion.slerp(_swing, damp(dt, WRIST_LAMBDA))
+  slerpLimited(arm.hand.quaternion, _swing, dt, WRIST_LAMBDA, WRIST_MAX_RAD_S)
   arm.hand.updateMatrixWorld(true)
 }
 
 export type FingerTarget = { curl: readonly [number, number, number]; spread: number }
 
-/** Sign of the flexion rotation; calibrated once, see calibrateCurl. */
-let CURL_SIGN = 1
-export function setCurlSign(s: number) { CURL_SIGN = s }
 const FINGER_JOINT_MAX = [1.34, 1.48, 1.02]
 
+/**
+ * Anatomical joint limits, enforced here rather than trusted from the pose data.
+ *
+ * The MCP, PIP and DIP joints are not independent. The PIP and DIP are hinges
+ * with essentially no extension range, and the DIP is tendon-coupled to the PIP
+ * through flexor digitorum profundus: you cannot fold the fingertip while the
+ * middle joint stays straight. Try it on your own hand. A pose that asks for it
+ * reads as broken even when every individual angle is inside its own limit,
+ * which is how a descriptor-derived handshape ends up looking like a claw.
+ *
+ * Clamping at the point of application means NO pose - authored, composed, or
+ * later imported from capture - can put the hand outside human range. That is
+ * the guarantee worth having, because the pose data will keep changing.
+ */
+function anatomicalCurl(curl: readonly number[]): [number, number, number] {
+  const mcp = THREE.MathUtils.clamp(curl[0] ?? 0, 0, FINGER_JOINT_MAX[0])
+  const pip = THREE.MathUtils.clamp(curl[1] ?? 0, 0, FINGER_JOINT_MAX[1])
+  // The DIP follows the PIP and cannot lead it.
+  const dipMax = Math.min(FINGER_JOINT_MAX[2], pip * 0.72 + 0.12)
+  const dip = THREE.MathUtils.clamp(curl[2] ?? 0, 0, dipMax)
+  return [mcp, pip, dip]
+}
+
 function applyFinger(chain: FingerChain, t: FingerTarget, dt: number, lambda = FINGER_LAMBDA) {
+  const curl = anatomicalCurl(t.curl)
   for (let i = 0; i < chain.bones.length; i++) {
     const b = chain.bones[i]
-    const requested = t.curl[i] ?? t.curl[t.curl.length - 1] * 0.7
-    const angle = THREE.MathUtils.clamp(requested, 0, FINGER_JOINT_MAX[i] ?? 1.02) * CURL_SIGN
+    const requested = curl[i] ?? curl[curl.length - 1] * 0.7
+    const angle = THREE.MathUtils.clamp(requested, 0, FINGER_JOINT_MAX[i] ?? 1.02) * chain.curlSign
     _dq.setFromAxisAngle(chain.curlAxis[i], angle)
     _want.copy(chain.restQ[i]).multiply(_dq)
     if (i === 0 && t.spread) {
-      _dq.setFromAxisAngle(chain.spreadAxis, THREE.MathUtils.clamp(t.spread, -.34, .34) * CURL_SIGN)
+      _dq.setFromAxisAngle(chain.spreadAxis,
+        THREE.MathUtils.clamp(t.spread, -.34, .34) * chain.spreadSign)
       _want.multiply(_dq)
     }
-    b.quaternion.slerp(_want, damp(dt, lambda))
+    slerpLimited(b.quaternion, _want, dt, lambda, FINGER_MAX_RAD_S)
   }
 }
 
@@ -596,20 +784,21 @@ export type ThumbTarget = {
 function applyThumb(chain: FingerChain, t: ThumbTarget, dt: number, lambda = FINGER_LAMBDA) {
   const base = chain.bones[0]
   _want.copy(chain.restQ[0])
-  _dq.setFromAxisAngle(chain.spreadAxis, THREE.MathUtils.clamp(t.abduct, -.08, .86) * CURL_SIGN)
+  _dq.setFromAxisAngle(chain.spreadAxis,
+    THREE.MathUtils.clamp(t.abduct, -.08, .86) * chain.spreadSign)
   _want.multiply(_dq)
-  _dq.setFromAxisAngle(chain.longAxis, THREE.MathUtils.clamp(t.rotate, -.15, .88) * CURL_SIGN)
+  _dq.setFromAxisAngle(chain.longAxis, THREE.MathUtils.clamp(t.rotate, -.15, .88))
   _want.multiply(_dq)
-  _dq.setFromAxisAngle(chain.curlAxis[0], THREE.MathUtils.clamp(t.curl[0], 0, 1.02) * CURL_SIGN)
+  _dq.setFromAxisAngle(chain.curlAxis[0], THREE.MathUtils.clamp(t.curl[0], 0, 1.02) * chain.curlSign)
   _want.multiply(_dq)
-  base.quaternion.slerp(_want, damp(dt, lambda))
+  slerpLimited(base.quaternion, _want, dt, lambda, FINGER_MAX_RAD_S)
 
   for (let i = 1; i < chain.bones.length; i++) {
     const requested = i === 1 ? t.curl[1] : t.curl[1] * 0.7
-    const angle = THREE.MathUtils.clamp(requested, 0, i === 1 ? 1.12 : .82) * CURL_SIGN
+    const angle = THREE.MathUtils.clamp(requested, 0, i === 1 ? 1.12 : .82) * chain.curlSign
     _dq.setFromAxisAngle(chain.curlAxis[i], angle)
     _want.copy(chain.restQ[i]).multiply(_dq)
-    chain.bones[i].quaternion.slerp(_want, damp(dt, lambda))
+    slerpLimited(chain.bones[i].quaternion, _want, dt, lambda, FINGER_MAX_RAD_S)
   }
 }
 

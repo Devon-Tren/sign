@@ -3,6 +3,7 @@ import { CircleAlert, FileAudio, Mic2, Send, Square, Waves } from 'lucide-react'
 import Avatar from './Avatar'
 import { CLIP_LENGTH_MS } from '../clips'
 import { LOCAL_PHRASES, localInterpret } from '../data'
+import { offlineSelection } from '../offlinePlan'
 import { fetchHealth, fetchPhrases, interpret, planASL, transcribeAudio } from '../api'
 import type { Phrase, PlanResult, Segment, SelectedPhrase } from '../types'
 import { useLiveAudio } from '../hooks/useLiveAudio'
@@ -15,6 +16,7 @@ export default function Live(){
   const [draft,setDraft]=useState('')
   const [importing,setImporting]=useState(false)
   const [fileError,setFileError]=useState('')
+  const [plannerDown,setPlannerDown]=useState(false)
   const [queue,setQueue]=useState<SelectedPhrase[]>([])
   const [playing,setPlaying]=useState<SelectedPhrase|null>(null)
   const nextId=useRef(1)
@@ -53,10 +55,12 @@ export default function Live(){
       try {
         // Matching and motion planning are independent reads. Running them in
         // parallel removes a full request round trip from live playback.
+        let plannerFailed=false
         const [result,planned]=await Promise.all([
           interpret(text,phrases,context),
-          planASL(text,context,true).catch(()=>undefined),
+          planASL(text,context,true).catch(()=>{plannerFailed=true;return undefined}),
         ])
+        setPlannerDown(plannerFailed)
         if(epoch!==generation.current)return
         const catalogMatches:SelectedPhrase[]=result.selected.map(clip=>({
           ...clip,
@@ -93,15 +97,26 @@ export default function Live(){
             }]
           }
         }
+        // The planner is what lets the avatar sign anything outside the catalog.
+        // When it is unreachable the old code fell through with an EMPTY
+        // selection and the avatar simply stood still, with nothing in the UI
+        // explaining why. Fall back to the local planner instead, so an unknown
+        // word still gets fingerspelled rather than silently dropped.
+        if(!selected.length) selected=offlineSelection(text,id)
         if(epoch!==generation.current)return
         setSegments(prev=>prev.map(segment=>segment.id===id
           ? {...segment,selected,catalogMatches,coverage:result.coverage,gate,planResult}
           : segment))
         enqueue(selected)
       } catch {
-        if(epoch===generation.current)setSegments(prev=>prev.map(segment=>segment.id===id
-          ? {...segment,coverage:'unsupported',planError:'Smart Sign Gate unavailable. Captions retained.'}
+        if(epoch!==generation.current)return
+        setPlannerDown(true)
+        const offline=offlineSelection(text,id)
+        setSegments(prev=>prev.map(segment=>segment.id===id
+          ? {...segment,selected:offline,coverage:offline.length?'illustrative-only':'unsupported',
+             planError:'Sign planner unavailable. Rendered offline from local data.'}
           : segment))
+        enqueue(offline)
       }
     })
     await translationChain.current
@@ -120,7 +135,7 @@ export default function Live(){
   useEffect(()=>{
     if(!playing||playing.playback)return
     const timer=setTimeout(()=>setPlaying(current=>current===playing?null:current),
-      CLIP_LENGTH_MS[playing.phrase_id]||1600)
+      CLIP_LENGTH_MS[playing.animation_file||playing.phrase_id]||1600)
     return ()=>clearTimeout(timer)
   },[playing])
 
@@ -167,7 +182,7 @@ export default function Live(){
       <section className="avatar-panel">
         <div className="panel-top"><span className="mini-heading"><Waves size={17}/> Maya </span><span className={live.status==='listening'?'mode-chip chip-live':'mode-chip'}>{live.status==='listening'&&!playing&&<span className="pulse-dot"/>}{modeLabel}</span></div>
         <div className="avatar-stage"><div className="orb orb-one"/><div className="orb orb-two"/>
-          <Avatar clipId={playing?.phrase_id||'idle'} speed={1} timeline={playing?.playback} onComplete={()=>setPlaying(null)}/>
+          <Avatar clipId={playing?.animation_file||playing?.phrase_id||'idle'} speed={1} timeline={playing?.playback} onComplete={()=>setPlaying(null)}/>
           <div className="stage-guidance"><span className="stage-index">{stageMode}</span><strong>{currentLabel}</strong><span>{stageHint}</span></div>
           <div className="stage-vertical">SIGN / 001</div>
         </div>
@@ -183,6 +198,7 @@ export default function Live(){
             <div className="connection-hint"><span className={`small-dot ${backend?.live_configured?'green':'amber'}`}/>{backend?.live_configured?'Smart catalog, microphone, and audio import ready':backend?'Smart catalog ready · browser microphone fallback available':'Local catalog fallback available'}{backend?.motion_count?` · ${backend.motion_count} motions`:''}{backend?.catalog_consistent?' · SQL linked':backend?' · catalog mismatch':''}{backend?.catalog_backend?` · catalog: ${backend.catalog_backend}`:''}{live.connectedModel?` · ${live.connectedModel}`:''}</div>
           </div>
         </div>
+        {plannerDown&&<div className="safety-inline planner-offline"><CircleAlert size={15}/><span>Sign planner unreachable &mdash; the avatar is running on local data only, so coverage is reduced. Start the backend with <code>bash start.sh</code> to restore full planning.</span></div>}
         <div className="safety-inline"><CircleAlert size={15}/><span>Prototype gestures are not validated ASL and cannot replace a qualified interpreter.</span></div>
       </section>
     </div>

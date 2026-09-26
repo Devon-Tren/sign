@@ -23,17 +23,126 @@ joint trajectory and lets each layer be evaluated independently.
 - SQLite exposes 104 searchable illustrative phrase/sign rows.
 - The planning catalog contains 103 playable procedural motion entries and 74
   candidate sentence examples.
-- Eleven motion entries are derived from ASL-LEX phonological descriptors; 92
-  are application-authored procedural candidates.
+- **97 motion entries are parameterised from ASL-LEX 2.0 phonological
+  descriptors** (78 exact lemma matches, 19 documented approximate mappings).
+  Six entries remain application-authored because no plausible ASL-LEX lemma
+  exists: `compile`, `do`, `explain`, `five`, `part`, `refill`.
+- Six entries carry the full ASL-LEX morpheme sequence rather than a single
+  descriptor block, so a compound such as `LEARN` (gather from the palm, then to
+  the forehead) plays as two articulations instead of holding the first.
 - No construction or motion has an approved signer-review record.
 - Unknown concepts remain visibly labelled fingerspelling approximations.
-- The procedural renderer now clamps finger and thumb joints, limits wrist
-  swing, keeps approximate targets in front of the torso, uses a visible neutral
-  stance, completes onset/hold/release within the advertised duration, and
-  blends adjacent signs over a short coarticulation window.
 
-Those changes prevent many impossible poses, but a descriptor such as "curved
-movement near the head" is still not a recorded human performance.
+### Descriptor coverage
+
+`scripts/extract_asl_lex.py` maps catalog ids onto ASL-LEX entries. It previously
+extracted 11; every id with a plausible lemma is now mapped, and the ids without
+one stay in `data/asl_custom_motions.json` flagged `app_authored` so the gap is
+reported rather than hidden.
+
+`data/asl_custom_motions.json` is now two blocks. `signs` holds phonology for
+the six unmapped ids. `augment` layers app-authored values on top of licensed
+descriptors and never replaces a phonological value: non-manual grammar,
+repetition counts, movement size and axis, and the two-handed relations that a
+contact-surface name cannot express.
+
+`backend/motion_data.py` is the single loader for both files. `catalog_store` and
+`playback` each previously read only the custom file, so a sign described by the
+licensed extract was invisible to the planner unless it had also been
+hand-authored.
+
+### Handshapes
+
+Handshape composition moved to `frontend/src/handshapes.ts`. ASL-LEX names
+handshapes compositionally (`flat_b`, `curved_5`, `flatspread_5`) and codes
+Flexion, Spread, ThumbPosition, ThumbContact and SelectedFingers as separate
+orthogonal columns; the previous 24-entry lookup table had nowhere to put them,
+so all five columns were extracted and never read. A base form plus modifiers,
+refined by those columns, now covers **all 58 handshapes ASL-LEX uses**.
+
+This fixed three shipped collisions: `closed_b`, `flat_b` and `b` resolved to
+byte-identical poses, as did `s` and `fist`, and `m`/`n`/`t` were separated only
+by a thumb role that did not distinguish how many fingers cover the thumb.
+
+`UlnarRotation` and `Contact` are also read now. Contact matters most: roughly
+1,694 of 2,723 ASL-LEX entries are coded `Contact=1`, and the renderer's torso
+clearance field was pushing every one of them off the body it is supposed to
+reach.
+
+### Fingerspelling
+
+The manual alphabet resolved 26 letters onto 13 distinct poses — `D`, `G`, `L`,
+`Q` and `Z` were all the `1` handshape — on the code path that renders every
+unsupported word. Each letter now carries its own handshape plus the palm and
+pointing direction that separates it, and `npm --prefix frontend run audit`
+fails if any two letters become indistinguishable again.
+
+### Timing
+
+Two schedules, because the published corpora give two different answers.
+SignAvatars' isolated subsets run ~57 and ~60 frames at 24 fps (about 2.4-2.5 s
+per sign), while its continuous Language2Motion subset runs ~162 frames at 24 fps
+for a multi-sign sequence — roughly 1.0-1.35 s per sign, close to citation form.
+Isolated display stretches citation duration ~2.1x (1250-2500 ms); connected
+signing stretches it ~1.15x (700-1400 ms). One global stretch made the live
+avatar wade through a lecture.
+
+Legibility is bought by extending the **hold**, not by slowing the stroke.
+
+Onset and release are fixed milliseconds (170 / 200), not fractions of clip
+duration. Human sign transitions run roughly 150-250 ms whatever the sign's
+length; the previous fractional release spent nearly 400 ms drifting to neutral
+on a long clip.
+
+### Non-manual grammar
+
+`Pose` gained a `headShake` channel. Negation in ASL is marked on the head, so
+`NO` and `NOT` were previously missing their grammar however correct the hands
+were. WH-questions furrow the brow and yes/no questions raise it; the two drive
+opposing action units and are never both asserted.
+
+### Two-handed relations
+
+The contact surface is in the licensed data — for a sign coded
+`MajorLocation=Hand`, `MinorLocation` names `Palm`, `PalmBack`, `Heel`,
+`FingerRadial`, `FingerTip` and so on. `frontend/src/anchors.ts` turns each
+surface into a relation, replacing the per-sign `id === 'help'` offsets that were
+compiled into the renderer. `DominanceViolation` and `SymmetryViolation` are also
+handled; the previous `startsWith('Asymmetrical')` test missed them, so `NAME`,
+`LAST`, `OR` and `RUN` all rendered one-handed.
+
+All 37 ASL-LEX minor locations now have anchors. The previous table carried 18,
+several of them app-invented rather than ASL-LEX vocabulary, so a sign coded at
+`FingerRadial` or `Clavicle` or `TorsoTop` was rendered in neutral space.
+
+### Audit
+
+The catalog had no way to be inspected as a whole, which is why the collisions
+above shipped. Two halves now exist:
+
+- `npm --prefix frontend run audit` — numeric. Pose distinctness, vocabulary
+  coverage and provenance, exiting non-zero on any collision.
+- The **Motion audit** tab — visual. Renders all 103 motions on the real rig at
+  their hold frame and captures a contact sheet, with provenance badges.
+
+`backend/tests/test_motion_data.py` asserts the data-side invariants: the two
+descriptor files stay disjoint, every handshape resolves to a base form, every
+location has an anchor, every hand-located sign resolves to a relation, and the
+augment entries that carry several fields keep all of them.
+
+### Rendering
+
+- The default camera is a three-quarter view, not frontal. ASL uses movement
+  toward and away from the body and a dead-on camera flattens that axis.
+- The shadow frustum was tightened from 6x6 units to the figure. The mesh already
+  casts and receives, so the hands shadow the torso — the strongest available
+  cue for how far a hand sits from the chest — and it was being spent on empty
+  space.
+
+Those changes prevent many impossible poses and make the licensed data
+load-bearing, but a descriptor such as "curved movement near the head" is still
+not a recorded human performance. **Nothing here makes the output validated
+ASL.** The next quality tier is captured motion; see the path below.
 
 ## Live path
 

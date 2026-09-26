@@ -47,8 +47,11 @@ def test_context_gate_disambiguates_intelligence():
             'text': 'Intelligence can help computers recognize patterns.',
             'context': ['We are studying machine learning.'],
         }).json()
+        # CAN is an ASL-LEX lemma and is now registered, so the modal is carried
+        # as a sign instead of being dropped. Expanding the extract from 11 to
+        # ~1,280 entries is what added it.
         assert [p['phrase_id'] for p in supported['selected']] == [
-            'artificial_intelligence', 'help', 'computer']
+            'artificial_intelligence', 'can', 'help', 'computer']
         assert supported['selected'][0]['match_kind'] == 'contextual'
         assert supported['gate']['context_used'] is True
 

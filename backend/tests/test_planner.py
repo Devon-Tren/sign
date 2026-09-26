@@ -21,9 +21,30 @@ def test_candidate_example_and_unknown_input():
         assert result['validation']['executable']
         assert not result['validation']['motion_issues']
         assert result['playback']['clips'][0]['sign_id'] == 'YOU'
-        for text in ['Do you not understand?', 'Submit it', 'Do you understand before Friday?', 'Do you understand on Friday?']:
+        # Expanding the ASL-LEX extract from 11 to 97 entries gave NOT and DO
+        # real descriptors, so this input now composes from catalog signs instead
+        # of spelling them. It must still be labelled a candidate.
+        result = client.post('/api/plan', json={'text': 'Do you not understand?'}).json()
+        assert result['mode'] == 'catalog-composed'
+        assert result['review_status'] == 'candidate'
+        # ASL-LEX carries NOT_UNDERSTAND as its own lemma, and one lexical sign
+        # is better ASL than NOT followed by UNDERSTAND. The planner takes the
+        # longest registered expression, so the expansion improved this.
+        assert [s['sign_id'] for s in result['plan']['manual_sequence']] == [
+            'DO', 'YOU', 'NOT_UNDERSTAND']
+        # The invariant that matters is unchanged: a word with no catalog sign is
+        # visibly fingerspelled rather than silently approximated by a near-miss.
+        # BEFORE and FRIDAY are registered signs now, so that sentence composes.
+        result = client.post('/api/plan', json={'text': 'Do you understand before Friday?'}).json()
+        assert result['mode'] == 'catalog-composed'
+        assert [s['sign_id'] for s in result['plan']['manual_sequence']] == [
+            'DO', 'YOU', 'UNDERSTAND', 'BEFORE', 'FRIDAY']
+        for text in ['Submit it', 'Please recalibrate the oscilloscope',
+                     'Might you reconsider the premise?']:
             result = client.post('/api/plan', json={'text': text}).json()
             assert result['mode'] == 'fingerspell-fallback'
+            assert any(step['sign_id'].startswith('FS:')
+                       for step in result['plan']['manual_sequence'])
             assert result['playback']
         assert client.post('/api/plan', json={'text': '   '}).status_code == 422
         assert client.post('/api/plan', json={'text': 'Hello', 'context': ['x' * 3001]}).status_code == 422
@@ -203,8 +224,17 @@ def test_fallback_prefers_longest_sign_expression_and_inflected_known_signs():
 
 
 def test_uncatalogued_modal_is_preserved_instead_of_silently_dropped():
+    # CAN, DRINK and WATER are all registered now, so this composes from catalog
+    # signs rather than spelling the modal.
     result = asyncio.run(create_plan(PlanRequest(text='Can you drink water?')))
-    assert result['mode'] == 'fingerspell-fallback'
-    assert [step['sign_id'] for step in result['plan']['manual_sequence']] == ['FS:CAN', 'YOU', 'DRINK', 'WATER']
+    assert result['mode'] == 'catalog-composed'
+    assert [step['sign_id'] for step in result['plan']['manual_sequence']] == ['CAN', 'YOU', 'DRINK', 'WATER']
     assert result['plan']['grammar']['question_type'] == 'yes_no'
     assert result['plan']['nonmanuals'][0]['profile_id'] == 'YES_NO_QUESTION_CANDIDATE'
+
+    # The behaviour under test is what happens to a modal with NO registered
+    # sign: it must be spelled and kept in sequence, never silently dropped.
+    result = asyncio.run(create_plan(PlanRequest(text='Might you reconsider the premise?')))
+    assert result['mode'] == 'fingerspell-fallback'
+    sequence = [step['sign_id'] for step in result['plan']['manual_sequence']]
+    assert 'FS:MIGHT' in sequence and sequence[0] == 'FS:MIGHT'
