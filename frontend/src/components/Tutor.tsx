@@ -17,6 +17,20 @@ const NAMES=['Index','Middle','Ring','Little']
 const TARGETS:Record<HandshapeTarget,number[][]>={open:[[1,1,1,1]],fist:[[0,0,0,0]],index:[[1,0,0,0]],'two-open':[[1,1,1,1],[1,1,1,1]]}
 const progressKey='sign-drill-completion-v1'
 const attemptMs=5000
+const mediaPipeBase=`${import.meta.env.BASE_URL}mediapipe`
+
+function practiceStartupError(cause:unknown,stage:'camera'|'video'|'tracker'){
+  if(cause instanceof DOMException){
+    if(cause.name==='NotAllowedError')return 'Camera permission was denied. Allow camera access for localhost in Chrome, then try again.'
+    if(cause.name==='NotFoundError')return 'No camera was found. Connect a webcam and try again.'
+    if(cause.name==='NotReadableError')return 'The camera is already in use by another app or browser tab.'
+    if(cause.message)return cause.message
+  }
+  if(cause instanceof Error&&cause.message)return cause.message
+  if(stage==='tracker')return 'The hand-tracking model could not start. Reload the page and try again.'
+  if(stage==='video')return 'Chrome could not start the webcam preview. Check the site camera permission and try again.'
+  return 'The webcam could not start. Check the site camera permission and try again.'
+}
 
 function angle(a:NormalizedLandmark,b:NormalizedLandmark,c:NormalizedLandmark){
   const u=[a.x-b.x,a.y-b.y,a.z-b.z],v=[c.x-b.x,c.y-b.y,c.z-b.z]
@@ -67,13 +81,13 @@ export default function Tutor(){
   const finishAttempt=useCallback((complete:boolean)=>{const best=bestRef.current;if(best)recordAttempt(best.score);if(complete){persistCompletion(selectedRef.current.id);setState('completed');stateRef.current='completed'}else{setState('feedback');stateRef.current='feedback'}},[persistCompletion,recordAttempt])
   const processFrame=useCallback((landmarks:NormalizedLandmark[][],now:number)=>{setHandsDetected(landmarks.length);if(stateRef.current!=='tracking')return;const target=selectedRef.current.practice.targetHandState;if(!target)return;const assessed=assessHands(landmarks,target);if(!bestRef.current||assessed.score>=bestRef.current.score)bestRef.current=assessed;setResult({handshape:assessed,overall:assessed.score});if(assessed.matched)stableRef.current=Math.min(12,stableRef.current+1);else stableRef.current=Math.max(0,stableRef.current-2);setStability(stableRef.current);if(stableRef.current>=12)finishAttempt(true);else if(now-trackingStart.current>=attemptMs)finishAttempt(false)},[finishAttempt])
 
-  const startCamera=async()=>{resetAttempt();setLoading(true);try{
+  const startCamera=async()=>{resetAttempt();setLoading(true);let startupStage:'camera'|'video'|'tracker'='camera';try{
     const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});mediaRef.current=stream
-    if(!videoRef.current)throw new Error('Camera view unavailable.');const video=videoRef.current;video.srcObject=stream;await video.play()
-    if(!detectorRef.current){const {FilesetResolver,HandLandmarker}=await import('@mediapipe/tasks-vision');const vision=await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm');detectorRef.current=await HandLandmarker.createFromOptions(vision,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',delegate:'CPU'},runningMode:'VIDEO',numHands:2,minHandDetectionConfidence:.5,minHandPresenceConfidence:.5,minTrackingConfidence:.4})}
+    startupStage='video';if(!videoRef.current)throw new Error('Camera view unavailable.');const video=videoRef.current;video.srcObject=stream;await video.play()
+    startupStage='tracker';if(!detectorRef.current){const {FilesetResolver,HandLandmarker}=await import('@mediapipe/tasks-vision');const vision=await FilesetResolver.forVisionTasks(`${mediaPipeBase}/wasm`);detectorRef.current=await HandLandmarker.createFromOptions(vision,{baseOptions:{modelAssetPath:`${mediaPipeBase}/models/hand_landmarker.task`,delegate:'CPU'},runningMode:'VIDEO',numHands:2,minHandDetectionConfidence:.5,minHandPresenceConfidence:.5,minTrackingConfidence:.4})}
     liveRef.current=true;setCameraActive(true);setLoading(false);setState('ready');stateRef.current='ready'
     const draw=()=>{if(!liveRef.current||!videoRef.current||!detectorRef.current)return;const now=performance.now();if(now-lastFrame.current>95&&video.readyState>=2){lastFrame.current=now;const detection=detectorRef.current.detectForVideo(video,now);const canvas=canvasRef.current;if(canvas){const width=video.videoWidth||640,height=video.videoHeight||480;if(canvas.width!==width){canvas.width=width;canvas.height=height}const context=canvas.getContext('2d');if(context){context.clearRect(0,0,width,height);context.lineWidth=2.5;context.strokeStyle='#cefba8';context.fillStyle='#f6ffe8';for(const hand of detection.landmarks){for(const [a,b] of CONNECTIONS){context.beginPath();context.moveTo(hand[a].x*width,hand[a].y*height);context.lineTo(hand[b].x*width,hand[b].y*height);context.stroke()}for(const landmark of hand){context.beginPath();context.arc(landmark.x*width,landmark.y*height,3.5,0,Math.PI*2);context.fill()}}}}processFrame(detection.landmarks,now)}frameRef.current=requestAnimationFrame(draw)};frameRef.current=requestAnimationFrame(draw)
-  }catch(cause){stopCamera();setError(cause instanceof Error?cause.message:String(cause))}}
+  }catch(cause){stopCamera();setError(practiceStartupError(cause,startupStage))}}
   const beginCountdown=()=>{if(!cameraActive)return;resetAttempt();setCountdown(3);setState('countdown');stateRef.current='countdown'}
   useEffect(()=>{if(state!=='countdown')return;const timer=setTimeout(()=>{if(countdown>1)setCountdown(value=>value-1);else{trackingStart.current=performance.now();setState('tracking');stateRef.current='tracking'}},800);return()=>clearTimeout(timer)},[state,countdown])
   const continueLearning=()=>{if(nextItem)choose(nextItem)}

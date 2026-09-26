@@ -57,6 +57,7 @@ Browser fallback is expected to work best in current Chrome and Edge releases. I
 - Reference-avatar replay, pause, speed, manual rotation, and concise handshape/position/movement/orientation teaching notes.
 - Guided practice states: ready, countdown, tracking, feedback, and completed.
 - Webcam input and visible landmarks using the existing MediaPipe Hand Landmarker.
+- MediaPipe's WebAssembly runtime and official hand-landmarker model are bundled under `frontend/public/mediapipe`, so practice startup does not depend on jsDelivr or Google model-host availability.
 - Per-finger measured results, specific corrections, retry history, and continue-to-next-item flow.
 - Completion still requires 12 stable frames at the existing handshape threshold and persists under the existing browser `localStorage` key.
 - Real handshape practice is enabled for Open hand, Closed hand, Index extension, Two-hand coordination, Hello, Thank you, Please, Me, You, Understand, and Question.
@@ -99,6 +100,7 @@ Verified on September 26, 2026:
 - Backend test suite: **27 passed**.
 - Frontend development server: returned HTTP `200`.
 - Backend API documentation: returned HTTP `200`.
+- Learning Studio webcam startup: manually verified in Chrome; the bundled tracker initialized, the camera entered `LIVE` state, and the `I'm ready` action appeared.
 - Git whitespace check: passed.
 
 Live microphone transcription still requires a real browser permission grant and speech input for an end-to-end manual check. Automated tests do not simulate microphone hardware or third-party transcription services.
@@ -120,7 +122,7 @@ Live microphone transcription still requires a real browser permission grant and
 - Speech transcripts may contain errors, especially with names, technical terms, accents, background noise, or overlapping speakers.
 - Procedural avatar motion lacks complete coarticulation, classifier handling, facial grammar, and signer-reviewed fingerspelling.
 - The Learning Studio tracks limited hand and finger properties rather than complete sign language production.
-- MediaPipe assets and model files require network access on first load.
+- The bundled MediaPipe runtime and hand model increase the deployed frontend size, but allow hand tracking to initialize without a first-load CDN request.
 - The frontend production bundle currently emits a large-chunk warning during the Vite build.
 - Privacy and consent procedures are required before using microphone or camera features in a real classroom.
 
