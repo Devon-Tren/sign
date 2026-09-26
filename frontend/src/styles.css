@@ -88,11 +88,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .sidebar-collapsed .sidebar{width:72px;flex-basis:72px}
 .brand-row{min-height:52px;padding:0 8px}
 .brand-logo{display:flex;align-items:center;gap:12px;min-width:0}
-.brand-mark{width:40px;height:40px;border-radius:2px;background:var(--accent);color:var(--foreground)}
+.brand-mark{width:40px;height:40px;border-radius:2px;background:var(--accent);color:var(--foreground);transition:transform .16s ease,box-shadow .16s ease}
 .brand-type strong{font-size:27px;color:var(--dark-panel-foreground);font-weight:780}
 .brand-type strong span{color:var(--accent)}
 .brand-type small{color:#9d9788;letter-spacing:1.7px}
-.brand-button:hover .brand-mark{box-shadow:4px 4px 0 #675023}
+.brand-button:hover .brand-mark,.home-brand:hover .brand-mark{box-shadow:4px 4px 0 #675023;transform:translate(-2px,-2px)}
 .brand-button:focus-visible{border-radius:2px;outline-color:var(--accent)}
 .sidebar .brand-row{min-height:58px;padding:8px;background:var(--background);border:1px solid var(--border)}
 .sidebar .brand-type strong{color:var(--foreground)}

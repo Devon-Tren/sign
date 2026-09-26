@@ -14,10 +14,10 @@ export default function App(){
   if(tab==='home')return <Home onNavigate={setTab}/>
   return <div className={`app-shell ${collapsed?'sidebar-collapsed':''}`}>
     <aside className="sidebar"><button className="brand-row brand-button" title="Back to home" onClick={()=>setTab('home')}><BrandLogo/></button>
-      <div className="sidebar-control-row"><button className="collapse-toggle" title={collapsed?'Expand sidebar':'Collapse sidebar'} onClick={()=>setCollapsed(s=>!s)}>{collapsed?<PanelLeftOpen size={18}/>:<PanelLeftClose size={18}/>}</button></div>
       <div className="nav-divider"/>
       <div className="sidebar-nav">{NAV.map(([id,label,Icon,group],i)=><div key={id}>{(i===0||NAV[i-1][3]!==group)&&!collapsed&&<div className="nav-category">{group}</div>}<button className={`nav-item ${tab===id?'active':''}`} onClick={()=>setTab(id)} title={collapsed?label:undefined}><Icon size={19}/>{!collapsed&&<span>{label}</span>}{tab===id&&<span className="nav-current"/>}</button></div>)}</div>
       <div className="sidebar-spacer"/>
+      <div className="sidebar-control-row"><button className="collapse-toggle" title={collapsed?'Expand sidebar':'Collapse sidebar'} onClick={()=>setCollapsed(s=>!s)}>{collapsed?<PanelLeftOpen size={18}/>:<PanelLeftClose size={18}/>}</button></div>
     </aside>
     <div className="main-shell"><header className="app-header"><div className="header-crumb">SIGN <span>/</span> <strong>{NAV.find(x=>x[0]===tab)?.[1]}</strong></div><div className="header-right"><button className="header-help" title="About this prototype" onClick={()=>setTab('settings')}><HelpCircle size={19}/></button></div></header>
       <main key={tab}>{tab==='live'?<Live/>:tab==='learn'?<Tutor/>:tab==='library'?<Library/>:<Settings/>}</main>
