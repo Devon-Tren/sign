@@ -1,0 +1,440 @@
+{
+  "version": 1,
+  "warning": "Experimental authored prototypes, not Deaf/ASL expert validation. Exact lexical sequence lookup only; no substring or wildcard phrase matching.",
+  "signs": {
+    "HELLO": {
+      "status": "experimental",
+      "provenance": "Application-authored trajectory study using existing body anchors; no signer review or captured performance. Not approved ASL.",
+      "base_clip": "hello",
+      "duration_ms": 1200,
+      "phases": [
+        0.18,
+        0.62,
+        0.82
+      ],
+      "keyframes": [
+        {
+          "t": 0,
+          "right": {
+            "target": [
+              0.355,
+              -0.811,
+              0.345
+            ],
+            "palm": [
+              -0.7,
+              0.06,
+              -0.71
+            ],
+            "point": [
+              0.06,
+              -0.975,
+              0.21
+            ],
+            "shape": "flat_b",
+            "contact": false
+          }
+        },
+        {
+          "t": 0.18,
+          "right": {
+            "target": [
+              0.12,
+              0.4,
+              0.3
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "shape": "flat_b",
+            "contact": true
+          }
+        },
+        {
+          "t": 0.62,
+          "right": {
+            "target": [
+              0.34,
+              0.34,
+              0.49
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0.25,
+              0.97,
+              0
+            ],
+            "shape": "flat_b",
+            "contact": false
+          }
+        },
+        {
+          "t": 0.82,
+          "right": {
+            "target": [
+              0.34,
+              0.34,
+              0.49
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0.25,
+              0.97,
+              0
+            ],
+            "shape": "flat_b",
+            "contact": false
+          }
+        },
+        {
+          "t": 1,
+          "right": {
+            "target": [
+              0.355,
+              -0.811,
+              0.345
+            ],
+            "palm": [
+              -0.7,
+              0.06,
+              -0.71
+            ],
+            "point": [
+              0.06,
+              -0.975,
+              0.21
+            ],
+            "shape": "flat_b",
+            "contact": false
+          }
+        }
+      ]
+    },
+    "THANK_YOU": {
+      "status": "experimental",
+      "provenance": "Application-authored trajectory study using existing body anchors; no signer review or captured performance. Not approved ASL.",
+      "base_clip": "thank_you",
+      "duration_ms": 1300,
+      "phases": [
+        0.18,
+        0.62,
+        0.82
+      ],
+      "keyframes": [
+        {
+          "t": 0,
+          "right": {
+            "target": [
+              0.355,
+              -0.811,
+              0.345
+            ],
+            "palm": [
+              -0.7,
+              0.06,
+              -0.71
+            ],
+            "point": [
+              0.06,
+              -0.975,
+              0.21
+            ],
+            "shape": "flat_b",
+            "contact": false
+          }
+        },
+        {
+          "t": 0.18,
+          "right": {
+            "target": [
+              0.08,
+              0.13,
+              0.31
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "shape": "flat_b",
+            "contact": true
+          }
+        },
+        {
+          "t": 0.62,
+          "right": {
+            "target": [
+              0.12,
+              0.08,
+              0.61
+            ],
+            "palm": [
+              0,
+              -0.6,
+              -0.8
+            ],
+            "point": [
+              0,
+              0.8,
+              -0.6
+            ],
+            "shape": "flat_b",
+            "contact": false
+          }
+        },
+        {
+          "t": 0.82,
+          "right": {
+            "target": [
+              0.12,
+              0.08,
+              0.61
+            ],
+            "palm": [
+              0,
+              -0.6,
+              -0.8
+            ],
+            "point": [
+              0,
+              0.8,
+              -0.6
+            ],
+            "shape": "flat_b",
+            "contact": false
+          }
+        },
+        {
+          "t": 1,
+          "right": {
+            "target": [
+              0.355,
+              -0.811,
+              0.345
+            ],
+            "palm": [
+              -0.7,
+              0.06,
+              -0.71
+            ],
+            "point": [
+              0.06,
+              -0.975,
+              0.21
+            ],
+            "shape": "flat_b",
+            "contact": false
+          }
+        }
+      ]
+    }
+  },
+  "phrases": {
+    "greeting_thanks_prototype": {
+      "status": "experimental",
+      "provenance": "Application-authored trajectory study using existing body anchors; no signer review or captured performance. Not approved ASL.",
+      "base_clip": "hello",
+      "duration_ms": 2300,
+      "phases": [
+        0.1,
+        0.78,
+        0.88
+      ],
+      "keyframes": [
+        {
+          "t": 0,
+          "right": {
+            "target": [
+              0.355,
+              -0.811,
+              0.345
+            ],
+            "palm": [
+              -0.7,
+              0.06,
+              -0.71
+            ],
+            "point": [
+              0.06,
+              -0.975,
+              0.21
+            ],
+            "shape": "flat_b",
+            "contact": false
+          }
+        },
+        {
+          "t": 0.1,
+          "right": {
+            "target": [
+              0.12,
+              0.4,
+              0.3
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "shape": "flat_b",
+            "contact": true
+          }
+        },
+        {
+          "t": 0.32,
+          "right": {
+            "target": [
+              0.34,
+              0.34,
+              0.49
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0.25,
+              0.97,
+              0
+            ],
+            "shape": "flat_b",
+            "contact": false
+          }
+        },
+        {
+          "t": 0.51,
+          "right": {
+            "target": [
+              0.08,
+              0.13,
+              0.31
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "shape": "flat_b",
+            "contact": true
+          }
+        },
+        {
+          "t": 0.78,
+          "right": {
+            "target": [
+              0.12,
+              0.08,
+              0.61
+            ],
+            "palm": [
+              0,
+              -0.6,
+              -0.8
+            ],
+            "point": [
+              0,
+              0.8,
+              -0.6
+            ],
+            "shape": "flat_b",
+            "contact": false
+          }
+        },
+        {
+          "t": 0.88,
+          "right": {
+            "target": [
+              0.12,
+              0.08,
+              0.61
+            ],
+            "palm": [
+              0,
+              -0.6,
+              -0.8
+            ],
+            "point": [
+              0,
+              0.8,
+              -0.6
+            ],
+            "shape": "flat_b",
+            "contact": false
+          }
+        },
+        {
+          "t": 1,
+          "right": {
+            "target": [
+              0.355,
+              -0.811,
+              0.345
+            ],
+            "palm": [
+              -0.7,
+              0.06,
+              -0.71
+            ],
+            "point": [
+              0.06,
+              -0.975,
+              0.21
+            ],
+            "shape": "flat_b",
+            "contact": false
+          }
+        }
+      ],
+      "sequence": [
+        "HELLO",
+        "THANK_YOU"
+      ],
+      "boundaries": [
+        0,
+        0.46,
+        1
+      ],
+      "nonmanuals": [
+        {
+          "start": 0,
+          "end": 1,
+          "controls": {
+            "mouth": 0.05,
+            "bodyShift": 0.02
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CircleAlert, FileAudio, Mic2, Send, Square, Waves } from 'lucide-react'
 import Avatar from './Avatar'
-import { CLIP_LENGTH_MS } from '../clips'
 import { LOCAL_PHRASES, localInterpret } from '../data'
 import { offlineSelection } from '../offlinePlan'
 import { fetchHealth, fetchPhrases, interpret, planASL, transcribeAudio } from '../api'
@@ -132,12 +131,6 @@ export default function Live(){
     setPlaying(next)
     setQueue(rest)
   },[queue,playing])
-  useEffect(()=>{
-    if(!playing||playing.playback)return
-    const timer=setTimeout(()=>setPlaying(current=>current===playing?null:current),
-      CLIP_LENGTH_MS[playing.animation_file||playing.phrase_id]||1600)
-    return ()=>clearTimeout(timer)
-  },[playing])
 
   const startMic=async()=>{
     generation.current++
@@ -182,7 +175,7 @@ export default function Live(){
       <section className="avatar-panel">
         <div className="panel-top"><span className="mini-heading"><Waves size={17}/> Maya </span><span className={live.status==='listening'?'mode-chip chip-live':'mode-chip'}>{live.status==='listening'&&!playing&&<span className="pulse-dot"/>}{modeLabel}</span></div>
         <div className="avatar-stage"><div className="orb orb-one"/><div className="orb orb-two"/>
-          <Avatar clipId={playing?.animation_file||playing?.phrase_id||'idle'} speed={1} timeline={playing?.playback} onComplete={()=>setPlaying(null)}/>
+          <Avatar clipId={playing?.animation_file||playing?.phrase_id||'idle'} transcript={playing?.label} speed={1} timeline={playing?.playback} onComplete={()=>setPlaying(null)}/>
           <div className="stage-guidance"><span className="stage-index">{stageMode}</span><strong>{currentLabel}</strong><span>{stageHint}</span></div>
           <div className="stage-vertical">SIGN / 001</div>
         </div>

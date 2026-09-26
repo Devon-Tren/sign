@@ -103,11 +103,10 @@ export type PlanResult = {
 }
 
 export type PlaybackTimeline = {
+  curated_phrase?: string
   version: 2
   renderer: 'sign-procedural-v2'
   duration_ms: number
-  clips: {anchor: string; sign_id: string; clip_id: string; start_ms: number; end_ms: number; realization: string}[]
-  nonmanuals: {profile_id: string; start_ms: number; end_ms: number; controls: {
-    brow: number; mouth: number; head: readonly [number, number, number]; torso: number
-  }}[]
+  clips: {anchor: string; sign_id: string; clip_id: string; start_ms: number; end_ms: number; realization: string; source?: import('./motion/types').MotionSource}[]
+  nonmanuals: {profile_id: string; start_ms: number; end_ms: number; controls: import('./motion/types').NonmanualControls}[]
 }

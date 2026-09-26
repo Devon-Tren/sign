@@ -348,3 +348,18 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .safety-inline.planner-offline{background:#fdf6ec;color:#8a6224;border-top:1px solid #f0e2c8}
 .safety-inline.planner-offline svg{color:#c98a2e}
 .safety-inline.planner-offline code{background:#f3e6cd;border-radius:4px;padding:1px 5px;font-size:10px}
+
+/* Optional diagnostics; normal playback keeps only a small entry control. */
+.avatar-canvas{position:relative}
+.motion-debug-toggle{position:absolute;right:12px;top:62px;z-index:5;border:1px solid #bfcdbf;border-radius:7px;background:#fffdf4;color:#315f43;padding:7px 10px;font-size:11px}
+.motion-inspector{position:absolute;z-index:6;left:10px;right:10px;bottom:10px;max-height:48%;overflow:auto;background:#fffffff5;border:1px solid #bfcdbf;border-radius:10px;padding:12px;color:#233b30;font:12px/1.5 system-ui;box-shadow:0 5px 20px #15271e22}
+.motion-inspector p{margin:5px 0}.motion-inspector pre{max-height:230px;overflow:auto;white-space:pre-wrap;font-size:11px}.motion-inspector input[type=range]{width:100%}.motion-buttons,.motion-sequence{display:flex;flex-wrap:wrap;gap:5px}.motion-inspector button,.motion-inspector select{border:1px solid #ceddce;border-radius:5px;background:#f1f7ec;padding:4px 6px;color:#234b31;font-size:11px}.motion-inspector button[aria-current=step]{background:#315f43;color:white}.motion-inspector summary{cursor:pointer;padding:5px 0}.motion-inspector small{display:block;color:#526558}
+
+.motion-inspecting{z-index:3;container-type:inline-size}
+.avatar-stage:has(.motion-inspecting) .stage-guidance{display:none}
+.motion-inspector{background:var(--background,#fffdf4);border-color:var(--border,#cfc7b5);color:var(--foreground,#29271f);border-radius:3px}
+.motion-inspector button,.motion-inspector select,.motion-debug-toggle{background:#f8f3e6;border-color:#cec5b1;color:#3e3a2e;border-radius:3px}
+@container (min-width:750px){
+ .motion-inspecting>div:first-child{width:55%!important}
+ .motion-inspector{left:55%;top:48px;bottom:10px;max-height:none}
+}

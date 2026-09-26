@@ -3,6 +3,7 @@ import hashlib
 import json
 
 import motion_data
+from curated_motion import definitions, phrase_for, valid_controls
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,7 +16,10 @@ def renderer_digest():
     digest = hashlib.sha256()
     for name in ['frontend/src/clips.ts', 'frontend/src/components/Avatar.tsx',
                  'frontend/src/playback.ts', 'data/asl_lex_params.json',
-                 'data/asl_custom_motions.json', 'backend/playback.py']:
+                 'data/asl_custom_motions.json', 'backend/playback.py',
+                 'data/asl_curated_motions.json', 'backend/curated_motion.py',
+                 'frontend/src/anchors.ts', 'frontend/src/handshapes.ts', 'frontend/src/signerRig.ts',
+                 *[str(p.relative_to(ROOT)) for p in sorted((ROOT / 'frontend/src/motion').glob('*.ts'))]]:
         digest.update((ROOT / name).read_bytes())
     return digest.hexdigest()
 
@@ -41,6 +45,8 @@ def approved(example, refs):
 
 
 def compile_timeline(construction, refs):
+    curated_signs = definitions()['signs']
+    phrase_id, phrase = phrase_for([s.sign_id for s in construction.manual_sequence])
     available = motion_data.lex_signs()
     custom = motion_data.custom_signs()
     signs = {s['id']: s for s in refs['signs']}
@@ -56,7 +62,7 @@ def compile_timeline(construction, refs):
             duration = max(700, len(word.replace('-', '')) * 360)
             clips.append({'anchor': step.id, 'sign_id': step.sign_id, 'clip_id': clip,
                           'start_ms': offset, 'end_ms': offset + duration,
-                          'realization': 'fingerspelling-approximation'})
+                          'realization': 'fingerspelling-approximation', 'source': 'fingerspelling'})
             offset += duration
             continue
         asset = signs.get(step.sign_id, {}).get('motion_asset')
@@ -71,32 +77,42 @@ def compile_timeline(construction, refs):
         # A planned timeline is connected signing, not isolated display. The
         # previous 2.1x isolated stretch made the live avatar wade through a
         # lecture; motion_data keeps this in step with the renderer.
-        duration = motion_data.clip_duration_ms(clip, 'continuous')
+        curated_sign = curated_signs.get(step.sign_id)
+        duration = curated_sign['duration_ms'] if curated_sign else motion_data.clip_duration_ms(clip, 'continuous')
         clips.append({'anchor': step.id, 'sign_id': step.sign_id, 'clip_id': clip,
                       'start_ms': offset, 'end_ms': offset + duration,
-                      'realization': asset['format']})
+                      'realization': asset['format'],
+                      'source': 'curated-sign' if curated_sign else 'procedural'})
         offset += duration
+    if phrase and len(clips) == len(construction.manual_sequence):
+        offset = phrase['duration_ms']
+        for index, clip in enumerate(clips):
+            clip.update(start_ms=phrase['boundaries'][index] * offset,
+                        end_ms=phrase['boundaries'][index + 1] * offset,
+                        source='curated-phrase')
     anchors = {c['anchor']: c for c in clips}
     for span in construction.nonmanuals:
         controls = profiles.get(span.profile_id, {}).get('controls')
-        if not controls or set(controls) != {'brow', 'mouth', 'head', 'torso'}:
+        if not controls:
             issues.append(f'Missing compatible expression: {span.profile_id}')
             continue
-        values = [controls['brow'], controls['mouth'], controls['torso']]
-        head = controls['head']
-        if (not isinstance(head, list) or len(head) != 3 or
-                any(not isinstance(v, (int, float)) or not -1 <= v <= 1 for v in values + head)):
+        if not valid_controls(controls):
             issues.append(f'Invalid expression controls: {span.profile_id}')
             continue
         if span.start_anchor not in anchors or span.end_anchor not in anchors:
             issues.append('Expression anchors have no playable motion.')
             continue
         start, end = anchors[span.start_anchor]['start_ms'], anchors[span.end_anchor]['end_ms']
-        if end <= start or any(start < s['end_ms'] and end > s['start_ms'] for s in spans):
-            issues.append('Reversed or overlapping expression spans are unsupported.')
+        if end <= start:
+            issues.append('Reversed expression spans are unsupported.')
+            continue
+        if any(start < s['end_ms'] and end > s['start_ms'] and
+               set(controls) & set(s['controls']) for s in spans):
+            issues.append('Overlapping expression spans cannot compete for the same controls.')
             continue
         spans.append({'profile_id': span.profile_id, 'start_ms': start, 'end_ms': end, 'controls': controls})
     if issues or not clips:
         return None, issues
     return {'version': 2, 'renderer': 'sign-procedural-v2', 'duration_ms': offset,
+            'curated_phrase': phrase_id,
             'clips': clips, 'nonmanuals': spans}, []

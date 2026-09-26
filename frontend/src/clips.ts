@@ -14,6 +14,12 @@
  */
 import params from '../../data/asl_lex_params.json'
 import customParams from '../../data/asl_custom_motions.json'
+import { blendOrientation } from './motion/orientation'
+import { defaultPhases } from './motion/phases'
+import { primitiveAt, type Primitive } from './motion/primitives'
+import { coordinateHands } from './motion/relationships'
+import { blendControls } from './motion/nonmanuals'
+import type { Phases, HandRelationship, NonmanualControls } from './motion/types'
 import {
   FINGERSPELL, HANDSHAPES, RELAXED, handshapeFor,
   type FingerPose, type HandPose, type ThumbPose,
@@ -50,6 +56,7 @@ export type ArmPose = {
 }
 
 export type Pose = {
+  nonmanual?: NonmanualControls
   rightArm: ArmPose | null
   leftArm: ArmPose | null
   rightHand: HandPose
@@ -106,13 +113,10 @@ export type SignParams = Morpheme & {
 
 /** App-authored values layered on top of the licensed descriptors. */
 export type Augment = {
-  nonmanual?: {
-    browRaise?: number
-    browFurrow?: number
-    mouth?: number
-    headShake?: number
-    head?: Vec3
-  }
+  phases?: Phases
+  primitive?: Primitive
+  relationship?: HandRelationship
+  nonmanual?: NonmanualControls
   repeat_count?: number
   movement_size?: number
   movement_axis?: 'vertical' | 'lateral' | 'forward'
@@ -179,8 +183,6 @@ export type TimingMode = 'isolated' | 'continuous'
 /** Transitions in human signing are roughly constant, not proportional to the
  *  sign's length. Fractional onset/release made a long clip drift to neutral
  *  for nearly 400 ms. */
-const ONSET_MS = 170
-const RELEASE_MS = 200
 /** Travel time cap. Past this the sign has arrived and the rest is hold. */
 const STROKE_MAX_MS = 520
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
@@ -295,8 +297,8 @@ function movementOffset(
   switch (kind) {
     case 'Straight':     return [0, 0, 0]
     case 'Curved':       return [0, Math.sin(p * Math.PI) * k, Math.sin(p * Math.PI) * k * 0.67]
-    case 'Circular':     return [Math.cos(p * TAU) * k, Math.sin(p * TAU) * k, 0]
-    case 'BackAndForth': return [0, 0, Math.sin(p * TAU) * k]
+    case 'Circular':     return primitiveAt({ type: 'circle', direction: [1, 0, 0], amplitude: k, easing: 'linear' }, p).offset
+    case 'BackAndForth': return primitiveAt({ type: 'bounce', amplitude: k, easing: 'linear' }, p).offset
     case 'Z-shaped':     return [Math.sin(p * TAU * 1.5) * k, Math.cos(p * TAU) * k * 0.47 - k * 0.47, 0]
     case 'X-shaped':     return [Math.sin(p * TAU) * k, Math.sin(p * TAU * 2) * k * 0.72, 0]
     case 'None':         return [0, Math.sin(p * TAU) * k, 0]
@@ -401,8 +403,9 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   // previous `startsWith('Asymmetrical')` test missed entirely, so NAME, LAST,
   // OR and RUN all rendered one-handed.
   const type = m.SignType ?? 'OneHanded'
-  const symmetric = type === 'SymmetricalOrAlternating' || type === 'SymmetryViolation'
-  const contacted = type.startsWith('Asymmetrical') || type === 'DominanceViolation'
+  const relationship = augment.relationship?.type
+  const symmetric = relationship ? ['mirrored', 'parallel', 'alternating', 'approaching', 'separating'].includes(relationship) : type === 'SymmetricalOrAlternating' || type === 'SymmetryViolation'
+  const contacted = relationship ? ['dominant_support', 'contact'].includes(relationship) : type.startsWith('Asymmetrical') || type === 'DominanceViolation'
   const twoHanded = symmetric || contacted
 
   // --- location -----------------------------------------------------------
@@ -427,7 +430,8 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
     ? add(from, relation!.travel ?? [0, 0, 0])
     : end
   const base = mix(from, to, travel)
-  const target = add(base, movementOffset(m.Movement, phase, size, augment.movement_axis))
+  const primitive = augment.primitive ? primitiveAt(augment.primitive, phase) : null
+  const target = add(base, primitive?.offset ?? movementOffset(m.Movement, phase, size, augment.movement_axis))
 
   // --- orientation --------------------------------------------------------
   const byLocation = ORIENTATION_BY_LOCATION[m.MajorLocation ?? 'Neutral']
@@ -453,12 +457,12 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   if (symmetric) {
     nonDominant = handshapeFor(m.NonDominantHandshape ?? m.Handshape, descriptors)
     // An alternating sign runs the two hands half a cycle apart.
-    const alt = m.Movement === 'Circular' || type === 'SymmetryViolation'
+    const alt = augment.relationship?.type === 'alternating' ? (phase + (augment.relationship.phaseOffset ?? .5)) % 1 : m.Movement === 'Circular' || type === 'SymmetryViolation'
       ? (phase + 0.5) % 1
       : phase
     leftArm = {
       target: add(mirror(mix(start, end, travel)),
-        mirror(movementOffset(m.Movement, alt, size, augment.movement_axis))),
+        mirror(augment.primitive ? primitiveAt(augment.primitive, alt).offset : movementOffset(m.Movement, alt, size, augment.movement_axis))),
       palm: normalise(mirror(palm)),
       point: normalise(mirror(point)),
       elbow: normalise(mirror(elbow)),
@@ -491,16 +495,21 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   // mild ambient raise that keeps a face-located sign from staring.
   const browRaise = nm.browRaise ?? (browFurrow > 0 ? 0 : m.MajorLocation === 'Head' ? 0.12 : 0)
 
-  return {
-    rightArm: {
+  const rightArm: ArmPose = {
       target,
       palm: normalise(palm),
       point: normalise(point),
       elbow: normalise(elbow),
       wristMax: ulnar ? 1.15 : undefined,
       contact: m.Contact === '1',
-    },
-    leftArm,
+    }
+  if (primitive?.twist) {
+    const a = primitive.twist, c = Math.cos(a), s = Math.sin(a), n = normalise(rightArm.point), p = rightArm.palm
+    const dot = n[0]*p[0]+n[1]*p[1]+n[2]*p[2]
+    rightArm.palm = [p[0]*c+(n[1]*p[2]-n[2]*p[1])*s+n[0]*dot*(1-c), p[1]*c+(n[2]*p[0]-n[0]*p[2])*s+n[1]*dot*(1-c), p[2]*c+(n[0]*p[1]-n[1]*p[0])*s+n[2]*dot*(1-c)]
+  }
+  return {
+    ...(augment.relationship ? coordinateHands(rightArm, leftArm, augment.relationship, travel) : { rightArm, leftArm }),
     rightHand: dominant,
     leftHand: nonDominant,
     head: nm.head ?? [0, twoHanded ? 0 : -0.03, 0],
@@ -509,6 +518,7 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
     browFurrow,
     mouth: nm.mouth ?? 0.06,
     headShake: nm.headShake ?? 0,
+    nonmanual: nm,
   }
 }
 
@@ -538,8 +548,9 @@ export function motionFor(
   // Fixed-millisecond transitions. Human sign transitions run roughly 150-250
   // ms whatever the sign's length; scaling them with duration made a long clip
   // spend nearly 400 ms drifting back to neutral.
-  const onsetMs = Math.min(ONSET_MS, total * 0.25)
-  const releaseMs = Math.min(RELEASE_MS, total * 0.25)
+  const phases = augment.phases ?? defaultPhases(total)
+  const onsetMs = phases[0] * total
+  const releaseMs = (1 - phases[2]) * total
   const coreMs = Math.max(1, total - onsetMs - releaseMs)
 
   const tMs = ((elapsedSeconds * 1000) % total + total) % total
@@ -555,7 +566,7 @@ export function motionFor(
 
   // Travel occupies the front of the segment and then holds. Extending the hold
   // rather than the stroke is what makes a sign readable without looking slow.
-  const strokeMs = Math.min(segmentMs * 0.62, STROKE_MAX_MS)
+  const strokeMs = augment.phases ? (phases[1] - phases[0]) * total / morphemes.length : Math.min(segmentMs * 0.62, STROKE_MAX_MS)
   const travel = easeInOut(clamp(localMs / strokeMs, 0, 1))
 
   const repeats = augment.repeat_count
@@ -592,8 +603,7 @@ export function blendPoses(a: Pose, b: Pose, t: number): Pose {
         + ((y.wristMax ?? DEFAULT_WRIST_MAX) - (x.wristMax ?? DEFAULT_WRIST_MAX)) * t
     return {
       target: mix(x.target, y.target, t),
-      palm: slerpDirection(x.palm, y.palm, t),
-      point: slerpDirection(x.point, y.point, t),
+      ...blendOrientation(x.palm, x.point, y.palm, y.point, t),
       elbow,
       wristMax,
       // Contact is asserted while either side asserts it, so the renderer does
@@ -613,6 +623,7 @@ export function blendPoses(a: Pose, b: Pose, t: number): Pose {
     browFurrow: n(a.browFurrow, b.browFurrow),
     mouth: n(a.mouth, b.mouth),
     headShake: n(a.headShake, b.headShake),
+    nonmanual: a.nonmanual || b.nonmanual ? blendControls(a.nonmanual, b.nonmanual, t) : undefined,
   }
 }
 

@@ -7,7 +7,7 @@
  * authentic ASL.
  */
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import {
@@ -15,7 +15,10 @@ import {
   applySpine, applyHead, applyGazeTarget, setMorphDirect, smoothTarget,
   type ArmChain, type SignerRig,
 } from '../signerRig'
-import { motionFor, idlePose, blendPoses, breathAt, type Pose, type Vec3 } from '../clips'
+import { idlePose, blendPoses, breathAt, type Pose, type Vec3 } from '../clips'
+import { resolvedMotionFor as motionFor, resolveTimeline, singleSignTimeline, resolveSign } from '../motion/resolver'
+import MotionInspector, { type CameraPreset } from './MotionInspector'
+import type { MotionSnapshot } from '../motion/types'
 import { poseAt } from '../playback'
 import type { PlaybackTimeline } from '../types'
 
@@ -36,6 +39,10 @@ type AvatarProps = {
   /** Review-gated playback: a backend-planned timeline overrides clipId. */
   timeline?: PlaybackTimeline
   onComplete?: () => void
+  transcript?: string
+  seek?: { ms: number; serial: number }
+  onSnapshot?: (snapshot: MotionSnapshot) => void
+  inspecting?: boolean
 }
 
 /** The FBX is parsed once and the result shared by every Avatar instance. */
@@ -111,7 +118,7 @@ type Life = {
   gaze: { pitch: number; yaw: number }
 }
 
-function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & { paused: boolean; speed: number }) {
+function Signer({ clipId, paused, speed, timeline, onComplete, seek, onSnapshot, inspecting }: AvatarProps & { paused: boolean; speed: number }) {
   const [rig, setRig] = useState<SignerRig | null>(null)
   const elapsed = useRef(0)
   // Cross-fade state. `shown` tracks what the frame loop last rendered, because
@@ -125,6 +132,13 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
   })
   const clock = useRef(0)
   const finished = useRef(false)
+  const snapshotClock = useRef(0)
+  const didSeek = useRef(false)
+  useEffect(() => {
+    if (!seek) return
+    elapsed.current = seek.ms / 1000; finished.current = false; didSeek.current = true
+    if (rig) { rig.right.smooth.started = false; rig.left.smooth.started = false }
+  }, [seek, rig])
 
   useEffect(() => {
     let alive = true
@@ -143,21 +157,30 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
 
   useFrame((_, rawDelta) => {
     if (!rig) return
-    const dt = Math.min(rawDelta, 0.07)
-    clock.current += dt
-    if (!paused) elapsed.current += dt * speed
+    const frameDelta = Math.min(rawDelta, 0.07)
+    const dt = didSeek.current ? 1 : frameDelta
+    didSeek.current = false
+    if (!paused) clock.current += frameDelta
+    if (!paused) elapsed.current += frameDelta * speed
 
     let pose: Pose
     if (timeline) {
       // A planned timeline sequences its own clips, so the per-clip cross-fade
       // does not apply; poseAt handles the switching.
       const ms = elapsed.current * 1000
-      if (ms >= timeline.duration_ms && !finished.current) {
+      if (ms >= timeline.duration_ms && inspecting) {
+        elapsed.current = (timeline.duration_ms - 1) / 1000
+      } else if (ms >= timeline.duration_ms && !finished.current) {
         finished.current = true
         onComplete?.()
       }
-      pose = poseAt(timeline, ms)
+      pose = poseAt(timeline, elapsed.current * 1000, speed)
     } else {
+      const length = resolveSign(clipId).durationMs
+      if (clipId !== 'idle' && onComplete && elapsed.current * 1000 >= length) {
+        if (inspecting) elapsed.current = (length - 1) / 1000
+        else if (!finished.current) { finished.current = true; onComplete() }
+      }
       shown.current = { clip: clipId, at: elapsed.current }
       pose = motionFor(clipId, elapsed.current)
       if (fade.current < 1 && prev.current) {
@@ -171,7 +194,8 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
     const idle = idlePose(elapsed.current)
 
     // Spine first: the arms hang off it, so IK must see the updated shoulders.
-    applySpine(rig.face, pose.torso, breathAt(elapsed.current) * 0.018, dt)
+    const nm = pose.nonmanual
+    applySpine(rig.face, pose.torso + (nm?.bodyShift ?? 0), breathAt(elapsed.current) * 0.018 + (nm?.torsoLean ?? 0), dt)
 
     const drive = (a: ArmChain, sign: number, arm: Pose['rightArm'], fallback: NonNullable<Pose['rightArm']>) => {
       const resolved = arm ?? fallback
@@ -208,8 +232,8 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
     rig.face.eyes[1].getWorldPosition(_eyeB)
     _gazeTarget.addVectors(_eyeA, _eyeB).multiplyScalar(0.5)
       .addScaledVector(rig.face.forward, 3)
-    _gazeTarget.x += L.gaze.yaw * 3
-    _gazeTarget.y += L.gaze.pitch * 3 - glance * 0.35
+    _gazeTarget.x += (nm?.gaze?.[0] ?? L.gaze.yaw) * 3
+    _gazeTarget.y += (nm?.gaze?.[1] ?? L.gaze.pitch) * 3 - (nm?.gaze ? 0 : glance * 0.35)
     applyGazeTarget(rig.face, _gazeTarget, dt)
 
     // blinkT: >= 0 mid-blink, exactly -1 idle, between the two a double-blink gap.
@@ -239,7 +263,7 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
       : 0
     // Head follows gaze slightly and lags it, which is how real gaze shifts read.
     applyHead(rig.face,
-      pose.head[0] + L.gaze.pitch * 0.3 + glance * 0.08,
+      pose.head[0] + L.gaze.pitch * 0.3 + glance * 0.08 + Math.sin(elapsed.current * Math.PI * 4) * (nm?.headNod ?? 0) * .15,
       pose.head[1] + L.gaze.yaw * 0.35 + shake,
       pose.head[2], dt)
 
@@ -248,13 +272,46 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
     setMorph(rig, 'AU_02_OuterBrowRaiser', pose.browRaise, dt)
     setMorph(rig, 'AU_04_BrowLowerer', pose.browFurrow, dt)
     setMorph(rig, 'AK_25_JawOpen', pose.mouth * 0.32, dt)
+    const extraMorphs: [string, number][] = [
+      ['AK_19_EyeSquintLeft', Math.max(0, -(nm?.eyeAperture ?? 0))],
+      ['AK_20_EyeSquintRight', Math.max(0, -(nm?.eyeAperture ?? 0))],
+      ['AU_05_UpperLidRaiser', Math.max(0, nm?.eyeAperture ?? 0)],
+      ['AU_18_LipPucker', Math.max(0, nm?.mouthShape ?? 0)], ['AU_06_CheekRaiser', Math.max(0, nm?.cheek ?? 0)],
+    ]
+    for (const [name,value] of extraMorphs) setMorph(rig, name, value, dt)
+    snapshotClock.current += frameDelta
+    if (onSnapshot && snapshotClock.current >= .1) {
+      snapshotClock.current = 0
+      onSnapshot({ timeMs: timeline ? elapsed.current * 1000 : elapsed.current * 1000 % resolveSign(clipId).durationMs, pose,
+        wristWorld: { right: rig.right.hand.getWorldQuaternion(new THREE.Quaternion()).toArray(), left: rig.left.hand.getWorldQuaternion(new THREE.Quaternion()).toArray() },
+        handWorld: { right: rig.right.hand.getWorldPosition(new THREE.Vector3()).toArray(), left: rig.left.hand.getWorldPosition(new THREE.Vector3()).toArray() },
+        missingMorphs: extraMorphs.filter(([name,value])=>value!==0 && rig.morphTargets[name]===undefined).map(([name])=>name) })
+    }
   })
 
   if (!rig) return null
   return <primitive object={rig.root} />
 }
 
-export default function Avatar({ clipId, paused = false, speed = 1, compact = false, showGround = true, timeline, onComplete }: AvatarProps) {
+function CameraView({ preset, compact }: { preset: CameraPreset; compact: boolean }) {
+  const { camera } = useThree()
+  useEffect(()=>{
+    const positions = { default: compact ? [-.90,.60,2.78] : [-.98,.52,3.02], front: [0,.6,3], side: [2.8,.6,.2], hands: [-.25,.55,1.5] }
+    camera.position.set(...positions[preset] as [number,number,number]); camera.lookAt(0,.52,0)
+  },[camera,preset,compact])
+  return null
+}
+
+export default function Avatar({ clipId, paused = false, speed = 1, compact = false, showGround = true, timeline: inputTimeline, onComplete, transcript }: AvatarProps) {
+  const [debug,setDebug] = useState(()=>new URLSearchParams(location.search).get('debugMotion')==='true')
+  const [debugPaused,setDebugPaused] = useState(false), [debugSpeed,setDebugSpeed] = useState(1)
+  const [snapshot,setSnapshot] = useState<MotionSnapshot|null>(null)
+  const [seek,setSeek] = useState<{ms:number;serial:number}>()
+  const [camera,setCamera] = useState<CameraPreset>('default')
+  const timeline = useMemo(()=>inputTimeline ? resolveTimeline(inputTimeline) : undefined,[inputTimeline])
+  const inspectionTimeline = useMemo(()=>timeline ?? singleSignTimeline(clipId),[timeline,clipId])
+  useEffect(()=>{setSnapshot(null);setSeek(undefined)},[clipId,inputTimeline])
+  const seekTo = (ms:number) => {setDebugPaused(true);setSeek(old=>({ms:Math.max(0,Math.min(inspectionTimeline.duration_ms-1,ms)),serial:(old?.serial??0)+1}))}
   const groundTexture = useMemo(() => {
     const size = 128
     const canvas = document.createElement('canvas')
@@ -274,9 +331,8 @@ export default function Avatar({ clipId, paused = false, speed = 1, compact = fa
 
   return (
     <div
-      className="avatar-canvas"
-      role="img"
-      aria-label="3D person signing. Motions are composed from published phonological descriptors and are unverified placeholders, not authentic ASL."
+      className={`avatar-canvas ${debug && clipId !== 'idle' ? 'motion-inspecting' : ''}`}
+      aria-label="Experimental 3D signing avatar"
     >
       <Canvas
         shadows
@@ -335,7 +391,8 @@ export default function Avatar({ clipId, paused = false, speed = 1, compact = fa
             </>
           )}
 
-          <Signer clipId={clipId} paused={paused} speed={speed} timeline={timeline} onComplete={onComplete} />
+          <Signer clipId={clipId} paused={debug?debugPaused:paused} speed={debug?debugSpeed:speed} timeline={timeline} onComplete={onComplete} seek={seek} inspecting={debug} onSnapshot={debug?setSnapshot:undefined} />
+          <CameraView preset={camera} compact={compact}/>
           <OrbitControls
             target={[0, compact ? 0.60 : 0.52, 0]}
             enablePan={false}
@@ -347,6 +404,8 @@ export default function Avatar({ clipId, paused = false, speed = 1, compact = fa
           />
         </Suspense>
       </Canvas>
+      {clipId!=='idle' && <button className="motion-debug-toggle" onClick={()=>setDebug(value=>!value)}>{debug?'Close inspector':'Inspect motion'}</button>}
+      {debug && clipId!=='idle' && <MotionInspector isolated={!timeline} timeline={inspectionTimeline} transcript={transcript} snapshot={snapshot} paused={debugPaused} speed={debugSpeed} onPause={()=>setDebugPaused(value=>!value)} onSeek={seekTo} onReplay={ms=>{seekTo(ms);setDebugPaused(false)}} onSpeed={setDebugSpeed} onCamera={setCamera}/>}
     </div>
   )
 }

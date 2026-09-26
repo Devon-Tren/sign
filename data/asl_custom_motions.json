@@ -4,12 +4,15 @@
   "_schema": {
     "signs": "Full phonological descriptors, same shape as the ASL-LEX extract. Present only for ids that scripts/extract_asl_lex.py cannot map. `app_authored: true` marks them descriptor-free for the audit.",
     "augment": {
-      "nonmanual": "browRaise / browFurrow / mouth / headShake in 0..1, optional head [pitch, yaw, roll] in radians. ASL-LEX codes no non-manual channel; these come from published ASL grammar.",
+      "nonmanual": "Existing browRaise / browFurrow / mouth / headShake / head plus gaze, eyeAperture, mouthShape, cheek, headNod, torsoLean and bodyShift. Experimental channels; rig support is reported by the inspector.",
       "repeat_count": "Integer cycle count when RepeatedMovement is 1.",
       "movement_size": "Multiplier on the movement primitive amplitude.",
       "movement_axis": "vertical | lateral | forward - constrains the primitive.",
       "hand_relation": "on_palm | on_back | on_radial | on_tip | on_heel | on_wrist | crossed | tip_to_tip | beside. Derived from ASL-LEX MinorLocation where possible; listed here only when the surface name is not enough.",
-      "carried": "True when both hands move together as one contacted unit."
+      "carried": "True when both hands move together as one contacted unit.",
+      "phases": "Optional normalized ends [preparation, stroke, hold]; transition ends at 1. See docs/HYBRID_MOTION_AUTHORING.md.",
+      "primitive": "Optional reusable path definition: type, origin, direction, distance, amplitude, curvature, repetitions, speed, easing.",
+      "relationship": "Optional coupled-hand rule: mirrored, parallel, alternating, dominant_support, approaching, separating, contact; supports phaseOffset, contactAt, offset."
     }
   },
   "signs": {

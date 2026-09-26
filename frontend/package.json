@@ -7,7 +7,8 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "audit": "esbuild src/audit.cli.ts --bundle --platform=node --format=esm --loader:.json=json --outfile=node_modules/.cache/audit.mjs --log-level=error && node node_modules/.cache/audit.mjs"
+    "audit": "esbuild src/audit.cli.ts --bundle --platform=node --format=esm --loader:.json=json --outfile=node_modules/.cache/audit.mjs --log-level=error && node node_modules/.cache/audit.mjs",
+    "test": "esbuild tests/motion.test.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/motion.test.mjs --log-level=error && node node_modules/.cache/motion.test.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.22",
@@ -19,6 +20,7 @@
     "three": "^0.170.0"
   },
   "devDependencies": {
+    "@types/node": "^22.20.4",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/three": "^0.170.0",

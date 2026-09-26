@@ -1,5 +1,11 @@
 # Live signing and avatar motion pipeline
 
+> The `feature/avatar-motion-upgrade` branch adds a hybrid resolver, authored
+> phrase/sign prototypes, transition-aware sampling, and a live motion inspector.
+> See [Hybrid Motion Authoring](HYBRID_MOTION_AUTHORING.md) for the current runtime
+> contract and authoring instructions. The procedural background below remains
+> relevant; its historical catalog counts predate the 1,285-entry expansion.
+
 Last reviewed: September 26, 2026
 
 ## The system is four separate problems

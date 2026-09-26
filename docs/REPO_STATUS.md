@@ -4,7 +4,7 @@
 
 Last updated: September 26, 2026
 
-Branch: `main`
+Branch: `feature/avatar-motion-upgrade`
 
 Project stage: Hackathon research prototype
 
@@ -18,6 +18,34 @@ The project is runnable locally with `bash start.sh`:
 - Backend API documentation: `http://localhost:8000/docs`
 
 The bundled gestures and generated motion sequences are **not validated ASL** and must not be presented as professional interpretation.
+
+## Hybrid Motion Upgrade (September 26, 2026)
+
+The avatar now resolves **exact curated phrase → curated sign → procedural
+ASL-LEX/custom motion → fingerspelling**. English planning, registered IDs,
+transcription paths, catalog matching, Learn exercises, and rig controls remain.
+Two experimental authored sign overrides (`HELLO`, `THANK_YOU`) and one complete
+`HELLO THANK_YOU` trajectory demonstrate the new format. All other registered
+motions retain procedural fallback. No motion is signer-approved.
+
+Click **Inspect motion** on an active avatar or open `?debugMotion=true`. The
+inspector uses the avatar clock and exposes the transcript, lexical boundaries,
+source, phonology, phases, targets, orientation, actual rig measurements and facial
+spans. It provides pause, sign navigation, frame stepping, replay, slow motion,
+and camera presets. Classroom playback waits while inspecting.
+
+New motion modules separate authored sampling, resolution, quaternion orientation,
+movement primitives, phase timing, hand relationships, nonmanual controls, and
+transition calculation. Transitions consider hand distance, activity, contact and
+speed, with bounded Hermite tangents; authored full phrases bypass those blends.
+Backend nonmanual spans retain sign anchors and support additional independent
+facial/body channels. Review fingerprints include the new motion system.
+
+See [Hybrid Motion Authoring](HYBRID_MOTION_AUTHORING.md) for the architecture,
+new file inventory, source precedence, sign and phrase authoring instructions,
+coordinate conventions, timing, and limitations. Generated motion and curated
+prototype motion remain experimental; linguistic review is required before
+claiming accurate ASL interpretation.
 
 ## Implemented Features
 
@@ -125,7 +153,7 @@ Browser fallback is expected to work best in current Chrome and Edge releases. I
 
 ### Motion Audit
 
-- A **Motion audit** view renders all 103 motions on the real rig at their hold
+- A **Motion audit** view renders the procedural catalog motions on the real rig at their hold
   frame and captures a contact sheet with provenance badges. The catalog could
   previously only be inspected one sign at a time, which is how two defects
   shipped unnoticed: three distinct handshapes resolved to identical poses, and
@@ -188,22 +216,32 @@ Browser fallback is expected to work best in current Chrome and Edge releases. I
 
 ## Verification Status
 
-Verified on September 26, 2026:
+Verified on this branch on September 26, 2026:
 
-- Frontend production build: passed.
-- Backend test suite: **30 passed**.
-- Frontend development server: returned HTTP `200`.
-- Backend API documentation: returned HTTP `200`.
-- Browser smoke test: idle, `HELLO`, `HELP`, `YES`, and a seven-sign classroom
-  sequence rendered without runtime exceptions; the head and signing space
-  remained in frame.
-- Timeline boundary audit: position and handshape deltas across all six
-  transitions in `HELLO THANK_YOU YES NO PLEASE HELP ME` were effectively zero
-  (below `1e-8` in normalized pose space).
-- Learning Studio webcam startup: manually verified in Chrome; the bundled tracker initialized, the camera entered `LIVE` state, and the `I'm ready` action appeared.
-- Git whitespace check: passed.
+- Frontend production build: passed; existing Vite large-chunk warning remains.
+- Frontend motion regression suite: **10 passed**.
+- Backend test suite: **49 passed**, including six new hybrid-motion tests.
+- Numeric audit: 1,285 motions; 58/58 handshapes; zero handshape or letter
+  collisions. Its 33 existing issues remain (19 approximate mappings, eight
+  relocation/movement inconsistencies, six application-authored descriptors).
+- Tests cover exact phrase and sign precedence, fallback spelling, span timing,
+  quaternion bases, transitions, primitive/relationship helpers, invalid data,
+  and finite poses across the full vocabulary.
+- Browser: Learn inspector opened; pause, frame step to 33 ms, 0.25× speed and
+  side camera controls worked. Typed `Hello thank you` selected the continuous
+  `curated-phrase` motion; previous-sign navigation and stepping worked and the
+  Rocketbox avatar rendered. Captured logs showed no application exception;
+  an existing MediaPipe informational message was logged at error level.
+- The stale local backend was restarted with this branch's code. Browser testing
+  against the restarted process and the final inspector layout adjustment could
+  not be completed because automatic browser approval review hit its usage
+  limit. Automated tests exercise the new backend code directly.
+- Git whitespace/conflict-marker checks: passed.
 
-Live microphone transcription still requires a real browser permission grant and speech input for an end-to-end manual check. Automated tests do not simulate microphone hardware or third-party transcription services.
+Microphone hardware, browser speech services, and OpenAI realtime transcription
+were not exercised end to end during this branch. Existing audio code is unchanged;
+backend audio/error-path tests pass. A real microphone session remains a manual
+check. No signer/linguistic approval or measured frame-rate benchmark is claimed.
 
 ## Configuration
 
@@ -245,8 +283,8 @@ Live microphone transcription still requires a real browser permission grant and
    any learning item as a validated reference.
 4. Manually test both microphone paths with representative classroom speech and
    measure transcript-to-motion latency, revisions, and queue age.
-5. Add focused frontend tests for transcription state changes, timeline
-   coarticulation, and fallback behavior.
+5. Add focused frontend tests for transcription state changes; motion resolution,
+   coarticulation continuity, and fallback behavior now have regression coverage.
 6. Add contact constraints for approved two-hand/body-contact clips and split
    large frontend bundles if load time becomes a demo issue.
 

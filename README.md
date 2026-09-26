@@ -203,3 +203,13 @@ This repository is **dual-licensed**. The two licenses are not interchangeable:
 The bundled gestures remain unverified placeholders regardless of license terms — see "Why the signing is marked as a placeholder" above before any accessibility deployment.
 
 See [the playback contract and reviewer workflow](docs/ASL_PLAYBACK_AND_REVIEW.md) for review packets and evaluation cases.
+
+## Experimental hybrid avatar motion
+
+The avatar prefers authored phrase/sign prototypes, then the existing procedural
+motions and fingerspelling. Click **Inspect motion** on an active avatar or open
+`http://localhost:5173/?debugMotion=true` for stepping, source/pose diagnostics,
+slow motion and camera presets. See [Hybrid Motion Authoring](docs/HYBRID_MOTION_AUTHORING.md)
+for the JSON format, fallback order and tests (`npm --prefix frontend test`).
+Authored prototypes are not Deaf/ASL expert validation; all bundled motion remains
+experimental and requires linguistic review.
