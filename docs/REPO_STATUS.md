@@ -6,6 +6,11 @@ Last updated: September 26, 2026
 
 Branch: `feature/avatar-motion-upgrade`
 
+Push record: implementation commit `2336a3e` was pushed to
+`origin/feature/avatar-motion-upgrade` on September 26, 2026. The branch is not
+merged into `main`. This documentation follow-up records the completed push;
+the verification results below apply to that implementation.
+
 Project stage: Hackathon research prototype
 
 ## Current Summary
