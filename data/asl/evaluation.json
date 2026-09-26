@@ -1,0 +1,77 @@
+{
+  "status": "not human evaluated",
+  "cases": [
+    {
+      "text": "Hello",
+      "context": [],
+      "offline_expectation": "candidate_rehearsal",
+      "human_result": null
+    },
+    {
+      "text": "Thank you",
+      "context": [],
+      "offline_expectation": "candidate_rehearsal",
+      "human_result": null
+    },
+    {
+      "text": "Do you understand?",
+      "context": [],
+      "offline_expectation": "missing_motion",
+      "human_result": null
+    },
+    {
+      "text": "Could you explain that again?",
+      "context": [],
+      "offline_expectation": "unresolved_reference",
+      "human_result": null
+    },
+    {
+      "text": "Submit it",
+      "context": [],
+      "offline_expectation": "unsupported",
+      "human_result": null
+    },
+    {
+      "text": "Don't submit it",
+      "context": [],
+      "offline_expectation": "unsupported",
+      "human_result": null
+    },
+    {
+      "text": "Submit before Friday",
+      "context": [],
+      "offline_expectation": "unsupported",
+      "human_result": null
+    },
+    {
+      "text": "Submit on Friday",
+      "context": [],
+      "offline_expectation": "unsupported",
+      "human_result": null
+    },
+    {
+      "text": "Bring two books",
+      "context": [],
+      "offline_expectation": "unsupported",
+      "human_result": null
+    },
+    {
+      "text": "Bring three books",
+      "context": [],
+      "offline_expectation": "unsupported",
+      "human_result": null
+    },
+    {
+      "text": "Alex helps Sam",
+      "context": [],
+      "offline_expectation": "unsupported",
+      "human_result": null
+    },
+    {
+      "text": "Sam helps Alex",
+      "context": [],
+      "offline_expectation": "unsupported",
+      "human_result": null
+    }
+  ]
+}

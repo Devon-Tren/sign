@@ -31,6 +31,18 @@ npm run dev
 
 Open http://localhost:5173 (if it doesn't load, use http://127.0.0.1:5173). Click **Run sample lecture**. You can also type phrases, explore the 3D model, browse the library and visit the tutor. The demo works without the backend too, using the bundled phrase catalog.
 
+## Preview a structured ASL plan
+
+With the backend running, open **Classroom ASL plan** below the live panels.
+Try “Could you explain that again?” or “Do you understand?” without an API key.
+The preview shows candidate sign IDs, intended meaning, unresolved references,
+and missing animations. Other messages use experimental two-stage model planning
+when `OPENAI_API_KEY` is configured on the backend.
+
+These are unreviewed fixtures, not verified translations. Typed text and finalized microphone transcripts share this planner. Only approved
+complete constructions enter live avatar playback; candidates can be rehearsed
+in the preview panel. No approved constructions are bundled. See [the planner contract and required assets](backend/README.md#experimental-asl-planning).
+
 ## Enable real microphone transcription
 
 1. Copy `sign/backend/.env.example` to `sign/backend/.env`.
@@ -147,3 +159,5 @@ This repository is **dual-licensed**. The two licenses are not interchangeable:
 **Before any commercial use:** the NonCommercial term covers `data/` only, but the app reads that file at runtime. Remove `data/asl_lex_params.json` and source the phonological parameters independently, or obtain a separate license from the ASL-LEX authors. The MIT-licensed code is unaffected.
 
 The bundled gestures remain unverified placeholders regardless of license terms — see "Why the signing is marked as a placeholder" above before any accessibility deployment.
+
+See [the playback contract and reviewer workflow](docs/ASL_PLAYBACK_AND_REVIEW.md) for review packets and evaluation cases.

@@ -20,6 +20,7 @@ from websockets.asyncio.client import connect as ws_connect
 
 from db import get_connection, get_phrases, init_db
 from interpreter import interpret
+from planner import PlanRequest, create_plan
 
 load_dotenv(Path(__file__).parent / '.env')
 logging.basicConfig(level=logging.INFO)
@@ -60,6 +61,10 @@ async def phrases():
 @app.post('/api/interpret')
 async def interpret_endpoint(body: InterpretationRequest):
     return await interpret(body.text, get_phrases(app.state.db))
+
+@app.post('/api/plan')
+async def plan_endpoint(body: PlanRequest):
+    return await create_plan(body)
 
 @app.post('/api/feedback')
 async def feedback(body: FeedbackRequest):

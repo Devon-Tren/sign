@@ -10,6 +10,7 @@ export type Phrase = {
   animation_file: string | null
 }
 export type SelectedPhrase = {
+  playback?: PlaybackTimeline
   phrase_id: string
   label: string
   matched_text: string
@@ -28,6 +29,8 @@ export type Segment = {
   text: string
   timestamp: Date
   selected: SelectedPhrase[]
+  planResult?: PlanResult
+  planError?: string
   coverage?: Interpretation['coverage']
   source: 'demo' | 'microphone' | 'text'
 }
@@ -39,4 +42,29 @@ export type Drill = {
   target: 'open' | 'index' | 'fist' | 'two-open'
   clipId: string
   instructions: string[]
+}
+
+export type PlanResult = {
+  source_text: string
+  mode: 'catalog-example' | 'experimental-model' | 'unavailable'
+  review_status: 'candidate' | 'reviewed'
+  playback: PlaybackTimeline | null
+  rehearsal: PlaybackTimeline | null
+  review_fingerprint?: string
+  unresolved: string[]
+  plan: null | {
+    meaning: { intent: string; predicate: string; negated: boolean }
+    manual_sequence: { id: string; sign_id: string }[]
+  }
+  validation: null | { issues: string[]; motion_issues: string[]; executable: boolean }
+}
+
+export type PlaybackTimeline = {
+  version: 1
+  renderer: 'asl-lex-procedural-v1'
+  duration_ms: number
+  clips: {anchor: string; sign_id: string; clip_id: string; start_ms: number; end_ms: number}[]
+  nonmanuals: {profile_id: string; start_ms: number; end_ms: number; controls: {
+    brow: number; mouth: number; head: readonly [number, number, number]; torso: number
+  }}[]
 }

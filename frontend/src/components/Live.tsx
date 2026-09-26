@@ -1,9 +1,10 @@
+import PlanPreview from './PlanPreview'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AudioLines, Captions, ChevronDown, CircleAlert, Clock3, Download, Mic2, Pause, Play, RotateCcw, Send, SlidersHorizontal, Sparkles, Square, Volume2, Waves } from 'lucide-react'
 import Avatar from './Avatar'
 import { CLIP_LENGTH_MS } from '../clips'
 import { DEMO_SCRIPT, LOCAL_PHRASES, localInterpret } from '../data'
-import { fetchHealth, fetchPhrases, interpret } from '../api'
+import { fetchHealth, fetchPhrases, planASL } from '../api'
 import type { Phrase, Segment, SelectedPhrase } from '../types'
 import { useLiveAudio } from '../hooks/useLiveAudio'
 
@@ -26,14 +27,38 @@ export default function Live(){
   const enqueue=useCallback((items:SelectedPhrase[])=>{
     setQueue(old=>[...old,...items].slice(-32))
   },[])
+  const translationChain=useRef<Promise<void>>(Promise.resolve())
+  const recentContext=useRef<string[]>([])
+  const generation=useRef(0)
   const handleFinal=useCallback(async(text:string,source:Segment['source'])=>{
-    if(!text.trim())return
-    const id=nextId.current++
+    text=text.trim()
+    if(!text)return
+    const id=nextId.current++, epoch=generation.current
+    const context=[...recentContext.current]
+    recentContext.current=[...context,text].slice(-5)
     setPartial('')
-    setSegments(prev=>[...prev,{id,text:text.trim(),timestamp:new Date(),selected:[],source}].slice(-200))
-    const result=source==='demo'?localInterpret(text,phrases):await interpret(text,phrases)
-    setSegments(prev=>prev.map(s=>s.id===id?{...s,selected:result.selected,coverage:result.coverage}:s))
-    enqueue(result.selected)
+    setSegments(prev=>[...prev,{id,text,timestamp:new Date(),selected:[],source}].slice(-200))
+    if(source==='demo'){
+      const result=localInterpret(text,phrases)
+      setSegments(prev=>prev.map(s=>s.id===id?{...s,selected:result.selected,coverage:result.coverage}:s))
+      enqueue(result.selected)
+      return
+    }
+    // Serialize translation to retain spoken order, while captions appear immediately.
+    translationChain.current=translationChain.current.then(async()=>{
+      if(epoch!==generation.current)return
+      try {
+        const result=await planASL(text,context)
+        if(epoch!==generation.current)return
+        const selected:SelectedPhrase[]=result.validation?.executable && result.playback
+          ? [{phrase_id:`plan-${id}`,label:text,matched_text:text,validation_status:'validated',animation_file:null,playback:result.playback}] : []
+        setSegments(prev=>prev.map(s=>s.id===id?{...s,selected,planResult:result,coverage:selected.length?undefined:'unsupported'}:s))
+        enqueue(selected)
+      } catch {
+        if(epoch===generation.current)setSegments(prev=>prev.map(s=>s.id===id?{...s,coverage:'unsupported',planError:'Translator unavailable. Captions retained.'}:s))
+      }
+    })
+    await translationChain.current
   },[phrases,enqueue])
   const partialCb=useCallback((text:string)=>setPartial(text),[])
   const finalCb=useCallback((text:string)=>{void handleFinal(text,'microphone')},[handleFinal])
@@ -45,14 +70,14 @@ export default function Live(){
     const [next,...rest]=queue;setPlaying(next);setQueue(rest)
   },[queue,paused,playing])
   useEffect(()=>{
-    if(!playing||paused)return
+    if(!playing||paused||playing.playback)return
     const timer=setTimeout(()=>setPlaying(p=>p===playing?null:p), (CLIP_LENGTH_MS[playing.phrase_id]||1600)/speed)
     return ()=>clearTimeout(timer)
   },[playing,paused,speed])
   useEffect(()=>()=>{if(demoTimer.current)clearInterval(demoTimer.current)},[])
   const startDemo=()=>{
     if(demoTimer.current)clearInterval(demoTimer.current)
-    setSegments([]);setQueue([]);setPlaying(null);setPartial('');setDemoRunning(true)
+    generation.current++;recentContext.current=[];setSegments([]);setQueue([]);setPlaying(null);setPartial('');setDemoRunning(true)
     let index=0
     void handleFinal(DEMO_SCRIPT[index++],'demo')
     demoTimer.current=setInterval(()=>{
@@ -67,21 +92,21 @@ export default function Live(){
     const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:'text/plain'}))
     a.download=`sign-transcript-${new Date().toISOString().slice(0,10)}.txt`;a.click();URL.revokeObjectURL(a.href)
   }
-  const startMic=async()=>{stopDemo();await live.start()}
+  const startMic=async()=>{stopDemo();generation.current++;recentContext.current=[];setQueue([]);setPlaying(null);await live.start()}
   const currentLabel=playing?.label||'Ready when you are'
   return <div className="page-content live-page">
-    <div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/> THE CLASSROOM</div><h1>Every word, within reach<span className="heading-period">.</span></h1><p>Live captions, contextual phrase retrieval, and an animated 3D companion.</p></div>
+    <div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/> THE CLASSROOM</div><h1>Every word, within reach<span className="heading-period">.</span></h1><p>Live captions, structured signing plans, and an animated 3D companion.</p></div>
       <div className="heading-actions"><span className="privacy-pill"><span className="privacy-dot"/> No audio storage in Sign</span><button className="icon-button" title="Export transcript" onClick={downloadTranscript} disabled={!segments.length}><Download size={18}/></button></div>
     </div>
     <div className="live-layout">
       <section className="avatar-panel">
         <div className="panel-top"><span className="mini-heading"><Waves size={17}/> YOUR LIVE COMPANION</span><span className={`mode-chip ${live.status==='listening'?'chip-live':''}`}>{live.status==='listening'?<><span className="pulse-dot"/> LIVE</>:demoRunning?'DEMO RUNNING':'ILLUSTRATIVE PREVIEW'}</span></div>
         <div className="avatar-stage"><div className="orb orb-one"/><div className="orb orb-two"/>
-          <Avatar clipId={playing?.phrase_id||'idle'} paused={paused} speed={speed}/>
-          <div className="stage-guidance"><span className="stage-index">ANIMATION / {playing?'PLAYING':'STANDBY'}</span><strong>{currentLabel}</strong><span>{playing?'Demonstration gesture only — unverified ASL':'Rotate the character by dragging'}</span></div>
+          <Avatar clipId={playing?.phrase_id||'idle'} paused={paused} speed={speed} timeline={playing?.playback} onComplete={()=>setPlaying(null)}/>
+          <div className="stage-guidance"><span className="stage-index">ANIMATION / {playing?'PLAYING':'STANDBY'}</span><strong>{currentLabel}</strong><span>{playing?.playback?'Reviewed catalog sequence':playing?'Demonstration gesture only — unverified ASL':'Rotate the character by dragging'}</span></div>
           <div className="stage-vertical">SIGN / 001</div>
         </div>
-        <div className="playback-panel"><div className="playback-now"><div className="playback-icon"><AudioLines size={19}/></div><div><strong>{playing?'Illustrative motion':'Motion player ready'}</strong><span>{playing?`Phrase: ${playing.label}`:'Start a demo or connect your mic'}</span></div></div>
+        <div className="playback-panel"><div className="playback-now"><div className="playback-icon"><AudioLines size={19}/></div><div><strong>{playing?.playback?'Reviewed sequence':playing?'Illustrative motion':'Motion player ready'}</strong><span>{playing?`Phrase: ${playing.label}`:'Start a demo or connect your mic'}</span></div></div>
           <div className="playback-buttons"><button title={paused?'Resume animations':'Pause animations'} onClick={()=>setPaused(p=>!p)} className="round-control">{paused?<Play size={17}/>:<Pause size={17}/>}</button><button title="Replay last animated phrase" onClick={replay} disabled={!segments.some(s=>s.selected.length)} className="round-control"><RotateCcw size={16}/></button><button title="Playback settings" onClick={()=>setShowSettings(s=>!s)} className="round-control"><SlidersHorizontal size={16}/></button></div>
         </div>
         {showSettings&&<div className="speed-row"><label htmlFor="avatar-speed">Animation speed <strong>{speed.toFixed(1)}×</strong></label><input id="avatar-speed" aria-label="Avatar playback speed" type="range" min="0.5" max="1.5" step="0.1" value={speed} onChange={e=>setSpeed(Number(e.target.value))}/></div>}
@@ -92,7 +117,7 @@ export default function Live(){
           <div className="transcript-status"><span className="transcript-indicator"/><span>{live.status==='listening'?'Transcribing your microphone':demoRunning?'Playing sample lecture':'Waiting for speech'}</span><span className="transcript-time"><Clock3 size={12}/> ENGLISH</span></div>
           <div className="transcript-scroll" aria-live="polite" aria-relevant="additions text">
             {segments.length===0&&!partial&&<div className="empty-transcript"><div className="empty-symbol"><Volume2 size={25}/></div><strong>Words become visible here.</strong><p>Try the sample lecture to see captions and the avatar in action, or connect your microphone.</p></div>}
-            {segments.filter((_s,i)=>showHistory||i>=segments.length-2).map(s=><article className="transcript-line" key={s.id}><div className="transcript-meta"><span className="transcript-speaker">{s.source==='demo'?'SAMPLE LECTURE':s.source==='text'?'MANUAL INPUT':'SPEAKER'}</span><time>{s.timestamp.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</time></div><p>{s.text}</p><div className="matched-chips">{s.selected.map((clip,i)=><span key={`${clip.phrase_id}-${i}`} className="phrase-tag">{clip.label}</span>)}{s.coverage==='unsupported'&&<span className="unsupported-tag">Captions only</span>}{s.coverage==='illustrative-only'&&<span className="unverified-tag">Illustrative clips</span>}</div></article>)}
+            {segments.filter((_,i)=>showHistory||i>=segments.length-2).map(s=><article className="transcript-line" key={s.id}><div className="transcript-meta"><span className="transcript-speaker">{s.source==='demo'?'SAMPLE LECTURE':s.source==='text'?'MANUAL INPUT':'SPEAKER'}</span><time>{s.timestamp.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</time></div><p>{s.text}</p><div className="matched-chips">{s.selected.map((clip,i)=><span key={`${clip.phrase_id}-${i}`} className="phrase-tag">{clip.label}</span>)}{s.coverage==='unsupported'&&<span className="unsupported-tag">Captions only</span>}{s.coverage==='illustrative-only'&&<span className="unverified-tag">Illustrative clips</span>}</div>{s.planError&&<p>{s.planError}</p>}{s.planResult&&<details><summary>{s.planResult.playback?'Reviewed signing plan':'Candidate plan · captions retained'}</summary><pre className="plan-json">{JSON.stringify(s.planResult,null,2)}</pre></details>}</article>)}
             {partial&&<article className="transcript-line interim"><div className="transcript-meta"><span className="transcript-speaker"><span className="pulse-dot"/> TRANSCRIBING</span></div><p>{partial}<span className="typing-cursor"/></p></article>}
             <div ref={transcriptEnd}/>
           </div>
@@ -107,6 +132,7 @@ export default function Live(){
         </div>
       </section>
     </div>
-    <div className="bottom-feature-row"><div className="feature-note"><div className="feature-note-icon"><Sparkles size={18}/></div><div><strong>Context-aware phrase selection</strong><span>GPT-4.1 selects only known phrase IDs. Unknown content stays available as English captions.</span></div></div><div className="feature-note"><div className="feature-note-icon blue"><Clock3 size={18}/></div><div><strong>Built for ongoing lectures</strong><span>Captions update as speech arrives; animation playback runs in its own queue.</span></div></div></div>
+    <PlanPreview/>
+    <div className="bottom-feature-row"><div className="feature-note"><div className="feature-note-icon"><Sparkles size={18}/></div><div><strong>Shared text and audio translator</strong><span>Text and finalized speech use one planner. Only reviewed, playable sequences enter the signing queue.</span></div></div><div className="feature-note"><div className="feature-note-icon blue"><Clock3 size={18}/></div><div><strong>Built for ongoing lectures</strong><span>Captions update as speech arrives; animation playback runs in its own queue.</span></div></div></div>
   </div>
 }

@@ -31,3 +31,12 @@ export function liveWsUrl():string {
   const proto=location.protocol==='https:'?'wss':'ws'
   return `${proto}://${location.host}/ws/live`
 }
+
+export async function planASL(text: string, context: string[]): Promise<import('./types').PlanResult> {
+  const response = await fetch(`${base}/api/plan`, {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({text, context}), signal: AbortSignal.timeout(30000),
+  })
+  if (!response.ok) throw new Error(`Planner API ${response.status}`)
+  return response.json()
+}

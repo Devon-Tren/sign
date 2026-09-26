@@ -19,3 +19,13 @@
 .preview-provenance code{background:#e3ede2;padding:.05rem .3rem;border-radius:5px;font-size:.74rem}
 .preview-provenance strong{color:#20362e}
 .preview-provenance em{display:block;margin-top:.35rem;color:#6a7d72;font-style:normal}
+.plan-preview { margin-top: 24px; padding: 24px; border: 1px solid #dce2e0; border-radius: 16px; background: white; }
+.plan-preview h2 { margin-top: 0; }
+.plan-preview > p { color: #566560; }
+.plan-preview label { display: block; margin: 16px 0 6px; font-weight: 600; }
+.plan-preview input, .plan-preview textarea { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #c7d1cc; border-radius: 8px; font: inherit; }
+.plan-preview textarea { min-height: 72px; resize: vertical; }
+.plan-preview button { margin-top: 12px; }
+.plan-preview details { margin-top: 16px; }
+.plan-preview pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 420px; overflow: auto; font-size: 12px; }
+.plan-json { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 300px; overflow: auto; font-size: 12px; }

@@ -1,3 +1,5 @@
+import { poseAt } from '../playback'
+import type { PlaybackTimeline } from '../types'
 /**
  * Illustrative 3D avatar.
  *
@@ -14,7 +16,7 @@ import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { motionFor, type HandPose, type Pose } from '../clips'
 
-type AvatarProps = { clipId: string; paused?: boolean; speed?: number; compact?: boolean; showGround?: boolean }
+type AvatarProps = { timeline?: PlaybackTimeline; onComplete?: () => void; clipId: string; paused?: boolean; speed?: number; compact?: boolean; showGround?: boolean }
 
 const SKIN = '#c89877'
 const SKIN_LIGHT = '#dcb18f'
@@ -270,7 +272,7 @@ function applyHand(rig: HandRig, pose: HandPose, delta: number, lambda = 14) {
   if (mid) mid.rotation.x = THREE.MathUtils.damp(mid.rotation.x, pose.thumb.curl[1], lambda, delta)
 }
 
-function Model({ clipId, paused, speed }: { clipId: string; paused: boolean; speed: number }) {
+function Model({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {paused: boolean; speed: number}) {
   const right = {
     shoulder: useRef<THREE.Group | null>(null),
     elbow: useRef<THREE.Group | null>(null),
@@ -288,13 +290,18 @@ function Model({ clipId, paused, speed }: { clipId: string; paused: boolean; spe
   const brows = useRef<THREE.Group>(null)
   const mouth = useRef<THREE.Mesh>(null)
   const elapsed = useRef(0)
+  const finished = useRef(false)
 
-  useEffect(() => { elapsed.current = 0 }, [clipId])
+  useEffect(() => { elapsed.current = 0; finished.current = false }, [clipId, timeline])
 
   useFrame((_, rawDelta) => {
     const delta = Math.min(rawDelta, 0.07)
     if (!paused) elapsed.current += delta * speed
-    const pose: Pose = motionFor(clipId, elapsed.current)
+    if (timeline && elapsed.current * 1000 >= timeline.duration_ms && !finished.current) {
+      finished.current = true
+      onComplete?.()
+    }
+    const pose: Pose = timeline ? poseAt(timeline, elapsed.current * 1000) : motionFor(clipId, elapsed.current)
 
     _shoulder.set(SHOULDER_X, SHOULDER_Y, 0)
     if (right.shoulder.current && right.elbow.current) {
@@ -437,7 +444,7 @@ function Model({ clipId, paused, speed }: { clipId: string; paused: boolean; spe
   )
 }
 
-export default function Avatar({ clipId, paused = false, speed = 1, compact = false, showGround = true }: AvatarProps) {
+export default function Avatar({ clipId, paused = false, speed = 1, compact = false, showGround = true, timeline, onComplete }: AvatarProps) {
   // Radial falloff for the ground pad, built once.
   const groundTexture = useMemo(() => {
     const size = 128
@@ -505,7 +512,7 @@ export default function Avatar({ clipId, paused = false, speed = 1, compact = fa
             </>
           )}
 
-          <Model clipId={clipId} paused={paused} speed={speed} />
+          <Model clipId={clipId} paused={paused} speed={speed} timeline={timeline} onComplete={onComplete} />
           <OrbitControls
             target={[0, 0.62, 0]}
             enablePan={false}
