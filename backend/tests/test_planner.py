@@ -30,15 +30,20 @@ def test_candidate_example_and_unknown_input():
         # ASL-LEX carries NOT_UNDERSTAND as its own lemma, and one lexical sign
         # is better ASL than NOT followed by UNDERSTAND. The planner takes the
         # longest registered expression, so the expansion improved this.
+        # Auxiliary DO is not signed: ASL has no do-support, the question is on
+        # the face (yes/no brow raise, checked above).
         assert [s['sign_id'] for s in result['plan']['manual_sequence']] == [
-            'DO', 'YOU', 'NOT_UNDERSTAND']
+            'YOU', 'NOT_UNDERSTAND']
         # The invariant that matters is unchanged: a word with no catalog sign is
         # visibly fingerspelled rather than silently approximated by a near-miss.
         # BEFORE and FRIDAY are registered signs now, so that sentence composes.
         result = client.post('/api/plan', json={'text': 'Do you understand before Friday?'}).json()
         assert result['mode'] == 'catalog-composed'
         assert [s['sign_id'] for s in result['plan']['manual_sequence']] == [
-            'DO', 'YOU', 'UNDERSTAND', 'BEFORE', 'FRIDAY']
+            'YOU', 'UNDERSTAND', 'BEFORE', 'FRIDAY']
+        # A main-verb DO is still signed.
+        result = client.post('/api/plan', json={'text': 'What do you do?'}).json()
+        assert [s['sign_id'] for s in result['plan']['manual_sequence']] == ['WHAT', 'YOU', 'DO']
         for text in ['Submit it', 'Please recalibrate the oscilloscope',
                      'Might you reconsider the premise?']:
             result = client.post('/api/plan', json={'text': text}).json()

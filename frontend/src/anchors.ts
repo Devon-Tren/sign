@@ -34,38 +34,35 @@ export const ANCHORS: Record<string, Vec3> = {
   // without naming which region it left.
   Away: [0.30, -0.20, 0.60],
 
-  // --- head --------------------------------------------------------------
-  // The head is about 0.12 reach units wide from the midline (head half-width
-  // .04H over a reach of .332H), and the wrist reaches the shoulder edge at
-  // about 0.35. The upper-face anchors used to sit at 0.16-0.23, i.e. up to
-  // 1.9x the head half-width, so a sign coded at Forehead or Eye or CheekNose
-  // landed BESIDE the head rather than on it, with the elbow flared out to
-  // reach. These are pulled back inside the head, and raised slightly to match
-  // where the brow and eyes actually are.
-  Head: [0.12, 0.30, 0.29],
-  HeadTop: [0.09, 0.50, 0.22],
-  Forehead: [0.12, 0.40, 0.30],
-  Eye: [0.11, 0.34, 0.30],
-  CheekNose: [0.13, 0.25, 0.30],
-  UpperLip: [0.08, 0.20, 0.32],
-  Mouth: [0.08, 0.18, 0.31],
-  Chin: [0.08, 0.13, 0.31],
-  UnderChin: [0.08, 0.08, 0.30],
-  // Off the head, out in space beside it. Kept inboard of the shoulder: an
-  // x beyond ~0.40 pulls the wrist outside the shoulder and locks the arm.
-  HeadAway: [0.38, 0.29, 0.42],
+  // --- head, neck, torso: SURFACE points --------------------------------
+  // Measured from the skinned mesh (artifacts/rig-verify/landmarks.mjs). These
+  // are where the hand's CONTACT POINT goes (fingertips, thumb tip or palm -
+  // see ArmPose.reach in ./clips), not wrist positions. Wrist-position anchors
+  // tuned by eye put the wrist at the face, which bent the wrist ~35 degrees
+  // on typical signs and sank the forearm into the chest for chin signs.
+  // Slightly toward the dominant side of the midline, as one-handed signs are.
+  Head: [0.05, 0.45, 0.25],
+  HeadTop: [0.04, 0.72, 0.10],
+  Forehead: [0.05, 0.56, 0.235],
+  Eye: [0.08, 0.47, 0.225],
+  CheekNose: [0.10, 0.39, 0.215],
+  UpperLip: [0.02, 0.35, 0.268],
+  Mouth: [0.02, 0.32, 0.262],
+  Chin: [0.02, 0.26, 0.245],
+  UnderChin: [0.02, 0.22, 0.15],
+  // Off the head, out in space beside it: palm centre, not a surface.
+  HeadAway: [0.36, 0.34, 0.42],
 
-  // --- neck, torso, hips -------------------------------------------------
-  Neck: [0.09, 0.03, 0.30],
-  Clavicle: [0.16, -0.06, 0.34],
-  Shoulder: [0.34, -0.02, 0.28],
-  Body: [0.22, -0.36, 0.48],
-  TorsoTop: [0.20, -0.16, 0.44],
-  TorsoMid: [0.20, -0.30, 0.46],
-  TorsoBottom: [0.19, -0.44, 0.45],
-  Waist: [0.20, -0.52, 0.44],
-  Hips: [0.22, -0.60, 0.42],
-  BodyAway: [0.30, -0.28, 0.58],
+  Neck: [0.03, 0.18, 0.11],
+  Clavicle: [0.14, 0.02, 0.21],
+  Shoulder: [0.31, 0.06, 0.08],
+  Body: [0.10, -0.28, 0.335],
+  TorsoTop: [0.11, -0.12, 0.29],
+  TorsoMid: [0.10, -0.28, 0.335],
+  TorsoBottom: [0.10, -0.46, 0.37],
+  Waist: [0.15, -0.55, 0.37],
+  Hips: [0.22, -0.66, 0.35],
+  BodyAway: [0.28, -0.28, 0.62],
 
   // --- the non-dominant hand as a place ----------------------------------
   // Absolute fallbacks. A sign coded at one of these is normally positioned
@@ -105,6 +102,27 @@ const LOCATION_ALIASES: Record<string, string> = {
   Nose: 'CheekNose',
 }
 
+/** Locations whose anchor is a point on the body surface (contact point goes
+ *  there); everything else is a point in space (palm centre goes there). */
+export const SURFACE_LOCATIONS = new Set(['Head', 'HeadTop', 'Forehead', 'Eye', 'CheekNose', 'UpperLip',
+  'Mouth', 'Chin', 'UnderChin', 'Neck', 'Clavicle', 'Shoulder', 'Body', 'TorsoTop', 'TorsoMid',
+  'TorsoBottom', 'Waist', 'Hips', 'Chest', 'Cheek', 'Nose'])
+
+/**
+ * Front of the torso (arm-reach units) at height y, from the mesh: collarbone
+ * 0.21, upper chest 0.28, chest 0.33, jacket front at the waist 0.36. Used to
+ * keep a derived wrist, and transitions, out of the body.
+ */
+export function torsoFrontZ(y: number): number {
+  const table: [number, number][] = [[0.12, 0.10], [0.05, 0.19], [0, 0.21], [-0.1, 0.28], [-0.2, 0.325], [-0.3, 0.33], [-0.4, 0.36], [-0.9, 0.36]]
+  if (y >= table[0][0]) return table[0][1]
+  for (let i = 1; i < table.length; i++) {
+    const [y0, z0] = table[i - 1], [y1, z1] = table[i]
+    if (y >= y1) return z0 + (z1 - z0) * (y - y0) / (y1 - y0)
+  }
+  return table[table.length - 1][1]
+}
+
 export function anchor(minor?: string | null, major?: string | null): Vec3 {
   const key = minor && minor !== 'NA' ? (LOCATION_ALIASES[minor] ?? minor) : ''
   const fallback = major ? (LOCATION_ALIASES[major] ?? major) : ''
@@ -138,60 +156,87 @@ export type HandRelation = {
   meetPalm: Vec3
   /** Travel applied across the stroke when the sign moves along the surface. */
   travel?: Vec3
+  /**
+   * The surface point on the BASE hand, in its own frame: along the fingers
+   * from the wrist, toward the thumb side, out of the palm (arm-reach units;
+   * the B hand measures 0.356 wrist-to-fingertip). The dominant hand's
+   * contact part (`reach`) goes there, so the dominant wrist is derived from
+   * real hand geometry rather than an authored wrist offset, which bent the
+   * wrist ~50 degrees on the ~360 signs made on the other hand.
+   */
+  at?: Vec3
+  reach?: { tip?: number; thumb?: number; palm?: number }
 }
 
-const PALM_UP: Vec3 = [0.06, 0.97, 0.22]
-const PALM_DOWN: Vec3 = [0.04, -0.96, 0.28]
-const POINT_ACROSS: Vec3 = [0.96, 0.06, 0.26]
+// The base hand's fingers point forward and across, continuing its forearm;
+// straight across (0.96, 0.06, 0.26) needed ~70 degrees of sideways wrist bend.
+const POINT_ACROSS: Vec3 = [0.60, 0.05, 0.80]
+const PALM_UP: Vec3 = [-0.06, 0.998, 0.03]
+const PALM_DOWN: Vec3 = [0.06, -0.998, -0.03]
+const PALM: { palm: number } = { palm: 1 }
+const FINGERS: { tip: number; palm: number } = { tip: 0.5, palm: 0.5 }
+const TIPS: { tip: number } = { tip: 1 }
 
 export const HAND_SURFACE: Record<string, HandRelation> = {
   // Base palm up, dominant hand lands on it from above.
   Palm: {
     offset: [0.05, 0.05, 0.02], basePalm: PALM_UP, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.02, 0.05, 0.02],
+    at: [0.12, 0, 0.02], reach: PALM,
   },
   // Base palm down, dominant hand works on the back of it.
   PalmBack: {
     offset: [0.05, 0.06, 0.01], basePalm: PALM_DOWN, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.02, 0.03, 0.01],
+    at: [0.12, 0, -0.03], reach: PALM,
   },
   // The heel of the base palm, nearer the wrist.
   Heel: {
     offset: [-0.04, 0.05, 0.02], basePalm: PALM_UP, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.05, 0.02, 0.01],
+    at: [0.04, 0, 0.02], reach: PALM,
   },
   // The front (palm side) of the base fingers.
   FingerFront: {
     offset: [0.12, 0.05, 0.03], basePalm: PALM_UP, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.03, 0.03, 0.01],
+    at: [0.26, 0, 0.015], reach: FINGERS,
   },
   FingerBack: {
     offset: [0.12, 0.05, -0.01], basePalm: PALM_DOWN, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.03, 0.02, 0.01],
+    at: [0.26, 0, -0.02], reach: FINGERS,
   },
   // The thumb-side edge of the base fingers. NAME crosses the H-hands here,
   // which is why an offset near the wrists produced the crossed-hand artifact.
   FingerRadial: {
     offset: [0.10, 0.09, 0.02], basePalm: [0.10, -0.32, 0.94], basePoint: POINT_ACROSS,
     meetPalm: [0.06, -0.94, 0.33], travel: [0, 0.02, 0],
+    at: [0.24, 0.05, 0], reach: FINGERS,
   },
   // The little-finger-side edge.
   FingerUlnar: {
     offset: [0.02, 0.11, 0.02], basePalm: [0.12, 0.34, 0.93], basePoint: POINT_ACROSS,
     meetPalm: [0.04, -0.92, 0.39], travel: [0, 0.02, 0],
+    at: [0.22, -0.05, 0], reach: FINGERS,
   },
-  // Fingertips meeting fingertips.
+  // Fingertips meeting fingertips, like a roof: both hands' fingers point
+  // forward and inward, palms angled toward each other and the signer. The
+  // old base/meet palms were ~17 degrees out of reach from diagonal hands.
   FingerTip: {
-    offset: [0.18, 0.07, 0.02], basePalm: [0.28, 0.42, 0.86], basePoint: [0.86, 0.46, 0.22],
-    meetPalm: [-0.30, -0.40, 0.87], travel: [0.02, 0.02, 0],
+    offset: [0.18, 0.07, 0.02], basePalm: [0.8, 0, -0.6], basePoint: POINT_ACROSS,
+    meetPalm: [-0.8, 0, -0.6], travel: [0.02, 0.02, 0],
+    at: [0.36, 0, 0], reach: TIPS,
   },
   WristBack: {
     offset: [-0.10, 0.04, 0.01], basePalm: PALM_DOWN, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.02, 0.02, 0],
+    at: [-0.02, 0, -0.03], reach: PALM,
   },
   WristFront: {
     offset: [-0.10, 0.04, 0.03], basePalm: PALM_UP, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.02, 0.02, 0],
+    at: [-0.02, 0, 0.025], reach: PALM,
   },
   // "HandAway" is ASL-LEX's code for articulated NEAR the non-dominant hand
   // without contacting it - AGAIN, STUDY, WHEN and CODE all work in the space
@@ -201,6 +246,7 @@ export const HAND_SURFACE: Record<string, HandRelation> = {
   HandAway: {
     offset: [0.12, 0.17, 0.05], basePalm: PALM_UP, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.03, -0.06, 0.01],
+    at: [0.14, 0, 0.14], reach: PALM,
   },
   // --- the non-dominant ARM as a surface ---------------------------------
   // HOSPITAL, MUSCLE and ENERGY are on the upper arm; LONG, TABLE and IMPROVE
@@ -211,26 +257,32 @@ export const HAND_SURFACE: Record<string, HandRelation> = {
   ForearmFront: {
     offset: [-0.16, 0.05, 0.03], basePalm: PALM_UP, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.10, 0.00, 0.00],
+    at: [-0.2, 0, 0.03], reach: PALM,
   },
   ForearmBack: {
     offset: [-0.16, 0.05, -0.01], basePalm: PALM_DOWN, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.10, 0.00, 0.00],
+    at: [-0.2, 0, -0.04], reach: PALM,
   },
   ForearmUlnar: {
     offset: [-0.16, 0.09, 0.01], basePalm: PALM_DOWN, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.08, 0.00, 0.00],
+    at: [-0.2, -0.04, 0], reach: PALM,
   },
   ForearmRadial: {
     offset: [-0.16, 0.01, 0.02], basePalm: PALM_UP, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.08, 0.00, 0.00],
+    at: [-0.2, 0.04, 0], reach: PALM,
   },
   ElbowFront: {
     offset: [-0.30, 0.04, 0.02], basePalm: PALM_UP, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.03, 0.00, 0.00],
+    at: [-0.45, 0, 0.03], reach: PALM,
   },
   ElbowBack: {
     offset: [-0.30, 0.04, -0.01], basePalm: PALM_DOWN, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.03, 0.00, 0.00],
+    at: [-0.45, 0, -0.05], reach: PALM,
   },
   UpperArm: {
     offset: [-0.34, 0.10, 0.00], basePalm: PALM_DOWN, basePoint: POINT_ACROSS,
@@ -247,6 +299,7 @@ export const HAND_SURFACE: Record<string, HandRelation> = {
   Other: {
     offset: [0.10, 0.12, 0.04], basePalm: PALM_UP, basePoint: POINT_ACROSS,
     meetPalm: PALM_DOWN, travel: [0.02, 0.02, 0.01],
+    at: [0.14, 0, 0.08], reach: PALM,
   },
 }
 
@@ -269,12 +322,14 @@ export const NAMED_RELATIONS: Record<string, HandRelation> = {
     offset: [0.10, 0.10, 0.02],
     basePalm: [0.14, -0.30, 0.94], basePoint: [0.92, 0.28, 0.27],
     meetPalm: [0.08, -0.92, 0.38], travel: [0, 0.02, 0],
+    at: [0.24, 0.05, 0], reach: FINGERS,
   },
-  /** Index tips or fingertips touching in front of the body. */
+  /** Index tips or fingertips touching in front of the body (roof, as FingerTip). */
   tip_to_tip: {
     offset: [0.20, 0.06, 0.02],
-    basePalm: [0.36, 0.20, 0.91], basePoint: [0.90, 0.36, 0.24],
-    meetPalm: [-0.36, -0.22, 0.91], travel: [0.02, 0, 0],
+    basePalm: [0.8, 0, -0.6], basePoint: POINT_ACROSS,
+    meetPalm: [-0.8, 0, -0.6], travel: [0.02, 0, 0],
+    at: [0.36, 0, 0], reach: TIPS,
   },
   /** Side by side, not in contact. */
   beside: {
@@ -303,8 +358,12 @@ export const ELBOW_BY_LOCATION: Record<string, Vec3> = {
   // A raised elbow still hangs mostly DOWN. Poling it almost fully lateral
   // threw the elbow out sideways to reach a face anchor that was itself too far
   // out; with the anchors corrected the pole can sit where a signer's does.
-  Head: [0.52, -0.74, -0.16],
-  Body: [0.42, -0.90, -0.16],
+  // Forward and down: for face signs the elbow comes up IN FRONT of the chest,
+  // not out to the side (which read as a flared "chicken wing").
+  Head: [0.2, -0.65, 0.73],
+  // Down and slightly forward: for chest signs the elbow hangs near the side,
+  // it does not wing out.
+  Body: [0.25, -0.92, 0.30],
   Hand: [0.52, -0.78, -0.12],
   Arm: [0.58, -0.72, -0.18],
   Neutral: [0.48, -0.84, -0.16],
@@ -317,12 +376,29 @@ export const ELBOW_BY_LOCATION: Record<string, Vec3> = {
  * everything here is an authored interpretive layer over the licensed data.
  */
 export const ORIENTATION_BY_LOCATION: Record<string, { palm: Vec3; point: Vec3 }> = {
-  Head: { palm: [0, 0.20, -0.96], point: [0, 1, 0] },
-  Hand: { palm: [0, -0.90, 0.44], point: [0.10, 0.20, 0.97] },
-  Body: { palm: [0, 0, -1], point: [0.10, 0.90, 0.40] },
+  // Fingertips meet the face with the fingers tilted back toward it and the
+  // palm toward the signer, so the wrist sits forward of the chest (straight
+  // up put the forearm inside it once the fingertips, not the wrist, contact).
+  // Fingers also lean slightly toward the midline, following a forearm that
+  // rises from the dominant side.
+  Head: { palm: [0, -0.38, -0.92], point: [-0.25, 0.9, -0.35] },
+  // On the other hand: dominant fingers forward and across toward the
+  // non-dominant side, continuing the dominant forearm and crossing the base
+  // hand (SCHOOL, PAPER). Straight forward bent the wrist ~58 degrees sideways.
+  Hand: { palm: [0, -0.90, 0.44], point: [-0.50, 0.10, 0.86] },
+  // Palm on the chest, fingers following the forearm up and across toward
+  // the non-dominant shoulder. Fingers straight up needed a wrist flexion the
+  // joint cannot give, leaving torso signs ~35 degrees off their palm.
+  Body: { palm: [-0.17, 0.11, -0.98], point: [-0.83, 0.52, 0.21] },
   Arm: { palm: [0, -0.80, 0.60], point: [-0.90, 0.20, 0.40] },
-  Neutral: { palm: [0, 0, 1], point: [0.10, 0.95, 0.30] },
-  Other: { palm: [0, 0, 1], point: [0.10, 0.95, 0.30] },
+  // ASL-LEX codes no orientation. Palm-out/fingers-up for every neutral sign
+  // demanded near-maximal wrist extension with the forearm angled forward (the
+  // wrist sat at its limit, palm ~29 degrees off, the "broken wrist" look). The
+  // default is now the relaxed forearm: fingers continuing it forward and up,
+  // palm toward the non-dominant side and slightly down. Signs with data
+  // (ASL-Phono priors, overrides) keep theirs.
+  Neutral: { palm: [-0.96, -0.28, 0.01], point: [-0.15, 0.55, 0.82] },
+  Other: { palm: [-0.96, -0.28, 0.01], point: [-0.15, 0.55, 0.82] },
 }
 
 /** ASL-LEX location names meaning "off the body, out in space". */
@@ -343,6 +419,18 @@ const AWAY = /Away$/
  * precedence in clips.ts. Retain this approximation for unreviewed entries
  * until their citation variants can be checked rather than flipping them all.
  */
+/** The open-5 thumb-contact family (MOTHER/FATHER): the THUMB tip touches. */
+export function thumbContactFamily(
+  major?: string | null, second?: string | null,
+  form?: { Handshape: string | null; SignType: string | null; MinorLocation: string | null;
+    Contact?: string | null; ThumbPosition?: string | null; FlexionChange?: string | null },
+): boolean {
+  return major === 'Head' && form?.Handshape === '5' && form.SignType === 'OneHanded'
+    && form.Contact === '1' && form.ThumbPosition === 'Open' && form.FlexionChange === '0'
+    && (form.MinorLocation === 'Forehead' || form.MinorLocation === 'Chin')
+    && (!second || second === 'NA')
+}
+
 export function orientationFor(
   major?: string | null,
   second?: string | null,
@@ -354,10 +442,11 @@ export function orientationFor(
   // alone cannot distinguish this from fingertips touching the face. This
   // narrowly scoped authored inference excludes changing-finger COLOR and
   // two-handed chin signs such as HATE; ASL-LEX does not code contact digits.
-  if (major === 'Head' && form?.Handshape === '5' && form.SignType === 'OneHanded'
-      && form.Contact === '1' && form.ThumbPosition === 'Open' && form.FlexionChange === '0'
-      && (form.MinorLocation === 'Forehead' || form.MinorLocation === 'Chin')
-      && (!second || second === 'NA')) return { palm: [-1, 0, 0], point: [0, 1, 0] }
+  // Fingers tilted slightly forward, which swings the resting thumb up and
+  // lets the wrist sit lower and closer: straight up
+  // held the wrist ~0.2 in front of the forehead at eye height, forcing the
+  // elbow up to shoulder level.
+  if (thumbContactFamily(major, second, form)) return { palm: [-1, 0, 0], point: [0, 0.88, 0.47] }
   const base = ORIENTATION_BY_LOCATION[major ?? 'Neutral'] ?? ORIENTATION_BY_LOCATION.Neutral
   if (!second || second === 'NA' || !AWAY.test(second)) return base
   // Turn the palm out without discarding the region's own character: keep the

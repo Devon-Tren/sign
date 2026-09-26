@@ -39,6 +39,11 @@ OUT = Path(__file__).resolve().parent.parent / "data" / "asl_lex_params.json"
 MAPPING: dict[str, tuple[str, str, str]] = {
     # -- exact lemma matches -------------------------------------------------
     "hello":       ("hello",      "exact", ""),
+    # ASL-LEX splits DEAF by sense; deaf_1 is the everyday citation form
+    # (index from cheek to chin, frequency 6.8/7). The sense-suffix rule kept
+    # it out of auto-expansion, so DEAF - one of the most common signs - was
+    # fingerspelled.
+    "deaf":        ("deaf_1",     "exact", "everyday citation form (cheek to chin)"),
     "morning":     ("morning",    "exact", ""),
     "thank_you":   ("thank_you",  "exact", ""),
     "help":        ("help",       "exact", ""),

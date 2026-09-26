@@ -8,6 +8,8 @@
  * hardcoded.
  */
 import * as THREE from 'three'
+import { solveThumbSite, type ThumbSite } from './thumbIK'
+import { torsoFrontZ } from './anchors'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
 
 const MODEL_URL = '/avatar/signer.fbx'
@@ -488,6 +490,8 @@ const _bend = new THREE.Vector3()
 const _claviclePos = new THREE.Vector3()
 const _clavicleRest = new THREE.Vector3()
 const _clavicleTarget = new THREE.Vector3()
+/** The signer faces +z (root forward, measured). */
+const _forwardAxis = new THREE.Vector3(0, 0, 1)
 const _swivelFrom = new THREE.Vector3(), _swivelTo = new THREE.Vector3()
 const _swivelCross = new THREE.Vector3(), _aimCorrection = new THREE.Quaternion()
 const previousUpper = new WeakMap<ArmChain, THREE.Vector3>()
@@ -518,10 +522,16 @@ const FINGER_MAX_RAD_S = 14
  * fast move instead of a teleport. Set by ./rigPose per application.
  */
 export const tracking = { exact: false }
+/** Last solver decisions, for diagnostics (artifacts/rig-verify). */
+export const solverDebug = { swivel: 0, twist: 0, wrist: 0, searched: false, requestedR: 0, twistR: 0, wristR: 0, requestedL: 0, twistL: 0, wristL: 0, refL: 0 }
 const EXACT_CAP_SCALE = 2.3
 /** Wrist target speed ceiling in exact mode, in arm reaches per second. The
  *  scheduler plans transitions at <= 3.2, so this never touches planned motion. */
 const EXACT_TARGET_SPEED = 4.5
+/** Forearm pronation/supination ceiling in exact mode (rad/s). */
+const FOREARM_TWIST_EXACT_RAD_S = 9
+/** Elbow swivel ceiling in exact mode (rad/s). */
+const SWIVEL_EXACT_RAD_S = 6
 
 /** Exponential response with a hard angular-velocity ceiling. Damping alone is
  * frame-rate independent, but a large target change can still rotate most of
@@ -639,9 +649,13 @@ export function solveArmIK(
     _rw.copy(_pq).multiply(arm.restQ.clavicle)
     _clavicleRest.copy(arm.axis.clavicle).applyQuaternion(_rw).normalize()
     _clavicleTarget.subVectors(targetWorld, _claviclePos).normalize()
-    const lift = THREE.MathUtils.clamp((_clavicleTarget.y + 0.05) * 0.20, 0, 0.18)
+    // Real shoulders lift for head-level signs and come forward (protract)
+    // for forward reaches; at 15% of the way the girdle barely moved and the
+    // arm hinged from a frozen shoulder.
+    const lift = THREE.MathUtils.clamp((_clavicleTarget.y + 0.1) * 0.32, 0, 0.30)
     const lateral = THREE.MathUtils.clamp(Math.abs(_clavicleTarget.x) * 0.08, 0, 0.06)
-    _clavicleTarget.lerp(_clavicleRest, 1 - lift - lateral).normalize()
+    const protract = THREE.MathUtils.clamp((_clavicleTarget.dot(_forwardAxis) - 0.45) * 0.18, 0, 0.10)
+    _clavicleTarget.lerp(_clavicleRest, 1 - lift - lateral - protract).normalize()
     aimBone(arm.clavicle, arm.axis.clavicle, arm.restQ.clavicle,
       _clavicleTarget, dt, ARM_LAMBDA * 0.72, ARM_MAX_RAD_S * 0.45)
   }
@@ -682,7 +696,9 @@ export function solveArmIK(
       _swivelFrom.normalize()
       const angle = Math.atan2(_swivelCross.crossVectors(_swivelFrom, _swivelTo).dot(_dir),
         _swivelFrom.dot(_swivelTo))
-      const cap = ARM_MAX_RAD_S * (tracking.exact ? EXACT_CAP_SCALE : 1) * dt
+      // In exact mode the elbow swivel has its own ceiling, so an escape to a
+      // better elbow reads as a deliberate move (~0.25 s for 90 degrees).
+      const cap = (tracking.exact ? SWIVEL_EXACT_RAD_S : ARM_MAX_RAD_S) * dt
       const step = THREE.MathUtils.clamp(angle * (tracking.exact ? 1 : damp(dt, ARM_LAMBDA)), -cap, cap)
       _swivelFrom.applyAxisAngle(_dir, step)
       _tmp.copy(_dir).multiplyScalar(Math.cos(offset)).addScaledVector(_swivelFrom, Math.sin(offset))
@@ -698,6 +714,82 @@ export function solveArmIK(
   arm.upper.updateMatrixWorld(true)
   // setHandOrientation constructs the forearm's anatomical frame from these
   // directions, then commits its aim and bounded pronation together.
+}
+
+const _reachQ = new THREE.Quaternion(), _reachInv = new THREE.Quaternion()
+const _reachW = new THREE.Vector3(), _reachP = new THREE.Vector3(), _reachA = new THREE.Vector3()
+const _reachB = new THREE.Vector3(), _reachSum = new THREE.Vector3()
+
+/** Extrapolated tip of a digit (Rocketbox has no tip bones). */
+function digitTip(bones: readonly THREE.Bone[], out: THREE.Vector3) {
+  bones.at(-1)!.getWorldPosition(_reachA)
+  bones.at(-2)!.getWorldPosition(_reachB)
+  return out.copy(_reachA).addScaledVector(_reachB.sub(_reachA).negate(), 0.85)
+}
+
+/**
+ * World offset from the wrist to a point on the hand - the extended
+ * fingertips, the thumb tip or the palm centre, blended by `weights` - with
+ * the hand at the orientation `palm`/`point` request and the fingers as they
+ * are now. ./rigPose subtracts it from a surface target, so the part of the
+ * hand that CONTACTS the body is what lands on it.
+ */
+export function reachOffset(arm: ArmChain, palm: THREE.Vector3, point: THREE.Vector3,
+  weights: { tip?: number; thumb?: number; palm?: number; tipFinger?: readonly number[] }, out: THREE.Vector3): THREE.Vector3 {
+  out.set(0, 0, 0)
+  const total = (weights.tip ?? 0) + (weights.thumb ?? 0) + (weights.palm ?? 0)
+  if (total <= 1e-6) return out
+  arm.hand.updateMatrixWorld(true)
+  arm.hand.getWorldPosition(_reachW)
+  arm.hand.getWorldQuaternion(_reachInv).invert()
+  desiredHand(arm, palm, point, _reachQ)
+  // current wrist->point vector, into the hand frame, then out at the request
+  const local = (world: THREE.Vector3) => world.sub(_reachW).applyQuaternion(_reachInv).applyQuaternion(_reachQ)
+  if (weights.tip) {
+    // The extended fingers make the contact: weight tips by reach from the wrist.
+    const tips = arm.fingers.map(f => digitTip(f.bones, new THREE.Vector3()))
+    const far = Math.max(...tips.map(t => t.distanceTo(_reachW)))
+    _reachSum.set(0, 0, 0)
+    let norm = 0
+    tips.forEach((t, i) => {
+      // Named fingers (SelectedFingers) if given, else the farthest-reaching.
+      const w = weights.tipFinger ? (weights.tipFinger[i] ?? 0) : Math.pow(t.distanceTo(_reachW) / far, 8)
+      _reachSum.addScaledVector(t, w); norm += w
+    })
+    if (norm < 1e-6) { tips.forEach(t => _reachSum.add(t)); norm = tips.length }
+    out.addScaledVector(local(_reachP.copy(_reachSum).multiplyScalar(1 / norm)), weights.tip)
+  }
+  if (weights.thumb) out.addScaledVector(local(digitTip(arm.thumb.bones, _reachP)), weights.thumb)
+  if (weights.palm) {
+    // Palm surface: part way to the middle knuckle, lifted off the bone.
+    arm.fingers[1].bones[0].getWorldPosition(_reachP).lerp(_reachW, 0.45)
+    _reachA.copy(arm.palmNormal).applyQuaternion(arm.hand.getWorldQuaternion(_reachQ).multiply(_inv.copy(arm.handRestWorldQ).invert()))
+    _reachP.addScaledVector(_reachA, 0.025 * (arm.upperLen + arm.foreLen))
+    desiredHand(arm, palm, point, _reachQ)
+    out.addScaledVector(local(_reachP), weights.palm)
+  }
+  return out.multiplyScalar(1 / Math.max(1, total))
+}
+
+/** World position of the blended hand point (see reachOffset) as the hand is NOW. */
+export function handPoint(arm: ArmChain, weights: { tip?: number; thumb?: number; palm?: number; tipFinger?: readonly number[] }, out: THREE.Vector3) {
+  arm.hand.updateMatrixWorld(true)
+  const delta = arm.hand.getWorldQuaternion(new THREE.Quaternion()).multiply(_inv.copy(arm.handRestWorldQ).invert())
+  const palmNow = arm.palmNormal.clone().applyQuaternion(delta)
+  const pointNow = arm.along.clone().applyQuaternion(delta)
+  reachOffset(arm, palmNow, pointNow, weights, out)
+  return out.add(arm.hand.getWorldPosition(new THREE.Vector3()))
+}
+
+/**
+ * Forget the frame-to-frame continuity state (elbow swivel, committed forearm
+ * twist) so the next solve makes a fresh best choice. Continuity is right for
+ * continuous motion but after a genuine jump - a new utterance, or a test that
+ * teleports between unrelated poses - it holds a stale, worse solution.
+ */
+export function resetContinuity(arm: ArmChain) {
+  previousUpper.delete(arm)
+  committedTwist.delete(arm)
 }
 
 /**
@@ -754,58 +846,134 @@ function orientAt(
     .multiply(_inv.copy(arm.restQ.hand).invert())
   if (_relative.w < 0) _relative.set(-_relative.x, -_relative.y, -_relative.z, -_relative.w)
   const dot = _relative.x * arm.axis.fore.x + _relative.y * arm.axis.fore.y + _relative.z * arm.axis.fore.z
-  const requested = 2 * Math.atan2(dot, _relative.w)
+  const principal = 2 * Math.atan2(dot, _relative.w)
+  // atan2 wraps at +/-pi. When a request passes through the back of the
+  // forearm's range, clamping the principal value flipped from full
+  // supination to full pronation in one frame - a 175-degree twist, the main
+  // mid-sign "pop" once damping stopped hiding it (PRIDE, JACKET). So compare
+  // the principal value with the representation nearest the last committed
+  // twist: take whichever leaves LESS wrist rotation, and prefer continuity
+  // only when the two are nearly equal (the wrap itself). Always preferring
+  // continuity carried a stale end into unrelated poses (palm median 7 -> 11).
+  // Both ends of the range are always candidates (the request and its 2*pi
+  // alias clamp to opposite ends when it lies outside the range). Pick by the
+  // wrist rotation left over; continuity only breaks near-ties, or holds when
+  // NEITHER end reaches the palm. Comparing only when the request had wrapped
+  // past the reference missed cases where the reference itself was on the
+  // wrong side (TOMATO's left hand pinned 55 degrees off).
+  let requested = principal
+  if (solverTuning.unwrapTwist) {
+    const residual = (value: number) => {
+      const t = -arm.side * THREE.MathUtils.clamp(-arm.side * value, -PRONATION, SUPINATION)
+      _foreWorld.copy(_neutral).multiply(_twist.setFromAxisAngle(arm.axis.fore, t))
+      _handLocal.copy(_foreWorld).invert().multiply(desired).multiply(_inv.copy(arm.restQ.hand).invert())
+      return _identity.angleTo(_handLocal)
+    }
+    const alias = principal > 0 ? principal - 2 * Math.PI : principal + 2 * Math.PI
+    const rp = residual(principal), ra = residual(alias)
+    let best = rp <= ra ? principal : alias
+    const reference = committedTwist.get(arm)
+    if (reference !== undefined) {
+      const near = Math.abs(principal - reference) <= Math.abs(alias - reference) ? principal : alias
+      const rn = near === principal ? rp : ra, rb = Math.min(rp, ra)
+      const limit = THREE.MathUtils.clamp(maxWrist, 0.65, 1.22) + 0.02
+      if (rn <= rb + TWIST_CONTINUITY_SLACK || (rb > limit && rn <= rb + TWIST_HOLD_WHEN_UNREACHABLE)) best = near
+    }
+    requested = best
+  }
+  lastRequestedTwist = requested
   // Positive physiological angle means supination on either arm.
   const twist = -arm.side * THREE.MathUtils.clamp(-arm.side * requested, -PRONATION, SUPINATION)
+  lastTwist = twist
+  solverDebug.twist = twist
+  if (arm.side < 0) { solverDebug.requestedR = requested; solverDebug.twistR = twist; solverDebug.wristR = _identity.angleTo(_handLocal) }
+  else { solverDebug.requestedL = requested; solverDebug.twistL = twist; solverDebug.refL = committedTwist.get(arm) ?? NaN }
   _foreWorld.copy(_neutral).multiply(_twist.setFromAxisAngle(arm.axis.fore, twist))
   _handLocal.copy(_foreWorld).invert().multiply(desired)
     .multiply(_inv.copy(arm.restQ.hand).invert())
   const angle = _identity.angleTo(_handLocal)
+  _lastWristAngle = angle
   const limit = THREE.MathUtils.clamp(maxWrist, 0.65, 1.22)
   if (angle > limit) _handLocal.slerp(_identity, 1 - limit / angle)
   _handLocal.multiply(arm.restQ.hand)
   return Math.max(0, angle - limit)
 }
 const _inv = new THREE.Quaternion(), _twist = new THREE.Quaternion()
+/** Wrist rotation away from bind requested by the last orientAt, before its clamp. */
+let _lastWristAngle = 0
+/** Twist committed by the last setHandOrientation per arm: the unwrap reference. */
+const committedTwist = new WeakMap<ArmChain, number>()
+let lastTwist = 0, lastRequestedTwist = 0
+/** Keep the continuous twist unless the other end is this much (rad) better. */
+const TWIST_CONTINUITY_SLACK = 0.2
+/** When neither end reaches the palm during CONTINUOUS motion, hold the current end unless the
+ *  other is this much better. Genuine jumps reset continuity (resetContinuity), so this only
+ *  trades accuracy for smoothness while the hand is actually moving. */
+const TWIST_HOLD_WHEN_UNREACHABLE = 0.5
+/**
+ * Wrist bend below this is free; above it costs. Accepting anything inside the
+ * 55-degree limit (the old early return) left typical signs bent 35 degrees
+ * past neutral - the "broken wrist" look - when moving the elbow or rolling
+ * the forearm would have delivered the same palm with a straight wrist.
+ */
+/** Solver weights, exported for the ablations in artifacts/rig-verify. */
+export const solverTuning = { wristComfort: 0.35, wristWeight: 0, swivelWeight: 0.2, continuity: 0.3,
+  unwrapTwist: true, localSwivel: true }
 
-/** Conservative torso envelope in arm-reach units. Contact targets remain
- * exact; avoid passing the intervening arm through the chest/abdomen. The
- * shoulder attachment and wrist contact themselves are excluded. */
+/**
+ * How far the arm (upper arm and forearm) passes into the torso, from the
+ * front-of-torso profile measured on the mesh (./anchors torsoFrontZ). The
+ * previous hand-sized ellipse put the chest front at ~0.22 arm reach where
+ * the mesh has 0.32-0.36, so a forearm clipping the chest scored zero and the
+ * elbow never moved to clear it. Contact at the wrist itself is excluded.
+ */
 function torsoPenalty(arm: ArmChain, shoulder: THREE.Vector3, elbow: THREE.Vector3, wrist: THREE.Vector3) {
   const reach = arm.upperLen + arm.foreLen
-  const centerX = shoulder.x - arm.side * 0.35 * reach
+  // Body frame: origin the shoulder midpoint (this shoulder is 0.349 reach out).
+  const midX = shoulder.x - arm.side * 0.349 * reach
   let penalty = 0
   for (let segment = 0; segment < 2; segment++) {
-    for (const t of [0.2, 0.4, 0.6, 0.8]) {
+    for (const t of [0.3, 0.5, 0.7, 0.9]) {
+      if (segment === 1 && t > 0.8) continue
       _clearancePoint.lerpVectors(segment === 0 ? shoulder : elbow, segment === 0 ? elbow : wrist, t)
+      const x = -(_clearancePoint.x - midX) / reach
       const y = (_clearancePoint.y - shoulder.y) / reach
-      if (y > 0.02 || y < -0.88) continue
-      const x = (_clearancePoint.x - centerX) / (0.30 * reach)
-      const z = (_clearancePoint.z - shoulder.z + 0.025 * reach) / (0.245 * reach)
-      const depth = Math.max(0, 1 - x * x - z * z)
+      const z = (_clearancePoint.z - shoulder.z) / reach
+      if (Math.abs(x) > 0.30 || y > 0.1 || y < -0.9 || z < -0.25) continue
+      // A forearm may REST on the torso (chest signs); only penetration past
+      // the surface counts. A clearance margin pushed the elbow ~20 cm out.
+      const depth = Math.max(0, torsoFrontZ(y) - 0.015 - z)
       penalty += depth * depth
     }
   }
   return penalty
 }
 
-/** Solve the remaining shoulder swivel only when the preferred elbow cannot
- * deliver the requested orientation. Penalise displacement and reject elbows
- * through the chest or above the shoulder; never relax wrist position. */
+/**
+ * Choose the elbow swivel (the one free shoulder DOF with the wrist fixed).
+ *
+ * Temporal coherence matters more than the per-frame optimum. The old version
+ * returned early while the wrist was comfortable and ran a full-circle search
+ * otherwise, so crossing that threshold - or two cost basins trading places -
+ * swung the elbow ~50 degrees in a few frames (PRIDE: hand 48 rad/s mid-
+ * stroke). Now the cost is always evaluated and, once there is a previous
+ * frame, only a narrow window around the previous swivel is searched, so the
+ * solution follows the nearest good elbow continuously. Penalise displacement
+ * and reject elbows through the chest or above the shoulder; never relax
+ * wrist position.
+ */
 function chooseElbow(
   arm: ArmChain, shoulder: THREE.Vector3, wrist: THREE.Vector3, aim: THREE.Vector3,
   upper: THREE.Vector3, desired: THREE.Quaternion, maxWrist: number,
 ) {
   _preferredUpper.copy(upper)
-  _candidateElbow.copy(shoulder).addScaledVector(upper, arm.upperLen)
-  _candidateFore.subVectors(wrist, _candidateElbow).normalize()
-  if (orientAt(arm, upper, _candidateFore, desired, maxWrist) < 0.002
-      && torsoPenalty(arm, shoulder, _candidateElbow, wrist) === 0) return
   _orientationDelta.copy(desired).multiply(_inv.copy(arm.handRestWorldQ).invert())
   _desiredPalm.copy(arm.palmNormal).applyQuaternion(_orientationDelta)
   _desiredPoint.copy(arm.along).applyQuaternion(_orientationDelta)
   const reach = arm.upperLen + arm.foreLen
+  const previousDir = previousUpper.get(arm)
   let best = Infinity, bestAngle = 0
+  _bestUpper.copy(_preferredUpper)
   const score = (angle: number) => {
     _candidateUpper.copy(_preferredUpper).applyAxisAngle(aim, angle)
     _candidateElbow.copy(shoulder).addScaledVector(_candidateUpper, arm.upperLen)
@@ -818,29 +986,109 @@ function chooseElbow(
       .multiply(_inv.copy(arm.handRestWorldQ).invert())
     _solvedPalm.copy(arm.palmNormal).applyQuaternion(_orientationDelta)
     _solvedPoint.copy(arm.along).applyQuaternion(_orientationDelta)
+    const bend = Math.max(0, _lastWristAngle - solverTuning.wristComfort)
     const error = 4 * (1 - _solvedPalm.dot(_desiredPalm)) + (1 - _solvedPoint.dot(_desiredPoint))
-      + 0.0005 * angle * angle
-      + 20 * torsoPenalty(arm, shoulder, _candidateElbow, wrist)
+      + solverTuning.wristWeight * bend * bend
+      + solverTuning.swivelWeight * angle * angle
+      + (previousDir ? solverTuning.continuity * (1 - _candidateUpper.dot(previousDir)) : 0)
+      // Strong enough that a forearm clipping the chest moves the elbow forward.
+      + TORSO_WEIGHT * torsoPenalty(arm, shoulder, _candidateElbow, wrist)
     if (error < best) { best = error; bestAngle = angle; _bestUpper.copy(_candidateUpper) }
   }
   score(0)
-  for (let k = 1; k <= 12; k++) { score(k * Math.PI / 12); score(-k * Math.PI / 12) }
-  for (const step of [Math.PI / 48, Math.PI / 192]) {
+  if (previousDir && solverTuning.localSwivel) {
+    // Previous frame's swivel, expressed in this frame's parameterisation.
+    _swivelFrom.copy(_preferredUpper).addScaledVector(aim, -_preferredUpper.dot(aim))
+    _swivelTo.copy(previousDir).addScaledVector(aim, -previousDir.dot(aim))
+    let center = 0
+    if (_swivelFrom.lengthSq() > 1e-8 && _swivelTo.lengthSq() > 1e-8) {
+      _swivelFrom.normalize(); _swivelTo.normalize()
+      center = Math.atan2(_swivelCross.crossVectors(_swivelFrom, _swivelTo).dot(aim), _swivelFrom.dot(_swivelTo))
+    }
+    for (let k = -SWIVEL_WINDOW_STEPS; k <= SWIVEL_WINDOW_STEPS; k++) score(center + k * SWIVEL_STEP)
+    // Coherence must not trap the elbow in a basin where the palm is out of
+    // reach while a far better one exists (IDEA's lead-out ended ~170 degrees
+    // of wrist short, then the forearm switched ends mid-move). If the local
+    // best is poor, look around the whole circle and move there if it is much
+    // better; the swivel rate cap turns that into a visible elbow move.
+    if (best > SWIVEL_ESCAPE_COST) {
+      const localBest = best, localAngle = bestAngle
+      _escapeUpper.copy(_bestUpper)
+      for (let k = 1; k <= 12; k++) { score(k * Math.PI / 12); score(-k * Math.PI / 12) }
+      if (best > localBest - SWIVEL_ESCAPE_MARGIN) { best = localBest; bestAngle = localAngle; _bestUpper.copy(_escapeUpper) }
+    }
+  } else {
+    for (let k = 1; k <= 12; k++) { score(k * Math.PI / 12); score(-k * Math.PI / 12) }
+  }
+  const coarse = previousDir && solverTuning.localSwivel ? SWIVEL_STEP : Math.PI / 12
+  for (const step of [coarse / 4, coarse / 16]) {
     const center = bestAngle
     for (let k = -3; k <= 3; k++) score(center + k * step)
   }
   upper.copy(_bestUpper)
+  solverDebug.swivel = bestAngle
+  solverDebug.searched = true
+}
+/** Per-frame swivel search window around the previous elbow: +/-0.15 rad. */
+const SWIVEL_STEP = 0.05
+const TORSO_WEIGHT = 150
+/** Local cost above which the whole swivel circle is also searched, and how much better it must be. */
+const SWIVEL_ESCAPE_COST = 0.6
+const SWIVEL_ESCAPE_MARGIN = 0.3
+const _escapeUpper = new THREE.Vector3()
+const SWIVEL_WINDOW_STEPS = 3
+
+const _relaxBest = new THREE.Vector3(), _relaxTry = new THREE.Vector3()
+
+/** Cost of turning an inferred finger direction by `delta` about the palm. */
+function relaxCost(arm: ArmChain, palm: THREE.Vector3, point: THREE.Vector3, delta: number, maxWrist: number) {
+  _relaxTry.copy(point).applyAxisAngle(palm, delta)
+  desiredHand(arm, palm, _relaxTry, _orientationWant)
+  orientAt(arm, arm.ikUpper, arm.ikFore, _orientationWant, maxWrist)
+  return _lastWristAngle + 0.35 * Math.abs(delta)
+}
+
+/**
+ * Turn an INFERRED finger direction about the (fixed) palm normal, within
+ * `tolerance`, to minimise wrist bend. Coarse scan then ternary refinement, so
+ * the optimum moves continuously frame to frame instead of hopping between
+ * grid points (which exact tracking would show as finger jitter).
+ */
+export function relaxPoint(arm: ArmChain, palm: THREE.Vector3, point: THREE.Vector3, tolerance: number, maxWrist = MAX_WRIST_SWING) {
+  let bestDelta = 0, best = Infinity
+  for (let k = -4; k <= 4; k++) {
+    const c = relaxCost(arm, palm, point, tolerance * k / 4, maxWrist)
+    if (c < best) { best = c; bestDelta = tolerance * k / 4 }
+  }
+  let lo = Math.max(-tolerance, bestDelta - tolerance / 4), hi = Math.min(tolerance, bestDelta + tolerance / 4)
+  for (let i = 0; i < 10; i++) {
+    const a = lo + (hi - lo) / 3, b = hi - (hi - lo) / 3
+    if (relaxCost(arm, palm, point, a, maxWrist) < relaxCost(arm, palm, point, b, maxWrist)) hi = b
+    else lo = a
+  }
+  _relaxBest.copy(point).applyAxisAngle(palm, (lo + hi) / 2)
+  point.copy(_relaxBest)
 }
 
 export function setHandOrientation(
   arm: ArmChain, palm: THREE.Vector3, point: THREE.Vector3, dt: number,
-  maxWristSwing = MAX_WRIST_SWING,
+  maxWristSwing = MAX_WRIST_SWING, pointTolerance = 0,
 ) {
+  if (pointTolerance > 0) relaxPoint(arm, palm.normalize(), point, pointTolerance, maxWristSwing)
   desiredHand(arm, palm, point, _orientationWant)
   orientAt(arm, arm.ikUpper, arm.ikFore, _orientationWant, maxWristSwing)
+  // Commit the (clamped) twist's unwrapped request as the next frame's reference:
+  // the clamped value would re-wrap an out-of-range request on the next frame.
+  committedTwist.set(arm, THREE.MathUtils.clamp(lastRequestedTwist, lastTwist - Math.PI, lastTwist + Math.PI))
   arm.fore.parent?.getWorldQuaternion(_pq)
   _foreLocal.copy(_pq).invert().multiply(_foreWorld)
-  slerpLimited(arm.fore.quaternion, _foreLocal, dt, ARM_LAMBDA, ARM_MAX_RAD_S)
+  // In exact mode the forearm's TWIST gets its own ceiling. When a request can
+  // only be reached from the other end of the pronation range the forearm must
+  // roll ~175 degrees; at the generic cap that read as a snap (40-48 rad/s at
+  // the hand). ~0.34 s for a full roll reads as a deliberate forearm turn. The
+  // aim is restored below, so only pronation is slowed, never the arm path.
+  slerpLimited(arm.fore.quaternion, _foreLocal, dt, ARM_LAMBDA,
+    tracking.exact ? FOREARM_TWIST_EXACT_RAD_S / EXACT_CAP_SCALE : ARM_MAX_RAD_S)
   // Damping may lag pronation, but it must not lag the forearm's IK direction.
   _rw.copy(_pq).multiply(arm.fore.quaternion)
   _cur.copy(arm.axis.fore).applyQuaternion(_rw).normalize()
@@ -848,6 +1096,18 @@ export function setHandOrientation(
   _rw.premultiply(_aimCorrection)
   arm.fore.quaternion.copy(_pq.invert()).multiply(_rw)
   arm.fore.updateMatrixWorld(true)
+  // The wrist works from the forearm as it ACTUALLY is this frame, not from
+  // the twist it is heading for. Otherwise, while the forearm is still rolling
+  // (its twist is rate-limited above), the wrist jumped straight to its final
+  // setting and the hand snapped. Relative to the real forearm the hand gets as
+  // close to the request as the wrist allows, every frame, and turns smoothly.
+  arm.fore.getWorldQuaternion(_foreWorld)
+  _handLocal.copy(_foreWorld).invert().multiply(_orientationWant)
+    .multiply(_inv.copy(arm.restQ.hand).invert())
+  const bend = _identity.angleTo(_handLocal)
+  const wristLimit = THREE.MathUtils.clamp(maxWristSwing, 0.65, 1.22)
+  if (bend > wristLimit) _handLocal.slerp(_identity, 1 - wristLimit / bend)
+  _handLocal.multiply(arm.restQ.hand)
   slerpLimited(arm.hand.quaternion, _handLocal, dt, WRIST_LAMBDA, WRIST_MAX_RAD_S)
   arm.hand.updateMatrixWorld(true)
 }
@@ -900,32 +1160,48 @@ export type ThumbTarget = {
   abduct: number
   rotate: number
   curl: readonly [number, number]
+  /** Position target for the tip (./thumbIK); outranks the angles by weight. */
+  site?: ThumbSite
 }
+
+const _thumbWant = [new THREE.Quaternion(), new THREE.Quaternion(), new THREE.Quaternion()]
+const _thumbIK: THREE.Quaternion[] = []
 
 /**
  * The thumb carries three degrees of freedom the other fingers do not:
  * abduction away from the palm, opposition (rotation about its own axis) and
  * flexion. Handshapes like `a`, `s`, `baby_o` and `open_8` are distinguished
  * almost entirely by these, so they cannot be collapsed into a curl value.
+ *
+ * On this rig those angle axes cannot fold the thumb across the palm (the best
+ * reachable tip stays 0.6-1.4 palm widths from a folded B, S, 1 or T), so a
+ * handshape with a `site` is placed by position instead, after the fingers
+ * it refers to have been posed.
  */
-function applyThumb(chain: FingerChain, t: ThumbTarget, dt: number, lambda = FINGER_LAMBDA) {
-  const base = chain.bones[0]
-  _want.copy(chain.restQ[0])
+function applyThumb(arm: ArmChain, t: ThumbTarget, dt: number, lambda = FINGER_LAMBDA) {
+  const chain = arm.thumb
+  _thumbWant[0].copy(chain.restQ[0])
   _dq.setFromAxisAngle(chain.spreadAxis,
     THREE.MathUtils.clamp(t.abduct, -.08, .86) * chain.spreadSign)
-  _want.multiply(_dq)
+  _thumbWant[0].multiply(_dq)
   _dq.setFromAxisAngle(chain.longAxis, THREE.MathUtils.clamp(t.rotate, -.15, .88))
-  _want.multiply(_dq)
+  _thumbWant[0].multiply(_dq)
   _dq.setFromAxisAngle(chain.curlAxis[0], THREE.MathUtils.clamp(t.curl[0], 0, 1.02) * chain.curlSign)
-  _want.multiply(_dq)
-  slerpLimited(base.quaternion, _want, dt, lambda, FINGER_MAX_RAD_S)
-
+  _thumbWant[0].multiply(_dq)
   for (let i = 1; i < chain.bones.length; i++) {
     const requested = i === 1 ? t.curl[1] : t.curl[1] * 0.7
     const angle = THREE.MathUtils.clamp(requested, 0, i === 1 ? 1.12 : .82) * chain.curlSign
     _dq.setFromAxisAngle(chain.curlAxis[i], angle)
-    _want.copy(chain.restQ[i]).multiply(_dq)
-    slerpLimited(chain.bones[i].quaternion, _want, dt, lambda, FINGER_MAX_RAD_S)
+    _thumbWant[i].copy(chain.restQ[i]).multiply(_dq)
+  }
+  const weight = Math.min(1, t.site?.weight ?? 0)
+  if (t.site && weight > 0) {
+    arm.hand.updateMatrixWorld(true)
+    solveThumbSite(arm, t.site, _thumbIK)
+    for (let i = 0; i < chain.bones.length; i++) _thumbWant[i].slerp(_thumbIK[i], weight)
+  }
+  for (let i = 0; i < chain.bones.length; i++) {
+    slerpLimited(chain.bones[i].quaternion, _thumbWant[i], dt, lambda, FINGER_MAX_RAD_S)
   }
 }
 
@@ -934,7 +1210,7 @@ export function applyHand(arm: ArmChain, fingers: readonly FingerTarget[], thumb
     const t = fingers[i]
     if (t) applyFinger(arm.fingers[i], t, dt)
   }
-  applyThumb(arm.thumb, thumb, dt)
+  applyThumb(arm, thumb, dt)
 }
 
 /**
@@ -1006,6 +1282,24 @@ export function applySpine(face: FaceRig, lean: number, breathe: number, dt: num
       { axis: face.forward, angle: (lean / n) * w },
       { axis: face.right, angle: (breathe / n) * w },
     ], dt, 6)
+  }
+}
+
+/**
+ * Whole-torso motion (./body): forward lean, turn toward the dominant side and
+ * side bend, spread across the spine, plus breathing. Axis signs are from
+ * rendered tests: +right leans BACK, +up turns toward the NON-dominant side,
+ * +forward bends toward the dominant side.
+ */
+export function applyTorso(face: FaceRig, forward: number, yaw: number, side: number, breathe: number, dt: number) {
+  const n = face.spine.length || 1
+  for (let i = 0; i < face.spine.length; i++) {
+    const w = (i + 1) / n
+    rotateWorld(face.spine[i], face.rest, [
+      { axis: face.right, angle: (-forward / n) * w + (breathe / n) * w },
+      { axis: face.up, angle: (-yaw / n) * w },
+      { axis: face.forward, angle: (side / n) * w },
+    ], dt, 5)
   }
 }
 

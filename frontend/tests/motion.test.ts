@@ -5,7 +5,9 @@ import { acceptedDirection, phonoPriorFor, pointForPalm, type DirectionEvidence 
 import { auditReport, internalMovement, priorUsage } from '../src/audit'
 import { authoredClipFor } from '../src/authored'
 import { offlinePlan } from '../src/offlinePlan'
-import { poseAt } from '../src/playback'
+import { playbackPlan, poseAt } from '../src/playback'
+import { ORIENTATION_BY_LOCATION } from '../src/anchors'
+import { FINGERSPELL } from '../src/handshapes'
 import './rig.test'
 import { orientationFor } from '../src/anchors'
 
@@ -171,8 +173,83 @@ test('rest fan closes B while explicit spread opens away from the middle', () =>
 test('GOOD MORNING expands into two continuous lexical clips', () => {
   const planned = offlinePlan('Good morning')!.timeline
   assert.deepEqual(planned.clips.map(c => c.clip_id), ['good', 'morning'])
-  const boundary = planned.clips[0].end_ms
+  // poseAt takes time in the PLAYED plan (planner clips + scheduled transitions).
+  const boundary = playbackPlan(planned).clips[0].end_ms
   const before = poseAt(planned, boundary - 0.01)
   const after = poseAt(planned, boundary)
   assert.ok(Math.hypot(...before.rightArm!.target.map((v, i) => v - after.rightArm!.target[i])) < 0.001)
+})
+
+const dist = (a: readonly number[], b: readonly number[]) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
+const turn = (a: readonly number[], b: readonly number[]) =>
+  Math.acos(Math.max(-1, Math.min(1, (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (Math.hypot(...a) * Math.hypot(...b)))))
+
+test('played plans move at human speed: no impossible transitions between signs', () => {
+  // Root cause R1: transitions used to be squeezed into ~170 ms inside the sign
+  // (7-13 arm-reach/s, ~26 rad/s palms). They are now scheduled explicitly.
+  for (const text of ['Hello. Good morning.', 'Thank you very much', 'My mother and father', 'Where is the bathroom']) {
+    const plan = playbackPlan(offlinePlan(text)!.timeline)
+    let prev = poseAt(plan, 0)
+    for (let ms = 1000 / 120; ms < plan.duration_ms; ms += 1000 / 120) {
+      const pose = poseAt(plan, ms)
+      const inside = plan.clips.some(c => ms > c.start_ms && ms < c.end_ms)
+      if (!inside && pose.rightArm && prev.rightArm) {
+        assert.ok(dist(pose.rightArm.target, prev.rightArm.target) * 120 < 3.4, `${text} transition speed at ${ms}`)
+        assert.ok(turn(pose.rightArm.palm, prev.rightArm.palm) * 120 < 18, `${text} transition turn at ${ms}`)
+      }
+      prev = pose
+    }
+  }
+})
+
+test('repeated straight signs repeat their path', () => {
+  // Root cause R3: Straight + RepeatedMovement signs moved exactly once.
+  for (const id of ['mother', 'yes', 'more']) {
+    const dur = clipLengthMs(id, 'continuous')
+    const opts = { mode: 'continuous' as const, durationMs: dur, skipOnset: true, skipRelease: true }
+    const ys: number[] = []
+    for (let ms = 0; ms < dur; ms += 5) {
+      const a = motionFor(id, ms / 1000, opts).rightArm!
+      ys.push(a.target[0] + a.target[1] * 3 + a.target[2] * 7)
+    }
+    let reversals = 0
+    for (let i = 2; i < ys.length; i++) if ((ys[i] - ys[i - 1]) * (ys[i - 1] - ys[i - 2]) < -1e-12) reversals++
+    assert.ok(reversals >= 2, `${id} reversals ${reversals}`)
+  }
+})
+
+test('no orientation data hands the solver a degenerate palm/finger frame', () => {
+  // P, Q, G, H and ME were each coded with palm and fingers (nearly) parallel,
+  // which left the finger direction undefined and flipped the hand.
+  const pairs: [string, readonly number[], readonly number[]][] = [
+    ...Object.entries(ORIENTATION_BY_LOCATION).map(([k, v]) => [k, v.palm, v.point] as [string, readonly number[], readonly number[]]),
+    ...Object.entries(FINGERSPELL).map(([k, v]) => [`letter ${k}`, v.palm, v.point] as [string, readonly number[], readonly number[]]),
+    ...allSignIds().flatMap(id => {
+      const o = (augmentFor(id) as { orientation?: { palm: number[]; point: number[] } }).orientation
+      return o ? [[id, o.palm, o.point] as [string, readonly number[], readonly number[]]] : []
+    }),
+  ]
+  for (const [name, palm, point] of pairs) assert.ok(Math.abs(Math.cos(turn(palm, point))) < 0.7, name)
+})
+
+test('fingerspelled words change letters smoothly', () => {
+  for (const word of ['half', 'no', 'opportunity']) {
+    let prev = motionFor(`fs:${word}`, 0).rightArm!
+    for (let t = 1 / 120; t < word.length * 0.36; t += 1 / 120) {
+      const a = motionFor(`fs:${word}`, t).rightArm!
+      assert.ok(turn(a.point, prev.point) < 0.45, `${word} finger step at ${t.toFixed(3)}`)
+      prev = a
+    }
+  }
+})
+
+test('handshape codes compose as ASL-LEX defines them', () => {
+  // closed_b is a straight B (thumb closed), not a fist.
+  assert.deepEqual([...handshapeFor('closed_b').fingers[0].curl], [0, 0, 0])
+  // F, 8 and 7 curve their contact finger to the thumb instead of folding it away.
+  assert.ok(handshapeFor('f').fingers[0].curl[0] < 0.8)
+  assert.ok(handshapeFor('8').fingers[1].curl[0] < 0.8)
+  // Folded and opposed thumbs are placed by position (./thumbIK).
+  for (const name of ['closed_b', 's', '1', 'o', 'f', 't', 'a']) assert.ok(handshapeFor(name).thumb.site, name)
+  assert.equal(handshapeFor('5').thumb.site, undefined)
 })

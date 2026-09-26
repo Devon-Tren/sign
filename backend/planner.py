@@ -176,9 +176,19 @@ def lexical_steps(source_words: list[str], refs: dict) -> list[Sign]:
         'do', 'does', 'did', 'to', 'of', 'and', 'for', 'but', 'so', 'as',
         'at', 'by', 'from', 'in', 'into', 'on', 'with', 'it', 'its',
     }
+    # Auxiliary DO carries English tense and negation/question support; ASL has
+    # no do-support (negation and questions are on the face and head). It was
+    # being matched to the lexical sign DO before the helper list applied, so
+    # "I do not understand" signed ME DO NOT-UNDERSTAND. A main-verb do - "what
+    # do you DO" - is not followed by NOT or a subject, and is kept.
+    auxiliary_next = {'not', 'never', 'i', 'you', 'we', 'they', 'he', 'she', 'it', 'people'}
     steps: list[Sign] = []
     index = 0
     while index < len(source_words) and len(steps) < 16:
+        if (source_words[index] in {'do', 'does', 'did'} and index + 1 < len(source_words)
+                and source_words[index + 1] in auxiliary_next):
+            index += 1
+            continue
         matched = None
         for size in range(min(max_span, len(source_words) - index), 0, -1):
             key = tuple(source_words[index:index + size])

@@ -17,14 +17,16 @@ import params from '../../data/asl_lex_params.json'
 import customParams from '../../data/asl_custom_motions.json'
 import { acceptedDirection, phonoPriorFor, pointForPalm, type PhonoPrior } from './phono'
 import { authoredClipFor, authoredSequenceFor, type AuthoredFrame } from './authored'
-import { sampleSequence } from './sequence'
+import { minJerk, sampleSequence, transitionMs } from './sequence'
+import { blendSites } from './thumbIK'
+import { blendOrientation, bridgeArc, bridgeClearance, frameQuat, quatRotate, quatSlerp } from './orient'
 import {
   FINGERSPELL, HANDSHAPES, RELAXED, handshapeFor,
   type FingerPose, type HandPose, type ThumbPose,
 } from './handshapes'
 import {
-  ANCHORS, ELBOW_BY_LOCATION, NON_DOMINANT_REST,
-  anchor, isHandLocated, orientationFor, relationFor,
+  ANCHORS, ELBOW_BY_LOCATION, NON_DOMINANT_REST, SURFACE_LOCATIONS,
+  anchor, isHandLocated, orientationFor, relationFor, thumbContactFamily,
 } from './anchors'
 
 export type ClipId = string
@@ -51,7 +53,25 @@ export type ArmPose = {
   /** ASL-LEX Contact=1. The renderer keeps approximate targets off the torso;
    *  a sign that genuinely touches the body must be allowed to reach it. */
   contact?: boolean
+  /** Radians the solver may turn the fingers about the palm normal to spare
+   *  the wrist. Only for INFERRED finger directions: ASL-LEX codes no
+   *  orientation, and palm facing is the salient part. Authored keyframes,
+   *  overrides and contact relations leave it undefined (exact). */
+  pointTolerance?: number
+  /** Which point of the hand `target` is for, as blend weights (fingertips,
+   *  thumb tip, palm centre); none = the wrist. Body locations are surface
+   *  points the hand CONTACTS, so the wrist is derived from the real hand
+   *  geometry in ./rigPose instead of being the target itself. Weights, not a
+   *  label, so a blend from a wrist pose (rest) into a fingertip pose is smooth. */
+  reach?: Reach
+  /** Surface targets ride on the body part they touch (weights), so they stay
+   *  on the skin as the torso turns and the head inclines (./body). */
+  attach?: { head?: number; torso?: number }
 }
+/** `tipFinger` weights index..pinky for the fingertip point; absent = the
+ *  fingertips that reach farthest (the extended ones). Open-8 touches with its
+ *  BENT middle finger, which the farthest-tip rule never picks. */
+export type Reach = { tip?: number; thumb?: number; palm?: number; tipFinger?: readonly number[] }
 
 export type Pose = {
   rightArm: ArmPose | null
@@ -71,6 +91,8 @@ export type Pose = {
 }
 
 const DEFAULT_WRIST_MAX = 0.96
+/** ~25 degrees: how far an inferred finger direction may turn to spare the wrist. */
+const POINT_TOLERANCE = 0
 
 // ---------------------------------------------------------------------------
 // Descriptor records
@@ -372,6 +394,61 @@ function rotateAbout(v: Vec3, axis: Vec3, radians: number): Vec3 {
   ])
 }
 
+/** Which fingertips make the contact, from ASL-LEX SelectedFingers. */
+function selectedTips(m: Morpheme): readonly number[] | undefined {
+  const table: Record<string, readonly number[]> = {
+    i: [1, 0, 0, 0], m: [0, 1, 0, 0], p: [0, 0, 0, 1], im: [0.5, 0.5, 0, 0],
+    ip: [0.5, 0, 0, 0.5], imr: [1 / 3, 1 / 3, 1 / 3, 0], mr: [0, 0.5, 0.5, 0],
+  }
+  return table[(m.SelectedFingers ?? '').trim().toLowerCase()]
+}
+
+/** Index / two-finger hands touch with the fingertips (ME points at the
+ *  chest); flat hands and fists touch with the palm or knuckles. */
+function pointsWithFingers(m: Morpheme): boolean {
+  const sel = (m.SelectedFingers ?? '').trim().toLowerCase()
+  return (sel === 'i' || sel === 'im' || sel === 'm' || sel === 'p' || sel === 'ip' || sel === 'imr')
+    && m.Flexion !== 'FullyClosed' && m.Flexion !== 'Stacked'
+}
+
+/** `to`, pulled back toward `from` so the two are at most `max` radians apart. */
+function capTurn(from: Vec3, to: Vec3, max: number): Vec3 {
+  const a = normalise(from), b = normalise(to)
+  const angle = Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2])))
+  return angle <= max ? b : slerpDirection(a, b, max / angle)
+}
+
+/** The finger direction, carried with the palm only near the degenerate zone. */
+function avoidParallel(point: Vec3, fromPalm: Vec3, toPalm: Vec3): Vec3 {
+  const p = normalise(point), q = normalise(toPalm)
+  const closeness = Math.abs(p[0] * q[0] + p[1] * q[1] + p[2] * q[2])
+  const w = Math.min(1, Math.max(0, (closeness - 0.55) / 0.35))
+  if (w <= 0) return point
+  return slerpDirection(point, carryWithPalm(point, fromPalm, toPalm), w * w * (3 - 2 * w))
+}
+
+/**
+ * A point on the base (non-dominant) hand: `at` = [along the fingers, toward
+ * the thumb, out of the palm] from its wrist, with the hand oriented as the
+ * relation presents it. For the left hand the thumb side is point x palm.
+ */
+function onBaseHand(wrist: Vec3, palm: Vec3, pointHint: Vec3, at: Vec3): Vec3 {
+  const n = normalise(palm), u = normalise(pointForPalm(n, pointHint))
+  const v: Vec3 = [u[1] * n[2] - u[2] * n[1], u[2] * n[0] - u[0] * n[2], u[0] * n[1] - u[1] * n[0]]
+  return [wrist[0] + u[0] * at[0] + v[0] * at[1] + n[0] * at[2],
+    wrist[1] + u[1] * at[0] + v[1] * at[1] + n[1] * at[2],
+    wrist[2] + u[2] * at[0] + v[2] * at[1] + n[2] * at[2]]
+}
+
+/** Rotate `v` by the shortest-arc rotation that takes `from` onto `to`. */
+function carryWithPalm(v: Vec3, from: Vec3, to: Vec3): Vec3 {
+  const a = normalise(from), b = normalise(to)
+  const axis: Vec3 = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
+  const sin = Math.hypot(...axis), cos = a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+  if (sin < 1e-6) return v
+  return rotateAbout(v, axis, Math.atan2(sin, cos))
+}
+
 /**
  * ASL-LEX UlnarRotation: the forearm is rotated so the little-finger edge of
  * the hand leads. That is forearm supination/pronation, which is the main
@@ -404,6 +481,7 @@ function blendHands(a: HandPose, b: HandPose, t: number): HandPose {
         a.thumb.curl[0] + (b.thumb.curl[0] - a.thumb.curl[0]) * t,
         a.thumb.curl[1] + (b.thumb.curl[1] - a.thumb.curl[1]) * t,
       ] as const,
+      site: blendSites(a.thumb.site, b.thumb.site, t),
     },
   }
 }
@@ -491,7 +569,9 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   const baseWrist: Vec3 = augment.carried
     ? add(NON_DOMINANT_REST, [0, travel * 0.08, 0])
     : NON_DOMINANT_REST
-  const from: Vec3 = onHand ? add(baseWrist, relation!.offset) : start
+  const from: Vec3 = onHand
+    ? relation!.at ? onBaseHand(baseWrist, relation!.basePalm, relation!.basePoint, relation!.at) : add(baseWrist, relation!.offset)
+    : start
   const to: Vec3 = onHand
     ? add(from, relation!.travel ?? [0, 0, 0])
     : end
@@ -529,15 +609,24 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   const basePalm = onHand && !augment.orientation ? relation!.meetPalm : start0.palm
   // A sign travelling away from the body rotates the palm outward with it. An
   // authored end orientation takes over from that generic outward turn.
+  // The generic outward turn is an invention (ASL-LEX codes no orientation
+  // change); left unbounded it swung palms past the forearm's range (PRIDE,
+  // WHY-NOT). Keep its direction, at most 45 degrees.
   const endPalm: Vec3 = augment.orientation_end
     ? augment.orientation_end.palm
-    : [basePalm[0], Math.abs(basePalm[1]) * 0.5, Math.abs(basePalm[2])]
+    : capTurn(basePalm, [basePalm[0], Math.abs(basePalm[1]) * 0.5, Math.abs(basePalm[2])], Math.PI / 4)
   const rotates = !onHand && !priorPalm && (end !== start || !!augment.orientation_end)
   const orientationTravel = augment.orientation_end ? travel : travel * 0.7
   let palm: Vec3 = rotates ? slerpDirection(basePalm, endPalm, orientationTravel) : basePalm
+  // Turning only the palm can swing it into the (unchanged) finger direction;
+  // at the parallel point the fingers flipped 177 degrees in one frame
+  // (ASSIGNMENT). Carrying the fingers rigidly with the palm fixes that but
+  // swings them into unreachable orientations when the turn is large (CRY,
+  // YESTERDAY: 100 degrees off). So keep the finger direction, and carry it
+  // with the palm only as the palm approaches it, blended in smoothly.
   const preferredPoint = augment.orientation_end && rotates
     ? slerpDirection(start0.point, augment.orientation_end.point, orientationTravel)
-    : start0.point
+    : rotates ? avoidParallel(start0.point, basePalm, palm) : start0.point
   // UlnarRotation turns the forearm so the little-finger edge leads, which
   // rotates the palm about the axis the fingers point along.
   if (m.UlnarRotation === '1' && !augment.orientation && !priorPalm) {
@@ -554,11 +643,30 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   // column was extracted and never read.
   const elbow = ELBOW_BY_LOCATION[m.MajorLocation ?? 'Neutral'] ?? ELBOW_BY_LOCATION.Neutral
 
+  // The finger direction is inferred from location unless an override or a
+  // hand-contact relation states it; only then may the solver bend it.
+  const inferredPoint = !onHand && !augment.orientation && !augment.orientation_end
+
+  // Which part of the hand the target is for. A body location is a surface
+  // point the hand touches - with the thumb tip (MOTHER/FATHER family), the
+  // palm (torso) or the fingertips (face); a location in space holds the palm
+  // centre there. Signs on the other hand keep wrist-relative relations.
+  const minorKey = m.MinorLocation && m.MinorLocation !== 'NA' ? m.MinorLocation : m.MajorLocation ?? ''
+  const onSurface = SURFACE_LOCATIONS.has(minorKey)
+  const reach: Reach | undefined = onHand ? (relation!.at ? relation!.reach : undefined)
+    : m.MajorLocation === 'Hand' || m.MajorLocation === 'Arm' ? undefined
+    : !onSurface ? { palm: 1 }
+      : thumbContactFamily(m.MajorLocation, m.SecondMinorLocation, m) ? { thumb: 1 }
+        : m.MajorLocation === 'Body' && !pointsWithFingers(m) ? { palm: 1 } : { tip: 1, tipFinger: selectedTips(m) }
+  const attach = onSurface ? (m.MajorLocation === 'Head' ? { head: 1 } : { torso: 1 }) : undefined
+  // Not touching: hover a few centimetres off the surface instead.
+  const hover: Vec3 = onSurface && m.Contact !== '1' ? [0, 0, 0.06] : [0, 0, 0]
+
   // --- the non-dominant hand ---------------------------------------------
   let nonDominant: HandPose = rest.leftHand
   // Never null: a null arm made blendPoses switch hard at the midpoint rather
   // than interpolate, which put a snap in every one-handed sign.
-  let leftArm: ArmPose = rest.leftArm!
+  let leftArm: ArmPose = SIGNING_REST_LEFT
 
   if (symmetric) {
     nonDominant = handshapeFor(m.NonDominantHandshape ?? m.Handshape, descriptors)
@@ -567,11 +675,13 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
       ? (phase + 0.5) % 1
       : phase
     leftArm = {
-      target: mirror(add(base, offsetAt(alt))),
+      target: mirror(add(add(base, offsetAt(alt)), hover)),
       palm: normalise(mirror(palm)),
       point: normalise(mirror(point)),
       elbow: normalise(mirror(elbow)),
       contact: m.Contact === '1',
+      pointTolerance: inferredPoint ? POINT_TOLERANCE : undefined,
+      reach,
     }
   } else if (contacted) {
     nonDominant = handshapeFor(m.NonDominantHandshape ?? 'open_b')
@@ -603,11 +713,14 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
 
   return {
     rightArm: {
-      target,
+      target: add(target, hover),
       palm: normalise(palm),
       point: normalise(point),
       elbow: normalise(elbow),
       contact: m.Contact === '1',
+      pointTolerance: inferredPoint ? POINT_TOLERANCE : undefined,
+      reach,
+      attach,
     },
     leftArm,
     rightHand: dominant,
@@ -642,15 +755,18 @@ function authoredPose(id: string, elapsedSeconds: number, opts: MotionOptions): 
   if (!clip) return null
   const total = opts.durationMs ?? clipLengthMs(id, opts.mode)
   const ms = ((elapsedSeconds * 1000) % total + total) % total
-  const onset = Math.min(220, total * 0.2), release = Math.min(200, total * 0.2)
-  const phase = clamp((ms - onset) / (total - onset - release), 0, 1)
+  // Between scheduled transitions (./sequence) the sign owns its whole window;
+  // the onset/release from rest only exist for a sign played on its own.
+  const onset = opts.skipOnset ? 0 : Math.min(220, total * 0.2)
+  const release = opts.skipRelease ? 0 : Math.min(200, total * 0.2)
+  const phase = clamp((ms - onset) / Math.max(1, total - onset - release), 0, 1)
   const rest = idlePose(elapsedSeconds)
   const framePose = (f: AuthoredFrame): Pose => ({
     ...rest,
     rightArm: { elbow: [0.38, -0.90, -0.10], ...f.right,
       palm: normalise(f.right.palm), point: normalise(f.right.point) },
     leftArm: f.left ? { elbow: [-0.38, -0.90, -0.10], ...f.left,
-      palm: normalise(f.left.palm), point: normalise(f.left.point) } : rest.leftArm,
+      palm: normalise(f.left.palm), point: normalise(f.left.point) } : SIGNING_REST_LEFT,
     rightHand: handshapeFor(clip.right_handshape),
     leftHand: clip.left_handshape ? handshapeFor(clip.left_handshape) : rest.leftHand,
     head: [0, 0, 0], browRaise: 0, browFurrow: 0, mouth: 0.06, headShake: 0,
@@ -725,8 +841,8 @@ export function motionFor(
   // Fixed-millisecond transitions. Human sign transitions run roughly 150-250
   // ms whatever the sign's length; scaling them with duration made a long clip
   // spend nearly 400 ms drifting back to neutral.
-  const onsetMs = Math.min(ONSET_MS, total * 0.25)
-  const releaseMs = Math.min(RELEASE_MS, total * 0.25)
+  const onsetMs = opts.skipOnset ? 0 : Math.min(ONSET_MS, total * 0.25)
+  const releaseMs = opts.skipRelease ? 0 : Math.min(RELEASE_MS, total * 0.25)
   const coreMs = Math.max(1, total - onsetMs - releaseMs)
 
   const tMs = ((elapsedSeconds * 1000) % total + total) % total
@@ -744,22 +860,36 @@ export function motionFor(
   // Travel occupies the front of the segment and then holds. Extending the hold
   // rather than the stroke is what makes a sign readable without looking slow.
   const strokeMs = Math.min(segmentMs * 0.62, STROKE_MAX_MS)
-  const travel = easeInOut(clamp(localMs / strokeMs, 0, 1))
-
   const repeats = augment.repeat_count
     ?? (morphemes[index].RepeatedMovement === '1' ? 2 : 1)
+  // A Straight movement lives entirely in `travel` (the primitive offset is
+  // zero), and travel ran 0 -> 1 once, so the 295 signs coded Straight +
+  // RepeatedMovement - MOTHER, YES, NAME, MORE - moved exactly once. Repeat the
+  // path instead: 0 -> 1 -> 0 -> 1 for two repetitions (a tap goes in, out, in;
+  // a relocation A -> B -> A -> B), leaving a short hold at the end. With one
+  // repetition this is the same eased single stroke as before.
+  const repeatsPath = repeats > 1 && morphemes[index].Movement === 'Straight'
+  const travel = repeatsPath
+    ? (1 - Math.cos(Math.PI * (2 * repeats - 1) * clamp(localMs / (segmentMs * 0.85), 0, 1))) / 2
+    : easeInOut(clamp(localMs / strokeMs, 0, 1))
   const phase = (localMs / segmentMs) * repeats % 1
 
   const lexicalClass = sign.LexicalClass
   let active = poseForMorpheme(morphemes[index], { travel, phase, augment, rest, lexicalClass, prior })
 
   // Cross-blend the morpheme boundary so a compound reads as one utterance.
-  const MORPHEME_BLEND_MS = 120
-  if (index + 1 < morphemes.length && localMs > segmentMs - MORPHEME_BLEND_MS) {
+  // The blend is sized like any other transition (./sequence): a fixed 120 ms
+  // made LEARN travel palm-to-forehead at ~11 arm-reach/s. It may take up to
+  // 60% of the segment; beyond that the compound is simply short.
+  if (index + 1 < morphemes.length) {
     const next = poseForMorpheme(morphemes[index + 1],
       { travel: 0, phase: 0, augment, rest, lexicalClass, prior })
-    const t = (localMs - (segmentMs - MORPHEME_BLEND_MS)) / MORPHEME_BLEND_MS
-    active = blendPoses(active, next, easeInOut(t))
+    const end = poseForMorpheme(morphemes[index],
+      { travel: 1, phase: repeats % 1, augment, rest, lexicalClass, prior })
+    const blendMs = Math.min(segmentMs * 0.6, Math.max(120, transitionMs(end, next)))
+    if (localMs > segmentMs - blendMs) {
+      active = blendPoses(active, next, minJerk((localMs - (segmentMs - blendMs)) / blendMs))
+    }
   }
 
   if (tMs < onsetMs && !opts.skipOnset) return blendPoses(rest, active, easeInOut(tMs / onsetMs))
@@ -767,6 +897,90 @@ export function motionFor(
     return blendPoses(active, rest, easeInOut((tMs - (total - releaseMs)) / releaseMs))
   }
   return active
+}
+
+/**
+ * Shortest window a sign needs so its INTERNAL transitions (between the
+ * morphemes of a compound such as LEARN) stay within human speed. The planner
+ * sizes windows from citation duration alone, which cannot fit a palm-to-
+ * forehead move; ./sequence stretches a clip to at least this.
+ */
+export function minimumClipMs(id: string): number {
+  const sign = SIGNS[id]
+  if (!sign || sign.FingerspelledLoanSign === '1') return 0
+  const morphemes = morphemesOf(sign)
+  // Movement that fills the whole window (circles, back-and-forth, zigzags,
+  // repetitions) has no end hold to give back to the transitions; trimming
+  // it just ran PLEASE's circle twice as fast.
+  const augment0 = augmentFor(id)
+  const fillsWindow = morphemes.some(m => ['Circular', 'BackAndForth', 'Z-shaped', 'X-shaped'].includes(m.Movement ?? '')
+    || m.RepeatedMovement === '1') || (augment0.repeat_count ?? 1) > 1
+  const whole = fillsWindow ? clipLengthMs(id, 'continuous') : 0
+  if (morphemes.length < 2) return whole
+  const augment = augmentFor(id), rest = idlePose(0), lexicalClass = sign.LexicalClass
+  const prior = null
+  let worst = 0
+  for (let i = 0; i + 1 < morphemes.length; i++) {
+    const end = poseForMorpheme(morphemes[i], { travel: 1, phase: 0, augment, rest, lexicalClass, prior })
+    const next = poseForMorpheme(morphemes[i + 1], { travel: 0, phase: 0, augment, rest, lexicalClass, prior })
+    worst = Math.max(worst, transitionMs(end, next))
+  }
+  // The boundary blend may use 60% of a segment (see motionFor).
+  return Math.max(whole, Math.ceil(morphemes.length * worst / 0.6))
+}
+
+/**
+ * Blend for a scheduled TRANSITION (./sequence), which unlike a blend inside a
+ * sign has no data telling it which way to go, so it must respect the body:
+ *
+ * - Orientation: rest (fingers down) to a face sign (fingers up) is ~180
+ *   degrees, and the shortest arc swept the fingers backward through the
+ *   torso - measured 0.22-0.27 arm reach deep at the fingertip during every
+ *   face sign's lead-in. If the short arc points the fingers into the body at
+ *   its midpoint, take the other way round (forward and up, as people do).
+ * - Wrist path: a straight line may pass close to the torso; arc it forward by
+ *   a smooth bump that is zero at both ends, so the signs' own poses are exact.
+ */
+export function bridgePoses(a: Pose, b: Pose, t: number): Pose {
+  const pose = blendPoses(a, b, t)
+  const arm = (x: ArmPose | null, y: ArmPose | null, out: ArmPose | null, side: 1 | -1): ArmPose | null => {
+    if (!x || !y || !out) return out
+    const qa = frameQuat(x.palm, x.point), qb = frameQuat(y.palm, y.point)
+    const q = quatSlerp(qa, qb, t, bridgeArc(x.palm, x.point, y.palm, y.point, side, x.target, y.target).long)
+    // Forward clearance, applied as a sine bump (see ./orient bridgeClearance).
+    const deficit = bridgeClearance(x.target, y.target)
+    return {
+      ...out,
+      palm: normalise(quatRotate(q, [0, 0, 1])),
+      point: normalise(quatRotate(q, [0, 1, 0])),
+      target: deficit > 0 ? [out.target[0], out.target[1], out.target[2] + deficit * Math.sin(Math.PI * t)] : out.target,
+    }
+  }
+  return { ...pose, rightArm: arm(a.rightArm, b.rightArm, pose.rightArm, 1), leftArm: arm(a.leftArm, b.leftArm, pose.leftArm, -1) }
+}
+
+function blendReach(a: Reach | undefined, b: Reach | undefined, t: number): Reach | undefined {
+  if (!a && !b) return undefined
+  const w = (k: 'tip' | 'thumb' | 'palm') => (a?.[k] ?? 0) + ((b?.[k] ?? 0) - (a?.[k] ?? 0)) * t
+  const fa = a?.tipFinger, fb = b?.tipFinger
+  const tipFinger = fa || fb ? [0, 1, 2, 3].map(i => (fa?.[i] ?? 0.25) + ((fb?.[i] ?? 0.25) - (fa?.[i] ?? 0.25)) * t) : undefined
+  return { tip: w('tip'), thumb: w('thumb'), palm: w('palm'), tipFinger }
+}
+
+/**
+ * Where the non-dominant hand waits while the dominant hand signs: relaxed in
+ * front of the lower torso, forearm angled up, palm turned up and in. Hanging
+ * straight at the side for the whole utterance (the old behaviour) is the
+ * single most mannequin-like thing a signer can do; rest before and after an
+ * utterance keeps the arms down, and the scheduled transitions carry the arm
+ * between the two.
+ */
+const READY_PALM = normalise([0.35, 0.72, -0.6])
+export const SIGNING_REST_LEFT: ArmPose = {
+  target: [-0.17, -0.55, 0.47],
+  palm: READY_PALM,
+  point: pointForPalm(READY_PALM, [0.5, -0.2, 0.84]),
+  elbow: normalise([-0.42, -0.9, 0.05]),
 }
 
 /** Linear blend between two poses, used for the release and for sign changes. */
@@ -782,10 +996,18 @@ export function blendPoses(a: Pose, b: Pose, t: number): Pose {
         + ((y.wristMax ?? DEFAULT_WRIST_MAX) - (x.wristMax ?? DEFAULT_WRIST_MAX)) * t
     return {
       target: mix(x.target, y.target, t),
-      palm: slerpDirection(x.palm, y.palm, t),
-      point: pointForPalm(slerpDirection(x.palm, y.palm, t), slerpDirection(x.point, y.point, t)),
+      ...blendOrientation(x.palm, x.point, y.palm, y.point, t),
       elbow,
       wristMax,
+      // Interpolated, never switched: turning the tolerance on in one frame at
+      // the start of a sign made the relaxed fingers jump (BARELY: 24 rad/s).
+      reach: blendReach(x.reach, y.reach, t),
+      attach: x.attach || y.attach ? {
+        head: (x.attach?.head ?? 0) + ((y.attach?.head ?? 0) - (x.attach?.head ?? 0)) * t,
+        torso: (x.attach?.torso ?? 0) + ((y.attach?.torso ?? 0) - (x.attach?.torso ?? 0)) * t,
+      } : undefined,
+      pointTolerance: x.pointTolerance === undefined && y.pointTolerance === undefined
+        ? undefined : (x.pointTolerance ?? 0) + ((y.pointTolerance ?? 0) - (x.pointTolerance ?? 0)) * t,
       // Contact is asserted while either side asserts it, so the renderer does
       // not push the hand off the body midway through a contacting sign.
       contact: t < 0.5 ? x.contact : y.contact,
@@ -820,8 +1042,23 @@ function fingerspellPose(word: string, elapsedSeconds: number): Pose {
   if (!letters.length) return idlePose(elapsedSeconds)
   const letterSeconds = 0.36
   const index = Math.min(letters.length - 1, Math.floor(elapsedSeconds / letterSeconds))
-  const letter = letters[index]
-  const phase = (elapsedSeconds / letterSeconds) % 1
+  const local = elapsedSeconds - index * letterSeconds
+  const pose = letterPose(letters[index], Math.min(1, local / letterSeconds), elapsedSeconds)
+  // Letters used to switch palm, finger direction and handshape in one frame
+  // (#NO flipped its fingers 180 degrees instantly). Blend into the next letter.
+  if (index + 1 < letters.length) {
+    const next = letterPose(letters[index + 1], 0, elapsedSeconds)
+    // Sized to the rotation like any transition (H -> A turns ~90 degrees),
+    // at most 60% of the letter; a fixed 110 ms spun the hand up to 67 rad/s.
+    const blend = Math.min(letterSeconds * 0.6, Math.max(LETTER_BLEND_S, transitionMs(letterPose(letters[index], 1, elapsedSeconds), next) / 1000))
+    if (local > letterSeconds - blend) return blendPoses(pose, next, minJerk((local - (letterSeconds - blend)) / blend))
+  }
+  return pose
+}
+
+const LETTER_BLEND_S = 0.11
+
+function letterPose(letter: string, phase: number, elapsedSeconds: number): Pose {
   const form = FINGERSPELL[letter] ?? FINGERSPELL['1']
 
   // J hooks downward and Z draws a zigzag; every other letter is held, with a
@@ -836,10 +1073,13 @@ function fingerspellPose(word: string, elapsedSeconds: number): Pose {
   // non-dominant arm keeps its natural hang and the body keeps breathing.
   return {
     ...idlePose(elapsedSeconds),
+    leftArm: SIGNING_REST_LEFT,
     rightArm: {
       target: add(ANCHORS.Neutral, trace),
       palm: normalise(form.palm),
-      point: normalise(form.point),
+      // Square the finger direction to the palm so letter data can never hand
+      // the solver a degenerate frame.
+      point: pointForPalm(normalise(form.palm), form.point),
       elbow: normalise(ELBOW_BY_LOCATION.Neutral),
     },
     rightHand: handshapeFor(form.shape),

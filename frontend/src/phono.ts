@@ -46,10 +46,28 @@ export function pointForPalm(palm: Vec3, preferred: Vec3): Vec3 {
     const dot = v[0] * palm[0] + v[1] * palm[1] + v[2] * palm[2]
     return [v[0] - dot * palm[0], v[1] - dot * palm[1], v[2] - dot * palm[2]]
   }
-  let point = project(preferred)
-  if (Math.hypot(...point) < 0.001) {
-    point = project(Math.abs(palm[1]) < 0.9 ? [0, 1, 0] : [0, 0, 1])
-  }
-  const length = Math.hypot(...point)
-  return [point[0] / length, point[1] / length, point[2] / length]
+  const unit = (v: Vec3): Vec3 => { const l = Math.hypot(...v) || 1; return [v[0] / l, v[1] / l, v[2] / l] }
+  const smooth = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t) }
+  // Stable fallback, itself continuous: "up" in the palm plane, fading to
+  // "forward" as the palm turns vertical (a hard switch at 0.9 used to jump).
+  const vertical = smooth(0.8, 0.95, Math.abs(palm[1]))
+  const up = project([0, 1, 0]), forward = project([0, 0, 1])
+  const fallback = unit([
+    up[0] * (1 - vertical) + forward[0] * vertical,
+    up[1] * (1 - vertical) + forward[1] * vertical,
+    up[2] * (1 - vertical) + forward[2] * vertical,
+  ])
+  // A preferred direction nearly parallel to the palm leaves a tiny residual
+  // whose direction is noise; using it flipped fingers 90-180 degrees between
+  // frames (ASSIGNMENT). Fade to the fallback as the residual shrinks.
+  const residual = project(preferred)
+  const r = Math.hypot(...residual)
+  const trust = smooth(0.08, 0.35, r)
+  const own = r > 1e-9 ? [residual[0] / r, residual[1] / r, residual[2] / r] : fallback
+  const mixed: Vec3 = [
+    own[0] * trust + fallback[0] * (1 - trust),
+    own[1] * trust + fallback[1] * (1 - trust),
+    own[2] * trust + fallback[2] * (1 - trust),
+  ]
+  return Math.hypot(...mixed) > 1e-6 ? unit(project(mixed)) : fallback
 }

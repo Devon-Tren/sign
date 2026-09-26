@@ -479,6 +479,8 @@ const ACROSS: Vec3 = [-0.92, 0, 0.39] // palm toward the non-dominant side
 const DOWN: Vec3 = [0, -1, 0]
 const UP: Vec3 = [0, 1, 0]
 const LATERAL: Vec3 = [-0.94, 0.12, 0.32] // fingers point across the body
+/** Palm toward the signer, perpendicular to LATERAL. */
+const FACING_SIGNER: Vec3 = [-0.32, 0.04, -0.95]
 
 export const FINGERSPELL: Record<string, LetterForm> = {
   A: { shape: 'a',      palm: OUT,    point: UP },
@@ -488,18 +490,28 @@ export const FINGERSPELL: Record<string, LetterForm> = {
   E: { shape: 'e',      palm: OUT,    point: UP },
   F: { shape: 'f',      palm: OUT,    point: UP },
   // G and Q share a handshape; G points across, Q points down.
-  G: { shape: 'g',      palm: ACROSS, point: LATERAL },
+  // G and H point across the body with the palm toward the signer. They were
+  // coded palm ACROSS / point LATERAL - almost the same vector (cos 0.99), so
+  // the finger direction was undefined and the hand flipped entering any word
+  // with G or H (HALF, THURSDAY, HIGH_SCHOOL: 67 rad/s).
+  G: { shape: 'g',      palm: FACING_SIGNER, point: LATERAL },
   // H and U share a handshape; H is horizontal, U is vertical.
-  H: { shape: 'h',      palm: ACROSS, point: LATERAL },
+  H: { shape: 'h',      palm: FACING_SIGNER, point: LATERAL },
   I: { shape: 'i',      palm: OUT,    point: UP },
   J: { shape: 'i',      palm: OUT,    point: UP, trace: 'hook' },
   K: { shape: 'k',      palm: OUT,    point: UP },
   L: { shape: 'l',      palm: OUT,    point: UP },
-  M: { shape: 'flat_m', palm: OUT,    point: DOWN },
-  N: { shape: 'flat_n', palm: OUT,    point: DOWN },
+  // `point` is the back of the hand (wrist -> knuckles), not the fingertips.
+  // M and N are upright like A/S/T; the fingers' drape over the thumb comes
+  // from the flat_m/flat_n handshape. Coded DOWN, N->O was a 180-degree flip.
+  M: { shape: 'flat_m', palm: OUT,    point: UP },
+  N: { shape: 'flat_n', palm: OUT,    point: UP },
   O: { shape: 'o',      palm: ACROSS, point: UP },
-  P: { shape: 'p',      palm: DOWN,   point: DOWN },
-  Q: { shape: 'g',      palm: DOWN,   point: DOWN },
+  // P is K tipped forward-down; Q is G pointing down, palm toward the signer.
+  // Both were coded palm DOWN / point DOWN - parallel, so the finger direction
+  // was undefined and toggled 90 degrees between frames (#OPPORTUNITY).
+  P: { shape: 'p',      palm: [0, -0.87, -0.5], point: [0, -0.5, 0.87] },
+  Q: { shape: 'g',      palm: [0, 0, -1],       point: DOWN },
   R: { shape: 'r',      palm: OUT,    point: UP },
   S: { shape: 's',      palm: OUT,    point: UP },
   T: { shape: 't',      palm: OUT,    point: UP },

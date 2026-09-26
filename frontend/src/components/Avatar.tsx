@@ -12,12 +12,13 @@ import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import {
   loadSigner, setMorph,
-  applyHead, applyGazeTarget, setMorphDirect,
+  applyHead, applyGazeTarget, setMorphDirect, resetContinuity,
   type SignerRig,
 } from '../signerRig'
-import { motionFor, blendPoses, type Pose } from '../clips'
+import { motionFor, blendPoses, clipLengthMs, type Pose } from '../clips'
 import { applyManualPose, rigSnapshot, type RigSnapshot } from '../rigPose'
-import { poseAt } from '../playback'
+import { bodyMotion } from '../body'
+import { playbackPlan, poseAt, singleSignPlan } from '../playback'
 import type { PlaybackTimeline } from '../types'
 
 type AvatarProps = {
@@ -71,11 +72,16 @@ type Life = {
 function Signer({ clipId, paused, speed, timeline, onComplete, timeMs, onRig }: AvatarProps & { paused: boolean; speed: number }) {
   const [rig, setRig] = useState<SignerRig | null>(null)
   const elapsed = useRef(0)
-  // Cross-fade state. `shown` tracks what the frame loop last rendered, because
-  // the clipId effect below closes over the INCOMING id, not the outgoing one.
-  const shown = useRef<{ clip: string; at: number }>({ clip: clipId, at: 0 })
-  const prev = useRef<{ clip: string; at: number } | null>(null)
+  // Cross-fade state: the last rendered pose, frozen when the clip changes,
+  // because the effect below closes over the INCOMING clip, not the outgoing one.
+  const lastPose = useRef<Pose | null>(null)
+  const prevPose = useRef<Pose | null>(null)
   const fade = useRef(1)
+  // What is actually played: the planner timeline plus scheduled transitions,
+  // or a single sign wrapped the same way so previews get a real lead-in.
+  const plan = useMemo(() => timeline ? playbackPlan(timeline) : null, [timeline])
+  const preview = useMemo(() => !timeline && clipId !== 'idle'
+    ? singleSignPlan(clipId, clipLengthMs(clipId, 'isolated')) : null, [clipId, timeline])
   const life = useRef<Life>({
     nextBlink: rand(BLINK_MIN, BLINK_MAX), blinkT: -1, doubleBlink: false,
     nextSaccade: rand(SACCADE_MIN, SACCADE_MAX), gaze: { pitch: 0, yaw: 0 },
@@ -92,8 +98,8 @@ function Signer({ clipId, paused, speed, timeline, onComplete, timeMs, onRig }: 
   }, [])
 
   useEffect(() => {
-    // Freeze the sign that was on screen and fade from it, rather than cutting.
-    prev.current = { ...shown.current }
+    // Freeze the pose that was on screen and fade from it, rather than cutting.
+    prevPose.current = lastPose.current
     fade.current = 0
     elapsed.current = 0
     finished.current = false
@@ -108,30 +114,43 @@ function Signer({ clipId, paused, speed, timeline, onComplete, timeMs, onRig }: 
     const at = timeMs === undefined ? elapsed.current : timeMs / 1000
 
     let pose: Pose
-    if (timeline) {
-      // A planned timeline sequences its own clips, so the per-clip cross-fade
-      // does not apply; poseAt handles the switching.
+    if (plan) {
+      // A planned timeline sequences its own clips and transitions; the
+      // completion time is the PLAYED duration, transitions included.
       const ms = at * 1000
-      if (ms >= timeline.duration_ms && !finished.current) {
+      if (ms >= plan.duration_ms && !finished.current) {
         finished.current = true
         onComplete?.()
       }
-      pose = poseAt(timeline, ms)
+      pose = poseAt(plan, ms)
+    } else if (preview) {
+      pose = poseAt(preview, (at * 1000) % preview.duration_ms)
     } else {
-      shown.current = { clip: clipId, at }
-      pose = motionFor(clipId, at)
-      if (timeMs === undefined && fade.current < 1 && prev.current) {
-        fade.current = Math.min(1, fade.current + dt / FADE_S)
-        const outgoing = motionFor(prev.current.clip, prev.current.at)
-        const t = fade.current
-        pose = blendPoses(outgoing, pose, t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2)
-      }
+      pose = motionFor('idle', at)
     }
+    if (timeMs === undefined && fade.current < 1 && prevPose.current) {
+      fade.current = Math.min(1, fade.current + dt / FADE_S)
+      const t = fade.current
+      pose = blendPoses(prevPose.current, pose, t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2)
+    }
+    lastPose.current = pose
 
     if (paused && timeMs !== undefined && lastSeek.current !== timeMs) {
-      for (let step = 0; step < 90; step++) {
-        rig.root.updateMatrixWorld(true)
+      if (plan) {
+        // Scrubbing shows exactly what playback shows at this moment: replay
+        // the plan from rest at 60 fps. Settling a single pose instead found
+        // solutions live playback never reaches (e.g. an elbow thrown up
+        // mid-transition), so the inspector disagreed with the performance.
+        resetContinuity(rig.right); resetContinuity(rig.left)
+        const rest = motionFor('idle', 0)
+        for (let step = 0; step < 30; step++) applyManualPose(rig, rest, 0, 1 / 60)
+        for (let t = 0; t < at * 1000; t += 1000 / 60) applyManualPose(rig, poseAt(plan, t), t / 1000, 1 / 60)
         applyManualPose(rig, pose, at, 1 / 60)
+      } else {
+        for (let step = 0; step < 90; step++) {
+          rig.root.updateMatrixWorld(true)
+          applyManualPose(rig, pose, at, 1 / 60)
+        }
       }
     } else applyManualPose(rig, pose, at, dt)
     lastSeek.current = timeMs
@@ -189,10 +208,15 @@ function Signer({ clipId, paused, speed, timeline, onComplete, timeMs, onRig }: 
       ? Math.sin(at * Math.PI * 2 * 3.1) * pose.headShake * 0.16
       : 0
     // Head follows gaze slightly and lags it, which is how real gaze shifts read.
+    // The head also joins the body (./body): it inclines toward a hand at the
+    // face. applyHead's axes: +pitch tilts BACK, +yaw turns toward the
+    // non-dominant side, +roll toward the dominant shoulder. A glance down at
+    // the hands is a slight nod (it used to tip the head back).
+    const body = bodyMotion(pose)
     applyHead(rig.face,
-      pose.head[0] + L.gaze.pitch * 0.3 + glance * 0.08,
-      pose.head[1] + L.gaze.yaw * 0.35 + shake,
-      pose.head[2], dt)
+      pose.head[0] + L.gaze.pitch * 0.3 - glance * 0.05 - body.headPitch,
+      pose.head[1] + L.gaze.yaw * 0.35 + shake - body.headYaw,
+      pose.head[2] + body.headRoll, dt)
 
     // Non-manual markers, on the model's FACS action units.
     setMorph(rig, 'AU_01_InnerBrowRaiser', pose.browRaise, dt)

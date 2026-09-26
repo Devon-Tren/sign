@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import Avatar from './Avatar'
 import { planASL } from '../api'
 import { clipLengthMs, motionFor, signParams } from '../clips'
-import { poseAt } from '../playback'
+import { playbackPlan, poseAt } from '../playback'
 import { offlinePlan } from '../offlinePlan'
 import { authoredClipFor } from '../authored'
 import { phonoPriorFor } from '../phono'
@@ -11,7 +11,7 @@ import type { RigSnapshot } from '../rigPose'
 
 export default function MotionInspector() {
   const [text, setText] = useState('Hello. Good morning.')
-  const [timeline, setTimeline] = useState<PlaybackTimeline>(() => offlinePlan('Hello. Good morning.')!.timeline)
+  const [timeline, setTimeline] = useState<PlaybackTimeline>(() => playbackPlan(offlinePlan('Hello. Good morning.')!.timeline))
   const [source, setSource] = useState('Local catalog')
   const [time, setTime] = useState(0)
   const [playing, setPlaying] = useState(false)
@@ -30,6 +30,10 @@ export default function MotionInspector() {
   const phaseName = authored?.keyframes.slice().reverse().find(f => f.at <= phase)?.phase
     ?? (clipId === 'idle' ? 'rest' : 'procedural stroke')
   const pose = useMemo(() => poseAt(timeline, time), [timeline, time])
+  // Between clips the played plan is a scheduled transition, not rest.
+  const upcoming = timeline.clips.find(c => c.start_ms > time)
+  const transitionLabel = time >= timeline.duration_ms - 1 || (!upcoming && time > 0)
+    ? 'REST · lead-out' : upcoming ? `→ ${upcoming.sign_id} · transition` : 'REST'
 
   useEffect(() => {
     if (!playing) return
@@ -51,10 +55,10 @@ export default function MotionInspector() {
       const result = await planASL(text, [])
       const next = result.rehearsal ?? result.playback
       if (!next) throw new Error('No playable plan')
-      setTimeline(next); setSource(`Backend · ${result.mode}`); setTime(0)
+      setTimeline(playbackPlan(next)); setSource(`Backend · ${result.mode}`); setTime(0)
     } catch {
       const next = offlinePlan(text)
-      if (next) { setTimeline(next.timeline); setSource('Local catalog · backend unavailable'); setTime(0) }
+      if (next) { setTimeline(playbackPlan(next.timeline)); setSource('Local catalog · backend unavailable'); setTime(0) }
       else setSource('No playable signs found')
     } finally { setBusy(false) }
   }
@@ -77,7 +81,7 @@ export default function MotionInspector() {
           <button className={view === v ? 'active' : ''} key={v} onClick={() => setView(v)}>{v === 'hands' ? 'Hand close-up' : v}</button>)}</div>
       </div>
       <div className="inspector-detail">
-        <strong data-testid="active-motion">{active?.sign_id ?? 'REST'} · {phaseName}</strong>
+        <strong data-testid="active-motion">{active ? `${active.sign_id} · ${phaseName}` : transitionLabel}</strong>
         <p>{authored ? `Authored phases: ${authored.variant}` : 'Descriptor-generated motion'}</p>
         {authored?.references.map(url => <a key={url} href={url} target="_blank" rel="noreferrer">Sign reference</a>)}
         <div className="sheet-controls">
