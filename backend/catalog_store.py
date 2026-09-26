@@ -24,10 +24,15 @@ def _seed_catalog() -> dict:
     signs = {entry['id']: entry for entry in catalog['signs']}
     for clip_id in custom:
         sign_id = clip_id.upper()
+        existing = signs.get(sign_id, {})
+        expressions = list(dict.fromkeys([
+            *existing.get('english_expressions', []), clip_id.replace('_', ' '),
+        ]))
         signs[sign_id] = {
+            **existing,
             'id': sign_id,
-            'meaning': clip_id.replace('_', ' '),
-            'english_expressions': [clip_id.replace('_', ' ')],
+            'meaning': existing.get('meaning', clip_id.replace('_', ' ')),
+            'english_expressions': expressions,
             'variant': 'Application-authored procedural candidate',
             'review_status': 'candidate',
             'motion_asset': {'format': 'custom-procedural-v1', 'clip_id': clip_id},
@@ -52,6 +57,7 @@ def _seed_catalog() -> dict:
                           'end_anchor': steps[-1]['id']})
         examples[phrase['id']] = {
             'id': phrase['id'], 'english': phrase['english'], 'context': [],
+            'aliases': phrase.get('aliases', []),
             'context_independent': True, 'review_status': 'candidate',
             'meaning': meaning,
             'construction': {

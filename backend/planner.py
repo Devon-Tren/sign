@@ -64,6 +64,18 @@ def exact_key(text):
     return ' '.join(text.casefold().strip().rstrip('.?!').split())
 
 
+def find_example(text: str, context: list[str], refs: dict):
+    """Return an exact catalog construction or one of its curated paraphrases."""
+    key = exact_key(text)
+    for example in refs['examples']:
+        expressions = [example['english'], *example.get('aliases', [])]
+        if key not in {exact_key(value) for value in expressions}:
+            continue
+        if example.get('context_independent', False) or example.get('context', []) == context:
+            return example
+    return None
+
+
 def validate_plan(meaning: Meaning, construction: Construction, refs: dict):
     errors, motion = [], []
     signs = {s['id']: s for s in refs['signs']}
@@ -116,40 +128,85 @@ async def model_output(client, schema, instruction, payload):
     return parsed
 
 
+def inflection_candidates(word: str) -> list[str]:
+    """Conservative English forms used only when the resulting base sign exists."""
+    values = [word]
+    if word.endswith('ies') and len(word) > 4:
+        values.append(word[:-3] + 'y')
+    if word.endswith('ing') and len(word) > 4:
+        stem = word[:-3]
+        values.extend([stem, stem + 'e'])
+        if len(stem) > 2 and stem[-1] == stem[-2]:
+            values.append(stem[:-1])
+    if word.endswith('ed') and len(word) > 4:
+        stem = word[:-2]
+        values.extend([stem, stem + 'e'])
+        if len(stem) > 2 and stem[-1] == stem[-2]:
+            values.append(stem[:-1])
+    if word.endswith('es') and len(word) > 3:
+        values.extend([word[:-2], word[:-1]])
+    elif word.endswith('s') and len(word) > 3:
+        values.append(word[:-1])
+    return list(dict.fromkeys(values))
+
+
+def lexical_steps(source_words: list[str], refs: dict) -> list[Sign]:
+    """Prefer the longest playable catalog expression; spell only unknown content."""
+    expressions: dict[tuple[str, ...], str] = {}
+    for sign in refs['signs']:
+        if not sign.get('motion_asset'):
+            continue
+        for expression in sign.get('english_expressions', []):
+            tokens = tuple(re.findall(r'[a-z0-9]+', exact_key(expression)))
+            if tokens:
+                expressions[tokens] = sign['id']
+    expressions.update({('i',): 'ME', ('my',): 'ME', ('mine',): 'ME', ('your',): 'YOU'})
+    max_span = max((len(key) for key in expressions), default=1)
+    helpers = {'a', 'an', 'the', 'is', 'are', 'am', 'do', 'does', 'did', 'to', 'of', 'and'}
+    steps: list[Sign] = []
+    index = 0
+    while index < len(source_words) and len(steps) < 16:
+        matched = None
+        for size in range(min(max_span, len(source_words) - index), 0, -1):
+            key = tuple(source_words[index:index + size])
+            if key in expressions:
+                matched = (size, expressions[key])
+                break
+        if matched:
+            size, sign_id = matched
+            steps.append(Sign(id=f's{len(steps) + 1}', sign_id=sign_id))
+            index += size
+            continue
+        word = source_words[index]
+        if word in helpers:
+            index += 1
+            continue
+        sign_id = next((expressions[(candidate,)] for candidate in inflection_candidates(word)
+                        if (candidate,) in expressions), None)
+        steps.append(Sign(id=f's{len(steps) + 1}', sign_id=sign_id or f'FS:{word.upper()}'))
+        index += 1
+    return steps
+
+
 def fallback_plan(text: str, refs: dict) -> tuple[Meaning, Construction]:
-    """Animate arbitrary text by matching known signs then fingerspelling gaps."""
+    """Compose playable catalog concepts, fingerspelling only unsupported content."""
     normalized_text = re.sub(
         r"\b(?:don't|doesn't|didn't|can't|won't|isn't|aren't|wasn't|weren't)\b",
         'not', text.casefold(), flags=re.IGNORECASE,
     )
     source_words = re.findall(r"[A-Za-z0-9]+(?:-[A-Za-z0-9]+)?", normalized_text)[:24]
-    helpers = {'a', 'an', 'the', 'is', 'are', 'am', 'do', 'does', 'did', 'to', 'of', 'and'}
-    words = [word for word in source_words if word.casefold() not in helpers][:16]
-    if not words:
-        words = source_words[:16]
-    expressions: dict[str, str] = {}
-    for sign in refs['signs']:
-        if sign.get('motion_asset'):
-            for expression in sign.get('english_expressions', []):
-                expressions[exact_key(expression)] = sign['id']
-    expressions.update({'i': 'ME', 'my': 'ME', 'mine': 'ME', 'your': 'YOU'})
-    steps = []
-    for word in words:
-        key = word.casefold()
-        sign_id = expressions.get(key) or (
-            expressions.get(key[:-1]) if key.endswith('s') else None
-        ) or f'FS:{word.upper()}'
-        steps.append(Sign(id=f's{len(steps) + 1}', sign_id=sign_id))
+    is_question = text.strip().endswith('?')
+    steps = lexical_steps(source_words, refs)
     negated = 'not' in source_words or 'never' in source_words or 'no' in source_words
     time_words = {'before', 'after', 'today', 'tomorrow', 'yesterday', 'friday', 'monday'}
     number_words = {'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'}
     times = [word for word in source_words if word in time_words]
     quantities = [word for word in source_words if word.isdigit() or word in number_words]
     meaning = Meaning(intent='communicate', predicate='unspecified', participants=[],
-                      negated=negated, time=times, quantities=quantities, entities=words,
+                      negated=negated, time=times, quantities=quantities,
+                      entities=source_words[:16],
                       conditions=[], references=[], unresolved=[])
     wh_words = {'how', 'what', 'where', 'when', 'why', 'who', 'which'}
-    is_question = text.strip().endswith('?')
     question_type = 'wh' if source_words and source_words[0] in wh_words else (
         'yes_no' if is_question else 'none')
     nonmanuals = []
@@ -166,10 +223,15 @@ def fallback_plan(text: str, refs: dict) -> tuple[Meaning, Construction]:
     return meaning, construction
 
 
+def fallback_mode(construction: Construction) -> str:
+    return ('fingerspell-fallback' if any(step.sign_id.startswith('FS:')
+                                          for step in construction.manual_sequence)
+            else 'catalog-composed')
+
+
 async def create_plan(request: PlanRequest):
     refs = catalog()
-    example = next((e for e in refs['examples']
-                    if exact_key(e['english']) == exact_key(request.text) and (e.get('context_independent', False) or e.get('context', []) == request.context)), None)
+    example = find_example(request.text, request.context, refs)
     mode, failure = 'catalog-example', None
     if example:
         meaning = Meaning.model_validate(example['meaning'])
@@ -198,10 +260,10 @@ async def create_plan(request: PlanRequest):
             mode = 'experimental-model'
         except Exception:
             meaning, construction = fallback_plan(request.text, refs)
-            mode = 'fingerspell-fallback'
+            mode = fallback_mode(construction)
     else:
         meaning, construction = fallback_plan(request.text, refs)
-        mode = 'fingerspell-fallback'
+        mode = fallback_mode(construction)
     if failure:
         return {'source_text': request.text, 'mode': 'unavailable', 'review_status': 'candidate',
                 'plan': None, 'unresolved': [failure], 'validation': None, 'playback': None, 'rehearsal': None}

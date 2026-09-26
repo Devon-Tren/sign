@@ -28,7 +28,11 @@ ordered playback queue.
 
 Without a key, bundled examples such as `How are you?`, `What is your name?`,
 and `Where is the bathroom?` use candidate gloss plans. Other input matches
-known concepts and fingerspells remaining words, so it stays visibly playable.
+curated paraphrases first, then uses the longest playable catalog expressions
+and conservative inflection matching. Curated constructions can account for
+English auxiliaries such as `can` and `could`; outside those constructions the
+planner preserves them rather than silently changing meaning. Fully covered input
+is reported as `catalog-composed`; only remaining unsupported content is fingerspelled.
 This fallback is not grammatical ASL translation.
 
 With a server-side `OPENAI_API_KEY`, other messages use two structured-output
@@ -63,5 +67,15 @@ Startup seeds `signs`, `profiles`, `examples`, and `metadata` collections from
 the versioned repository data. Existing records with matching IDs are updated;
 additional records are preserved. `GET /api/health` reports `mongodb`, `json`,
 or `json-fallback`. If MongoDB is unavailable, translation continues using JSON.
+
+### Growing coverage
+
+Treat [`data/asl/phrase_seed.json`](../data/asl/phrase_seed.json) as a versioned
+construction dataset, with MongoDB serving the same records at runtime. Add an
+`aliases` array only when every paraphrase preserves the construction's meaning.
+Adding a phrase does not create missing avatar motion: every gloss ID still needs
+a registered sign asset. Names and novel proper nouns should normally remain
+fingerspelled. A fluent ASL reviewer must approve the sequence, nonmanual scope,
+and aliases before changing its review status from `candidate`.
 
 Run `python -m pytest tests -q` for the offline integration and validation suite.

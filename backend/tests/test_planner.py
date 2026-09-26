@@ -167,3 +167,33 @@ def test_catalog_expansion_is_available_without_mongodb():
     assert len(refs['signs']) >= 40
     assert len(refs['examples']) >= 20
     assert {'HOW', 'YOU', 'FEEL', 'WHAT', 'WHERE'} <= {sign['id'] for sign in refs['signs']}
+
+
+def test_curated_paraphrases_reuse_candidate_constructions():
+    cases = {
+        'How are you doing?': ['HOW', 'YOU'],
+        'Could you help me?': ['YOU', 'HELP', 'ME'],
+        "Where's the bathroom?": ['BATHROOM', 'WHERE'],
+        'Please explain again.': ['EXPLAIN', 'AGAIN'],
+    }
+    for text, expected in cases.items():
+        result = asyncio.run(create_plan(PlanRequest(text=text)))
+        assert result['mode'] == 'catalog-example'
+        assert [step['sign_id'] for step in result['plan']['manual_sequence']] == expected
+        assert result['review_status'] == 'candidate'
+
+
+def test_fallback_prefers_longest_sign_expression_and_inflected_known_signs():
+    result = asyncio.run(create_plan(PlanRequest(text='Good morning, teacher.')))
+    assert result['mode'] == 'catalog-composed'
+    assert [step['sign_id'] for step in result['plan']['manual_sequence']] == ['GOOD_MORNING', 'TEACHER']
+    result = asyncio.run(create_plan(PlanRequest(text='They are going home.')))
+    assert [step['sign_id'] for step in result['plan']['manual_sequence']] == ['FS:THEY', 'GO', 'HOME']
+
+
+def test_uncatalogued_modal_is_preserved_instead_of_silently_dropped():
+    result = asyncio.run(create_plan(PlanRequest(text='Can you drink water?')))
+    assert result['mode'] == 'fingerspell-fallback'
+    assert [step['sign_id'] for step in result['plan']['manual_sequence']] == ['FS:CAN', 'YOU', 'DRINK', 'WATER']
+    assert result['plan']['grammar']['question_type'] == 'yes_no'
+    assert result['plan']['nonmanuals'][0]['profile_id'] == 'YES_NO_QUESTION_CANDIDATE'
