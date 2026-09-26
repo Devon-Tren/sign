@@ -1,0 +1,54 @@
+sign
+Copyright (c) 2026 Devon Trenoskie
+
+This product includes software developed by the sign project, licensed
+under the MIT License (see LICENSE).
+
+================================================================================
+THIS REPOSITORY IS DUAL-LICENSED
+================================================================================
+
+  Source code .................. MIT License               -> LICENSE
+  Linguistic data in data/ ..... CC BY-NC 4.0              -> data/LICENSE
+
+These are NOT interchangeable. The MIT License does not apply to anything
+in data/. The NonCommercial restriction on data/ does not apply to the
+source code.
+
+--------------------------------------------------------------------------------
+THIRD-PARTY ATTRIBUTION
+--------------------------------------------------------------------------------
+
+ASL-LEX 2.0
+  Files:    data/asl_lex_params.json
+  License:  Creative Commons Attribution-NonCommercial 4.0 International
+            (CC BY-NC 4.0)  https://creativecommons.org/licenses/by-nc/4.0/
+  Source:   https://asl-lex.org/  |  https://github.com/ASL-LEX/asl-lex
+
+  Citation:
+    Sehyr, Z. S., Caselli, N., Cohen-Goldberg, A. M., & Emmorey, K. (2021).
+    The ASL-LEX 2.0 Project: A Database of Lexical and Phonological
+    Properties for 2,723 Signs in American Sign Language.
+    Journal of Deaf Studies and Deaf Education, 26(2), 263-277.
+    https://doi.org/10.1093/deafed/enaa038
+
+  Scope of use: this repository contains phonological descriptors for 11
+  lexical entries only. The ASL-LEX database itself, its reference videos,
+  and its ratings data are NOT redistributed here. Reference videos on
+  asl-lex.org are excluded from the CC BY-NC license and are not used.
+
+  IMPORTANT: CC BY-NC prohibits commercial use. If this project is ever
+  used commercially, data/asl_lex_params.json must be removed and the
+  phonological parameters independently sourced or licensed. See
+  data/README.md before shipping anything revenue-generating.
+
+--------------------------------------------------------------------------------
+RUNTIME DEPENDENCIES (not redistributed; fetched at runtime)
+--------------------------------------------------------------------------------
+
+MediaPipe Tasks Vision (Apache-2.0) - Google LLC
+  WASM runtime and hand-landmark model downloaded from jsDelivr and
+  storage.googleapis.com at first launch of the Learning studio.
+
+Node and Python package dependencies retain their own licenses; see
+frontend/package-lock.json and backend/requirements.txt.

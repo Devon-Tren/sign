@@ -1,0 +1,62 @@
+Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
+================================================================================
+
+THIS LICENSE APPLIES ONLY TO THE CONTENTS OF THIS data/ DIRECTORY.
+
+The source code of this repository is licensed separately under the MIT
+License (see ../LICENSE). The MIT License does NOT apply to these files.
+
+Full legal code:  https://creativecommons.org/licenses/by-nc/4.0/legalcode
+Human-readable:   https://creativecommons.org/licenses/by-nc/4.0/
+
+--------------------------------------------------------------------------------
+Licensed material
+--------------------------------------------------------------------------------
+
+  asl_lex_params.json - phonological descriptors for 11 ASL lexical entries,
+  derived from the ASL-LEX 2.0 database.
+
+--------------------------------------------------------------------------------
+Attribution (required)
+--------------------------------------------------------------------------------
+
+  ASL-LEX 2.0, by Zed Sevcikova Sehyr, Naomi Caselli, Ariel M. Cohen-Goldberg
+  and Karen Emmorey, licensed under CC BY-NC 4.0. Source: https://asl-lex.org/
+
+  Sehyr, Z. S., Caselli, N., Cohen-Goldberg, A. M., & Emmorey, K. (2021).
+  The ASL-LEX 2.0 Project: A Database of Lexical and Phonological Properties
+  for 2,723 Signs in American Sign Language. Journal of Deaf Studies and Deaf
+  Education, 26(2), 263-277. https://doi.org/10.1093/deafed/enaa038
+
+  Modifications: a subset of 11 entries was selected and 18 phonological
+  columns were retained. Column names were normalized (the ".2.0" suffix was
+  removed) and values were left otherwise unchanged. No ratings, frequency,
+  iconicity or video data were copied.
+
+--------------------------------------------------------------------------------
+You may
+--------------------------------------------------------------------------------
+
+  * Share and redistribute these files in any medium or format
+  * Adapt, remix and build upon them
+
+  ...provided you give appropriate credit as above, link to the license, and
+  indicate if changes were made.
+
+--------------------------------------------------------------------------------
+You may NOT
+--------------------------------------------------------------------------------
+
+  * Use these files for commercial purposes. "Commercial" means primarily
+    intended for or directed toward commercial advantage or monetary
+    compensation.
+
+  * Apply legal terms or technological measures that legally restrict others
+    from doing anything the license permits.
+
+--------------------------------------------------------------------------------
+No warranty
+--------------------------------------------------------------------------------
+
+  The licensed material is provided as-is and as-available. See the full legal
+  code for the complete disclaimer of warranties and limitation of liability.

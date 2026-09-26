@@ -113,6 +113,29 @@ Present this as a *live caption + 3D signing architecture prototype with introdu
 
 From a terminal in the unzipped folder, run `./start.sh`. On macOS you can also use `START_HERE.command` if your system allows local scripts. The first run installs dependencies and may take a few minutes. It will not automatically open the browser; visit http://localhost:5173. If macOS blocks the script, run `bash start.sh` from Terminal. The script creates an empty `backend/.env`; add your API key there and restart when needed.
 
+## How the motion is generated
+
+Avatar motion is composed from published phonological descriptors rather than hand-invented joint angles. `data/asl_lex_params.json` holds the handshape, selected fingers, flexion, thumb position, location, movement and sign-type values for 11 catalog entries, extracted from **ASL-LEX 2.0**. At runtime `frontend/src/clips.ts` combines three libraries — handshapes, location anchors and movement primitives — into a pose, and `Avatar.tsx` resolves that pose with two-bone IK and explicit palm orientation.
+
+Regenerate or extend the extract with:
+
+```bash
+python scripts/extract_asl_lex.py
+```
+
+**This is still not validated ASL.** ASL-LEX *describes* signs; it is not an animation specification. Rendering "Curved movement at Head/Mouth" as a trajectory is interpretation, and palm orientation is an authored layer that ASL-LEX does not supply at all. Every entry stays `illustrative` until a qualified Deaf signer reviews it.
+
 ## License
 
-Released under the [MIT License](LICENSE). The bundled gestures remain unverified placeholders regardless of license terms — see "Why the signing is marked as a placeholder" above before any accessibility deployment.
+This repository is **dual-licensed**. The two licenses are not interchangeable:
+
+| Path | License | Notes |
+|---|---|---|
+| Everything except `data/` | [MIT](LICENSE) | Commercial use permitted |
+| `data/` | [CC BY-NC 4.0](data/LICENSE) | **NonCommercial only**; attribution required |
+
+`data/asl_lex_params.json` is derived from [ASL-LEX 2.0](https://asl-lex.org/) (Sehyr, Caselli, Cohen-Goldberg & Emmorey, 2021), licensed CC BY-NC 4.0. Full attribution is in [NOTICE](NOTICE), and the app credits it in the Phrase library preview.
+
+**Before any commercial use:** the NonCommercial term covers `data/` only, but the app reads that file at runtime. Remove `data/asl_lex_params.json` and source the phonological parameters independently, or obtain a separate license from the ASL-LEX authors. The MIT-licensed code is unaffected.
+
+The bundled gestures remain unverified placeholders regardless of license terms — see "Why the signing is marked as a placeholder" above before any accessibility deployment.
