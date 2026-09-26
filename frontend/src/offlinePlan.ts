@@ -14,6 +14,7 @@
  * a fingerspelling fallback so nothing here is presented as a translation.
  */
 import { CONTINUOUS_LENGTH_MS, allSignIds } from './clips'
+import { authoredSequenceFor } from './authored'
 import type { PlaybackTimeline, SelectedPhrase } from './types'
 
 /** Words that carry no separate sign in the catalog and are dropped, not spelled.
@@ -67,13 +68,15 @@ export function offlinePlan(text: string): OfflinePlan | null {
     }
 
     if (id) {
-      const duration = CONTINUOUS_LENGTH_MS[id] ?? 900
-      clips.push({
-        anchor: `a${clips.length + 1}`, sign_id: id.toUpperCase(), clip_id: id,
-        start_ms: offset, end_ms: offset + duration, realization: 'offline-catalog',
-      })
-      gloss.push(id.toUpperCase())
-      offset += duration
+      for (const component of authoredSequenceFor(id)?.clips ?? [id]) {
+        const duration = CONTINUOUS_LENGTH_MS[component] ?? 900
+        clips.push({
+          anchor: `a${clips.length + 1}`, sign_id: component.toUpperCase(), clip_id: component,
+          start_ms: offset, end_ms: offset + duration, realization: 'offline-catalog',
+        })
+        gloss.push(component.toUpperCase())
+        offset += duration
+      }
       matched += 1
       i += span - 1
       continue

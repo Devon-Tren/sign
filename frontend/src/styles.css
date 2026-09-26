@@ -332,7 +332,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
    rather than hidden: display:none or visibility:hidden stops WebGL painting
    and every captured frame comes back blank. */
 .sheet-stage{position:absolute;left:-9999px;top:0;width:360px;height:440px;pointer-events:none}
-.sheet-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.sheet-controls select{border:1px solid rgba(22,56,53,.16);border-radius:12px;padding:8px;background:white;font:inherit}
+.sheet-controls label{display:flex;align-items:center;gap:5px;font-size:13px}
+.sheet-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(310px,1fr))}
+.sheet-phases{display:flex}.sheet-phases>div{flex:1;min-width:0}.sheet-phases small{display:block;text-align:center;padding:4px;color:#40514c}
 .sheet-cell{margin:0;border-radius:10px;overflow:hidden;background:#fff;
   border:1px solid rgba(22,56,53,.12);display:flex;flex-direction:column}
 .sheet-cell img{width:100%;aspect-ratio:360/440;object-fit:cover;display:block;background:rgba(22,56,53,.03)}
@@ -344,6 +347,21 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .sheet-badge-warn{background:rgba(186,132,20,.14);color:#7a5406}
 .sheet-badge-none{background:rgba(22,56,53,.09);color:#40514c}
 .sheet-empty{font-size:13.5px;opacity:.7;line-height:1.55;max-width:62ch}
+
+.motion-inspector{padding:24px;display:flex;flex-direction:column;gap:16px}
+.motion-inspector h2{margin:0 0 8px}.motion-inspector p{line-height:1.5}
+.motion-inspector form{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.motion-inspector form input{flex:1;min-width:240px;padding:12px;border:1px solid #ccd4ce;border-radius:10px;font:inherit}
+.motion-inspector button{cursor:pointer;padding:9px 14px;border:1px solid #ccd4ce;background:white;border-radius:10px;font:inherit}
+.inspector-layout{display:grid;grid-template-columns:minmax(300px,1.15fr) minmax(300px,1fr);gap:24px}
+.inspector-avatar{height:610px;background:#eaf0e9;border:1px solid #d3ddd2;border-radius:16px;overflow:hidden}
+.inspector-detail{display:flex;flex-direction:column;gap:12px;min-width:0}
+.inspector-detail>strong{font-size:20px}.inspector-detail>p{margin:0}
+.inspector-detail pre{font-size:11px;line-height:1.5;max-height:260px;overflow:auto;background:#f5f7f3;padding:12px;border-radius:8px}
+.inspector-detail input[type=range]{width:100%;accent-color:#235d48}
+.inspector-boundaries{display:flex;gap:6px;flex-wrap:wrap}
+.inspector-boundaries button{font-size:12px}.inspector-boundaries small{display:block;opacity:.65;margin-top:3px}
+@media(max-width:900px){.inspector-layout{grid-template-columns:1fr}.inspector-avatar{height:480px}}
 @media (max-width:640px){.sheet-grid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}}
 .safety-inline.planner-offline{background:#fdf6ec;color:#8a6224;border-top:1px solid #f0e2c8}
 .safety-inline.planner-offline svg{color:#c98a2e}

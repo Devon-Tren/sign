@@ -5,7 +5,8 @@
  * (data/asl_lex_params.json, CC BY-NC 4.0 - see data/LICENSE and NOTICE)
  * rather than hand-invented joint angles. Handshapes are composed in
  * ./handshapes, locations and two-handed relations in ./anchors, and this
- * module sequences them over time.
+ * module sequences them over time. Consensus-gated ASL-Phono estimates
+ * (CC BY 4.0) fill eligible palm and local movement-direction gaps.
  *
  * THIS IS STILL NOT VALIDATED ASL. ASL-LEX describes signs; it is not an
  * animation specification. Turning "Curved movement at Head/Mouth" into a
@@ -14,13 +15,16 @@
  */
 import params from '../../data/asl_lex_params.json'
 import customParams from '../../data/asl_custom_motions.json'
+import { acceptedDirection, phonoPriorFor, pointForPalm, type PhonoPrior } from './phono'
+import { authoredClipFor, authoredSequenceFor, type AuthoredFrame } from './authored'
+import { sampleSequence } from './sequence'
 import {
   FINGERSPELL, HANDSHAPES, RELAXED, handshapeFor,
   type FingerPose, type HandPose, type ThumbPose,
 } from './handshapes'
 import {
-  ANCHORS, ELBOW_BY_LOCATION, NON_DOMINANT_REST, ORIENTATION_BY_LOCATION,
-  anchor, isHandLocated, relationFor,
+  ANCHORS, ELBOW_BY_LOCATION, NON_DOMINANT_REST,
+  anchor, isHandLocated, orientationFor, relationFor,
 } from './anchors'
 
 export type ClipId = string
@@ -32,7 +36,7 @@ export { HANDSHAPES, handshapeFor }
  * `palm` is the direction the palm faces; `point` is the direction the
  * fingers point. Palm orientation is one of the five classical ASL
  * parameters but is NOT among the ASL-LEX columns extracted here, so these
- * values are an interpretive layer added on top of the licensed data.
+ * values are an authored/derived layer or a consensus-gated ASL-Phono estimate.
  */
 export type ArmPose = {
   target: Vec3
@@ -101,6 +105,12 @@ export type SignParams = Morpheme & {
   app_authored?: boolean
   Compound?: string | null
   NumberOfMorphemes?: string | null
+  /** Noun / Verb / Adjective / Adverb / Minor / Name / Number. */
+  LexicalClass?: string | null
+  /** The sign is a lexicalised fingerspelling (#BANK, #OK) rather than a pose. */
+  FingerspelledLoanSign?: string | null
+  Initialized?: string | null
+  SignFrequency?: number | null
   morphemes?: Morpheme[]
 }
 
@@ -118,6 +128,13 @@ export type Augment = {
   movement_axis?: 'vertical' | 'lateral' | 'forward'
   hand_relation?: string
   carried?: boolean
+  /** Palm and finger direction at the START of the sign. ASL-LEX does not code
+   *  palm orientation at all, so this is authored, and it overrides the
+   *  derivation in ./anchors for signs whose presentation is distinctive. */
+  orientation?: { palm: Vec3; point: Vec3 }
+  /** Orientation at the END, when the sign rotates as it travels. */
+  orientation_end?: { palm: Vec3; point: Vec3 }
+  orientation_note?: string
 }
 
 const LEX = (params as { signs: Record<string, SignParams> }).signs
@@ -187,6 +204,10 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
 
 export function clipLengthMs(id: string, mode: TimingMode = 'isolated'): number {
   if (id === 'idle') return 2600
+  const sequence = authoredSequenceFor(id)
+  if (sequence) return sequence.clips.reduce((sum, child) => sum + clipLengthMs(child, mode), 0)
+  const authored = authoredClipFor(id)
+  if (authored) return authored.duration_ms[mode]
   const citation = SIGNS[id]?.duration_ms ?? 600
   return mode === 'continuous'
     ? Math.round(clamp(citation * 1.15, 700, 1400))
@@ -316,6 +337,50 @@ function defaultSize(major: string | null): number {
   return 1
 }
 
+/**
+ * The noun/verb movement contrast.
+ *
+ * In ASL a related noun-verb pair is distinguished by MOVEMENT, not handshape
+ * or location: the noun is restrained and smaller, the verb larger and more
+ * continuous (SIT/CHAIR, FLY/AIRPLANE). ASL-LEX carries LexicalClass for every
+ * entry and the renderer was ignoring it, so a noun and its verb rendered
+ * identically - the two signs were literally indistinguishable.
+ *
+ * This is the contrast coming from the database rather than from an authored
+ * table, which is the point: the descriptors already say which it is.
+ */
+function lexicalSize(lexicalClass: string | null | undefined): number {
+  if (lexicalClass === 'Noun') return 0.78
+  if (lexicalClass === 'Verb') return 1.12
+  return 1
+}
+
+/** Rotate a direction about an axis (Rodrigues). */
+function rotateAbout(v: Vec3, axis: Vec3, radians: number): Vec3 {
+  const k = normalise(axis)
+  const c = Math.cos(radians), sn = Math.sin(radians)
+  const dot = k[0] * v[0] + k[1] * v[1] + k[2] * v[2]
+  const cross: Vec3 = [
+    k[1] * v[2] - k[2] * v[1],
+    k[2] * v[0] - k[0] * v[2],
+    k[0] * v[1] - k[1] * v[0],
+  ]
+  return normalise([
+    v[0] * c + cross[0] * sn + k[0] * dot * (1 - c),
+    v[1] * c + cross[1] * sn + k[1] * dot * (1 - c),
+    v[2] * c + cross[2] * sn + k[2] * dot * (1 - c),
+  ])
+}
+
+/**
+ * ASL-LEX UlnarRotation: the forearm is rotated so the little-finger edge of
+ * the hand leads. That is forearm supination/pronation, which is the main
+ * degree of freedom in palm orientation - and 215 of the extracted signs carry
+ * it. It was being read and then thrown away on a wrist-limit tweak, so those
+ * signs presented the same palm as every other sign in their region.
+ */
+const ULNAR_RADIANS = 1.15
+
 // ---------------------------------------------------------------------------
 // Handshape change across a sign
 // ---------------------------------------------------------------------------
@@ -377,11 +442,15 @@ type MorphemeContext = {
   phase: number
   augment: Augment
   rest: Pose
+  /** Sign-level, so it is not on the per-morpheme record. */
+  lexicalClass?: string | null
+  prior: PhonoPrior | null
 }
 
 function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   const { travel, phase, augment, rest } = ctx
-  const size = augment.movement_size ?? defaultSize(m.MajorLocation)
+  const size = (augment.movement_size ?? defaultSize(m.MajorLocation))
+    * lexicalSize(ctx.lexicalClass)
 
   // --- handshape, refined by the orthogonal descriptor columns -------------
   const descriptors = {
@@ -426,22 +495,63 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   const to: Vec3 = onHand
     ? add(from, relation!.travel ?? [0, 0, 0])
     : end
-  const base = mix(from, to, travel)
-  const target = add(base, movementOffset(m.Movement, phase, size, augment.movement_axis))
+  // ASL-LEX codes a sign as Straight with no second location when the path is
+  // LOCAL - a tap, a short push - rather than a relocation. 628 of the 1,285
+  // entries are coded that way, and with start == end and a Straight primitive
+  // that returns a zero offset, each of them rendered as a hand that travels to
+  // one spot and freezes. Half the catalog was a still photograph.
+  //
+  // The direction is genuinely not in the data, so derive a conservative one
+  // rather than inventing a trajectory: a contacting sign taps in toward its
+  // location, anything else pushes slightly out and down. The audit reports
+  // these so the interpretation stays visible.
+  const noRelocation = Math.hypot(to[0] - from[0], to[1] - from[1], to[2] - from[2]) < 1e-6
+  const movementPrior = !onHand && noRelocation && !augment.movement_axis
+    ? acceptedDirection(ctx.prior?.movement_dh) : null
+  const localPath: Vec3 = noRelocation && m.Movement === 'Straight'
+    ? movementPrior ? scale(movementPrior, 0.065)
+      : (m.Contact === '1' ? [0, -0.012, -0.05] : [0.015, -0.03, 0.055])
+    : [0, 0, 0]
+  const base = add(mix(from, to, travel), scale(localPath, travel * size))
+  const offsetAt = (at: number): Vec3 => movementPrior && m.Movement === 'BackAndForth'
+    ? scale(movementPrior, Math.sin(at * TAU) * MOVEMENT_SCALE.BackAndForth * size)
+    : movementOffset(m.Movement, at, size, augment.movement_axis)
+  const target = add(base, offsetAt(phase))
 
   // --- orientation --------------------------------------------------------
-  const byLocation = ORIENTATION_BY_LOCATION[m.MajorLocation ?? 'Neutral']
-    ?? ORIENTATION_BY_LOCATION.Neutral
-  const basePalm = onHand ? relation!.meetPalm : byLocation.palm
-  // A sign travelling away from the body rotates the palm outward with it.
-  const palm: Vec3 = !onHand && end !== start
-    ? mix(basePalm, [basePalm[0], Math.abs(basePalm[1]) * 0.5, Math.abs(basePalm[2])], travel * 0.7)
-    : basePalm
-  const point = byLocation.point
+  const derived = orientationFor(m.MajorLocation, m.SecondMinorLocation, m)
+  // Contact relations and authored start/end orientation outrank a weak prior.
+  // One pooled normal cannot describe the separate phases of a compound.
+  const priorPalm = !onHand && !augment.orientation && !augment.orientation_end
+    ? acceptedDirection(ctx.prior?.orientation_dh) : null
+  const start0 = augment.orientation ?? (priorPalm
+    ? { palm: priorPalm, point: pointForPalm(priorPalm, derived.point) } : derived)
+  const basePalm = onHand && !augment.orientation ? relation!.meetPalm : start0.palm
+  // A sign travelling away from the body rotates the palm outward with it. An
+  // authored end orientation takes over from that generic outward turn.
+  const endPalm: Vec3 = augment.orientation_end
+    ? augment.orientation_end.palm
+    : [basePalm[0], Math.abs(basePalm[1]) * 0.5, Math.abs(basePalm[2])]
+  const rotates = !onHand && !priorPalm && (end !== start || !!augment.orientation_end)
+  const orientationTravel = augment.orientation_end ? travel : travel * 0.7
+  let palm: Vec3 = rotates ? slerpDirection(basePalm, endPalm, orientationTravel) : basePalm
+  const preferredPoint = augment.orientation_end && rotates
+    ? slerpDirection(start0.point, augment.orientation_end.point, orientationTravel)
+    : start0.point
+  // UlnarRotation turns the forearm so the little-finger edge leads, which
+  // rotates the palm about the axis the fingers point along.
+  if (m.UlnarRotation === '1' && !augment.orientation && !priorPalm) {
+    palm = rotateAbout(palm, preferredPoint, ULNAR_RADIANS)
+  }
+  // A hand has one orthonormal frame. Preserve the semantic palm normal and
+  // project the approximate finger direction into its plane, as for priors
+  // and authored clips. Otherwise the solver silently changes the palm (47°
+  // for FingerTip relations) even when it reaches the requested quaternion.
+  palm = normalise(palm)
+  const point = pointForPalm(palm, preferredPoint)
 
   // UlnarRotation=1 turns the forearm so the little-finger edge leads. This
   // column was extracted and never read.
-  const ulnar = m.UlnarRotation === '1'
   const elbow = ELBOW_BY_LOCATION[m.MajorLocation ?? 'Neutral'] ?? ELBOW_BY_LOCATION.Neutral
 
   // --- the non-dominant hand ---------------------------------------------
@@ -457,8 +567,7 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
       ? (phase + 0.5) % 1
       : phase
     leftArm = {
-      target: add(mirror(mix(start, end, travel)),
-        mirror(movementOffset(m.Movement, alt, size, augment.movement_axis))),
+      target: mirror(add(base, offsetAt(alt))),
       palm: normalise(mirror(palm)),
       point: normalise(mirror(point)),
       elbow: normalise(mirror(elbow)),
@@ -470,7 +579,8 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
     leftArm = {
       target: baseWrist,
       palm: normalise(r ? r.basePalm : [0.1, 0.94, 0.32]),
-      point: normalise(r ? r.basePoint : [0.75, 0.15, 0.64]),
+      point: pointForPalm(normalise(r ? r.basePalm : [0.1, 0.94, 0.32]),
+        r ? r.basePoint : [0.75, 0.15, 0.64]),
       elbow: normalise(mirror(ELBOW_BY_LOCATION.Hand)),
       // A flat support palm needs a little more wrist extension than the
       // conservative default allows.
@@ -497,7 +607,6 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
       palm: normalise(palm),
       point: normalise(point),
       elbow: normalise(elbow),
-      wristMax: ulnar ? 1.15 : undefined,
       contact: m.Contact === '1',
     },
     leftArm,
@@ -520,6 +629,49 @@ export type MotionOptions = {
   /** Explicit clip length, so a backend-planned timeline drives its own timing
    *  instead of the two schedules disagreeing about how long a sign lasts. */
   durationMs?: number
+  /** Reference comparison for the audit; normal playback enables priors. */
+  usePhonoPriors?: boolean
+  /** A contiguous sequence forms the next start pose without returning to rest. */
+  skipOnset?: boolean
+  skipRelease?: boolean
+}
+
+/** Explicit wrist paths and orientation phases for reference-guided candidates. */
+function authoredPose(id: string, elapsedSeconds: number, opts: MotionOptions): Pose | null {
+  const clip = authoredClipFor(id)
+  if (!clip) return null
+  const total = opts.durationMs ?? clipLengthMs(id, opts.mode)
+  const ms = ((elapsedSeconds * 1000) % total + total) % total
+  const onset = Math.min(220, total * 0.2), release = Math.min(200, total * 0.2)
+  const phase = clamp((ms - onset) / (total - onset - release), 0, 1)
+  const rest = idlePose(elapsedSeconds)
+  const framePose = (f: AuthoredFrame): Pose => ({
+    ...rest,
+    rightArm: { elbow: [0.38, -0.90, -0.10], ...f.right,
+      palm: normalise(f.right.palm), point: normalise(f.right.point) },
+    leftArm: f.left ? { elbow: [-0.38, -0.90, -0.10], ...f.left,
+      palm: normalise(f.left.palm), point: normalise(f.left.point) } : rest.leftArm,
+    rightHand: handshapeFor(clip.right_handshape),
+    leftHand: clip.left_handshape ? handshapeFor(clip.left_handshape) : rest.leftHand,
+    head: [0, 0, 0], browRaise: 0, browFurrow: 0, mouth: 0.06, headShake: 0,
+  })
+  const upper = clip.keyframes.findIndex(f => f.at > phase)
+  const a = clip.keyframes[upper < 0 ? clip.keyframes.length - 1 : Math.max(0, upper - 1)]
+  const b = clip.keyframes[upper < 0 ? clip.keyframes.length - 1 : upper]
+  const weight = a === b ? 0 : easeInOut((phase - a.at) / (b.at - a.at))
+  let pose = blendPoses(framePose(a), framePose(b), weight)
+  // Keep the two direction axes orthogonal after interpolation so the wrist
+  // solver always receives a usable basis.
+  pose = orthogonalAuthoredPose(pose)
+  if (ms < onset && !opts.skipOnset) return blendPoses(rest, pose, easeInOut(ms / onset))
+  if (ms > total - release && !opts.skipRelease) return blendPoses(pose, rest, easeInOut((ms - total + release) / release))
+  return pose
+}
+
+function orthogonalAuthoredPose(pose: Pose): Pose {
+  const orthogonal = (arm: ArmPose | null): ArmPose | null => arm
+    ? { ...arm, point: pointForPalm(arm.palm, arm.point) } : null
+  return { ...pose, rightArm: orthogonal(pose.rightArm), leftArm: orthogonal(pose.leftArm) }
 }
 
 export function motionFor(
@@ -528,8 +680,43 @@ export function motionFor(
   opts: MotionOptions = {},
 ): Pose {
   if (id.startsWith('fs:')) return fingerspellPose(id.slice(3), elapsedSeconds)
+  const sequence = authoredSequenceFor(id)
+  if (sequence) {
+    const mode = opts.mode ?? 'isolated'
+    const total = opts.durationMs ?? clipLengthMs(id, mode)
+    const factor = total / clipLengthMs(id, mode)
+    let start = 0
+    const parts = sequence.clips.map(child => {
+      const duration = clipLengthMs(child, mode) * factor
+      const part = { clip_id: child, start_ms: start, end_ms: start + duration }
+      start += duration
+      return part
+    })
+    return sampleSequence(parts, ((elapsedSeconds * 1000) % total + total) % total,
+      (child, at, options) => motionFor(child, at, { ...opts, ...options }), blendPoses, mode)
+  }
+  const authored = authoredPose(id, elapsedSeconds, opts)
+  if (authored) return authored
   const sign = SIGNS[id]
   if (!sign) return idlePose(elapsedSeconds)
+
+  // A lexicalised fingerspelling (#BANK, #OK, #TV) is spelled, not posed. The
+  // renderer was giving these 21 entries a single static handshape, which is
+  // the one thing they are definitely not. The real articulation is a reduced,
+  // fluid version of the spelling rather than crisp letters, so this is still
+  // an approximation - but a far closer one than holding one letter.
+  if (sign.FingerspelledLoanSign === '1') {
+    const word = (sign.asl_lex_entry ?? id).replace(/[^A-Za-z0-9]/g, '')
+    const nm = augmentFor(id).nonmanual ?? {}
+    const pose = fingerspellPose(word, elapsedSeconds)
+    return {
+      ...pose,
+      browRaise: nm.browRaise ?? pose.browRaise,
+      browFurrow: nm.browFurrow ?? pose.browFurrow,
+      headShake: nm.headShake ?? pose.headShake,
+      mouth: nm.mouth ?? pose.mouth,
+    }
+  }
 
   const total = opts.durationMs ?? clipLengthMs(id, opts.mode ?? 'isolated')
   const augment = augmentFor(id)
@@ -548,6 +735,7 @@ export function motionFor(
   // (gather from the palm, then to the forehead) is two articulations; a
   // single-block schema rendered only the first and held it.
   const morphemes = morphemesOf(sign)
+  const prior = opts.usePhonoPriors !== false && morphemes.length === 1 ? phonoPriorFor(id) : null
   const segmentMs = coreMs / morphemes.length
   const coreT = clamp(tMs - onsetMs, 0, coreMs)
   const index = Math.min(morphemes.length - 1, Math.floor(coreT / segmentMs))
@@ -562,18 +750,20 @@ export function motionFor(
     ?? (morphemes[index].RepeatedMovement === '1' ? 2 : 1)
   const phase = (localMs / segmentMs) * repeats % 1
 
-  let active = poseForMorpheme(morphemes[index], { travel, phase, augment, rest })
+  const lexicalClass = sign.LexicalClass
+  let active = poseForMorpheme(morphemes[index], { travel, phase, augment, rest, lexicalClass, prior })
 
   // Cross-blend the morpheme boundary so a compound reads as one utterance.
   const MORPHEME_BLEND_MS = 120
   if (index + 1 < morphemes.length && localMs > segmentMs - MORPHEME_BLEND_MS) {
-    const next = poseForMorpheme(morphemes[index + 1], { travel: 0, phase: 0, augment, rest })
+    const next = poseForMorpheme(morphemes[index + 1],
+      { travel: 0, phase: 0, augment, rest, lexicalClass, prior })
     const t = (localMs - (segmentMs - MORPHEME_BLEND_MS)) / MORPHEME_BLEND_MS
     active = blendPoses(active, next, easeInOut(t))
   }
 
-  if (tMs < onsetMs) return blendPoses(rest, active, easeInOut(tMs / onsetMs))
-  if (tMs > total - releaseMs) {
+  if (tMs < onsetMs && !opts.skipOnset) return blendPoses(rest, active, easeInOut(tMs / onsetMs))
+  if (tMs > total - releaseMs && !opts.skipRelease) {
     return blendPoses(active, rest, easeInOut((tMs - (total - releaseMs)) / releaseMs))
   }
   return active
@@ -593,7 +783,7 @@ export function blendPoses(a: Pose, b: Pose, t: number): Pose {
     return {
       target: mix(x.target, y.target, t),
       palm: slerpDirection(x.palm, y.palm, t),
-      point: slerpDirection(x.point, y.point, t),
+      point: pointForPalm(slerpDirection(x.palm, y.palm, t), slerpDirection(x.point, y.point, t)),
       elbow,
       wristMax,
       // Contact is asserted while either side asserts it, so the renderer does
@@ -736,13 +926,13 @@ export function idlePose(t: number): Pose {
     rightArm: {
       target: right,
       palm: normalise(REST_PALM_RIGHT),
-      point: normalise(REST_POINT_RIGHT),
+      point: pointForPalm(normalise(REST_PALM_RIGHT), REST_POINT_RIGHT),
       elbow: normalise([0.29, -0.945, -0.15]),
     },
     leftArm: {
       target: left,
       palm: normalise(REST_PALM_LEFT),
-      point: normalise(REST_POINT_LEFT),
+      point: pointForPalm(normalise(REST_PALM_LEFT), REST_POINT_LEFT),
       elbow: normalise([-0.27, -0.95, -0.16]),
     },
     rightHand: IDLE_HAND,

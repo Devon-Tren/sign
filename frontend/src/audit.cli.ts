@@ -9,10 +9,12 @@
 import { auditReport, formatAuditReport } from './audit'
 
 const report = auditReport()
-console.log(formatAuditReport(report))
+console.log(process.argv.includes('--json') ? JSON.stringify(report, null, 2) : formatAuditReport(report))
 
 const collisions = report.handshapeCollisions.length + report.fingerspellCollisions.length
-if (collisions > 0) {
-  console.error(`\nFAIL: ${collisions} pose collision(s); distinct signs would render identically.`)
+const invalid = report.issues.filter(i => ['invalid-pose', 'unknown-handshape', 'unknown-base-form',
+  'unknown-location', 'hand-located-without-relation'].includes(i.kind)).length
+if (collisions > 0 || invalid > 0) {
+  console.error(`\nFAIL: ${collisions} pose collision(s), ${invalid} invalid pose/descriptor issue(s).`)
   process.exit(1)
 }

@@ -15,7 +15,12 @@ def renderer_digest():
     digest = hashlib.sha256()
     for name in ['frontend/src/clips.ts', 'frontend/src/components/Avatar.tsx',
                  'frontend/src/playback.ts', 'data/asl_lex_params.json',
-                 'data/asl_custom_motions.json', 'backend/playback.py']:
+                 'data/asl_custom_motions.json', 'data/asl_phono_priors.json',
+                 'frontend/src/phono.ts', 'frontend/src/anchors.ts',
+                 'frontend/src/handshapes.ts', 'frontend/src/signerRig.ts',
+                 'data/asl_authored_motions.json', 'frontend/src/authored.ts',
+                 'frontend/src/sequence.ts', 'frontend/src/rigPose.ts',
+                 'backend/playback.py']:
         digest.update((ROOT / name).read_bytes())
     return digest.hexdigest()
 
@@ -46,6 +51,7 @@ def compile_timeline(construction, refs):
     signs = {s['id']: s for s in refs['signs']}
     profiles = {p['id']: p for p in refs['profiles']}
     clips, spans, issues, offset = [], [], [], 0
+    anchors = {}
     for step in construction.manual_sequence:
         if step.sign_id.startswith('FS:'):
             word = step.sign_id[3:]
@@ -58,6 +64,7 @@ def compile_timeline(construction, refs):
                           'start_ms': offset, 'end_ms': offset + duration,
                           'realization': 'fingerspelling-approximation'})
             offset += duration
+            anchors[step.id] = clips[-1]
             continue
         asset = signs.get(step.sign_id, {}).get('motion_asset')
         supported = ((asset or {}).get('format') == 'asl-lex-procedural-v1'
@@ -71,12 +78,16 @@ def compile_timeline(construction, refs):
         # A planned timeline is connected signing, not isolated display. The
         # previous 2.1x isolated stretch made the live avatar wade through a
         # lecture; motion_data keeps this in step with the renderer.
-        duration = motion_data.clip_duration_ms(clip, 'continuous')
-        clips.append({'anchor': step.id, 'sign_id': step.sign_id, 'clip_id': clip,
-                      'start_ms': offset, 'end_ms': offset + duration,
-                      'realization': asset['format']})
-        offset += duration
-    anchors = {c['anchor']: c for c in clips}
+        start = offset
+        components = motion_data.clip_sequence(clip)
+        for index, component in enumerate(components):
+            duration = motion_data.clip_duration_ms(component, 'continuous')
+            clips.append({'anchor': step.id if len(components) == 1 else f'{step.id}.{index + 1}',
+                          'sign_id': component.upper(), 'clip_id': component,
+                          'start_ms': offset, 'end_ms': offset + duration,
+                          'realization': motion_data.format_for(component)})
+            offset += duration
+        anchors[step.id] = {'start_ms': start, 'end_ms': offset}
     for span in construction.nonmanuals:
         controls = profiles.get(span.profile_id, {}).get('controls')
         if not controls or set(controls) != {'brow', 'mouth', 'head', 'torso'}:

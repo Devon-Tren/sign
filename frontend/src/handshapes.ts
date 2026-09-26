@@ -27,10 +27,14 @@
  * reviewed by a qualified Deaf signer before it is called a translation.
  */
 
+import { landmark, site, type ThumbSite } from './thumbIK'
+
 /** MCP / PIP / DIP flexion in radians, plus abduction from the neighbouring finger. */
 export type FingerPose = { curl: readonly [number, number, number]; spread: number }
-/** Thumb has its own abduction, opposition rotation and two flexion joints. */
-export type ThumbPose = { abduct: number; rotate: number; curl: readonly [number, number] }
+/** Thumb has its own abduction, opposition rotation and two flexion joints.
+ *  `site`, when present, places the thumb TIP by position instead (./thumbIK):
+ *  the angle model cannot fold the Rocketbox thumb across the palm. */
+export type ThumbPose = { abduct: number; rotate: number; curl: readonly [number, number]; site?: ThumbSite }
 export type HandPose = { fingers: readonly FingerPose[]; thumb: ThumbPose }
 
 /** index, middle, ring, pinky */
@@ -196,7 +200,7 @@ function spreadOf(selected: readonly FingerIndex[], magnitude: number, index: Fi
  * The Rocketbox rest pose already fans the fingers slightly, so a B-family
  * shape needs a small inward counter-spread to read as fingers together.
  */
-const REST_FAN: readonly number[] = [-0.055, -0.018, 0.018, 0.055]
+const REST_FAN: readonly number[] = [0.055, 0.018, -0.018, -0.055]
 
 export type HandshapeDescriptors = {
   Flexion?: string | null
@@ -250,7 +254,12 @@ export function composeHandshape(
   const selected = form.selected.length || !columnSelected ? form.selected : columnSelected
 
   // --- flexion ------------------------------------------------------------
-  const namedFlexion = modifiers.map((m) => MODIFIER_FLEXION[m]).find(Boolean)
+  // On B, `closed` names the thumb (folded across the palm), not the fingers:
+  // ASL-LEX closed_b is the ordinary straight B. Reading it as FullyClosed
+  // turned HELLO and 60+ other closed_b entries into a fist.
+  const namedFlexion = modifiers
+    .filter((m) => !(base === 'b' && m === 'closed'))
+    .map((m) => MODIFIER_FLEXION[m]).find(Boolean)
   const columnFlexion = descriptors.Flexion && descriptors.Flexion !== 'NA'
     ? descriptors.Flexion.trim()
     : undefined
@@ -286,7 +295,7 @@ export function composeHandshape(
   // ThumbContact=1 means the thumb pad meets a finger; force opposition.
   const contactCoded = descriptors.ThumbContact === '1'
   if (contactCoded && form.contact === undefined && thumbRole !== 'between') thumbRole = 'opposed'
-  const thumb = { ...THUMB[thumbRole] }
+  const thumb: ThumbPose = { ...THUMB[thumbRole] }
 
   // --- build --------------------------------------------------------------
   const fingers: FingerPose[] = []
@@ -306,8 +315,14 @@ export function composeHandshape(
     }
     // The contacting finger curls toward the opposed thumb, unless `open` has
     // lifted it off the pad.
-    if (isSelected && form.contact === i && !releaseContact) {
-      curl = [Math.max(curl[0], 0.62), Math.max(curl[1], 0.78), Math.max(curl[2], 0.30)] as Curl
+    // F, 8 and 7 list their contact finger outside `selected`, so it must be
+    // SET here, not maxed against the unselected fold - otherwise it tucks into
+    // the palm and the circle never closes. `open` (open_8, open_f) lifts it off
+    // the pad bent at the knuckle, which is how ASL-LEX codes it (Flexion=Flat).
+    if (form.contact === i) {
+      if (releaseContact) curl = [1.05, 0.30, 0.12]
+      else if (isSelected) curl = [Math.max(curl[0], 0.62), Math.max(curl[1], 0.78), Math.max(curl[2], 0.30)] as Curl
+      else curl = [0.62, 0.78, 0.30]
     }
     let spread = spreadOf(selected, magnitude, i) + (magnitude === 0 ? REST_FAN[i] : 0)
     // R crosses index over middle: equal and opposite abduction, no gap.
@@ -329,7 +344,48 @@ export function composeHandshape(
     thumb.abduct = releaseContact ? 0.58 : Math.min(thumb.abduct, 0.42)
   }
 
+  const tipSite = thumbSiteFor(thumbRole, form, fingers, releaseContact)
+  if (tipSite) thumb.site = tipSite
   return { fingers, thumb }
+}
+
+/**
+ * Where the thumb tip sits for each role, as a blend of the hand's own joints
+ * so it follows the fingers. Verified on the rig: residual 0.05-0.5 palm
+ * widths, against 0.8-2.2 for the angle model. Open/extended thumbs keep the
+ * angle model, which already renders them correctly.
+ */
+function thumbSiteFor(role: ThumbRole, form: BaseForm, fingers: readonly FingerPose[],
+  releaseContact: boolean): ThumbSite | undefined {
+  const curled = (i: FingerIndex) => fingers[i].curl[0] + fingers[i].curl[1] > 1.2
+  // Folded across the palm toward the ring-finger base (B, 4).
+  const palm = site([[landmark(1, 0), 0.35], [landmark(2, 0), 0.35], [0, 0.3]], 0.15)
+  switch (role) {
+    case 'closed':
+    case 'tucked':
+      // Over the curled middle finger (1, H, V, I) or into the palm (B, 4).
+      return curled(1) ? site([[landmark(1, 1), 0.5], [landmark(1, 2), 0.5]], 0.1) : palm
+    case 'across':
+      return site([[landmark(0, 1), .25], [landmark(0, 2), .25], [landmark(1, 1), .25], [landmark(1, 2), .25]], 0.15)
+    case 'between': {
+      // T under the index, N under index+middle, M under three fingers.
+      const u = Math.min(3, Math.max(1, form.thumbUnder ?? 1)) as 1 | 2 | 3
+      return site([[landmark((u - 1) as FingerIndex, 1), 0.5], [landmark(u, 1), 0.5]], 0.02)
+    }
+    case 'alongside':
+      return site([[landmark(0, 1), 1]], 0.02, 0.3)
+    case 'opposed': {
+      const k = form.contact ?? 0
+      // E tucks the thumb under the bent fingertips; open_8 / open_F hold it
+      // off the pad rather than letting it drift.
+      if (form.flexion === 'Bent' && k === 0 && form.selected.length === 4) {
+        return site([[landmark(0, 3), .5], [landmark(1, 3), .5]], -0.05)
+      }
+      return site([[landmark(k, 3), 1]], releaseContact ? 0.35 : 0.03)
+    }
+    default:
+      return undefined
+  }
 }
 
 const RELAXED: HandPose = {

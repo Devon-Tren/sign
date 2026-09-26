@@ -33,11 +33,13 @@ is credited in the PR.
 
 ## Licensing — read before adding data
 
-This repository is **dual-licensed** and the boundary is load-bearing:
+Source code and datasets have separate licenses:
 
 - **Code** (everything outside `data/`) is MIT. By contributing code you agree it
   is released under MIT.
-- **`data/`** is CC BY-NC 4.0, because it derives from ASL-LEX 2.0.
+- **`data/`** defaults to CC BY-NC 4.0, because it derives from ASL-LEX 2.0.
+  **`data/asl_phono_priors.json`** is separately CC BY 4.0. Preserve this
+  exception, attribution and source evidence when regenerating it.
 
 If your contribution adds linguistic data — sign parameters, notation, corpora,
 annotations — then:

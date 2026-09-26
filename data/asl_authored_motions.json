@@ -1,0 +1,51 @@
+{
+  "_license": "Application-authored pose targets; data/LICENSE applies. Reference media are not bundled.",
+  "_status": "candidate: authored from reference descriptions, not captured motion or signer approval",
+  "_frame": "+x signer right, +y up, +z forward; targets are WRISTS, not fingertips",
+  "clips": {
+    "hello": {
+      "variant": "Single outward salute, fingertips at the dominant brow",
+      "references": ["https://www.handspeak.com/word/1015/"],
+      "duration_ms": {"isolated": 1600, "continuous": 1150},
+      "right_handshape": "closed_b",
+      "keyframes": [
+        {"at": 0, "phase": "fingertips at brow", "right": {"target": [0.34, 0.25, 0.17], "palm": [0, 0, 1], "point": [-0.65, 0.76, 0], "elbow": [-0.055, -0.22, 0.974], "contact": true}},
+        {"at": 0.22, "phase": "fingertips at brow", "right": {"target": [0.34, 0.25, 0.17], "palm": [0, 0, 1], "point": [-0.65, 0.76, 0], "elbow": [-0.055, -0.22, 0.974], "contact": true}},
+        {"at": 0.72, "phase": "outward salute", "right": {"target": [0.54, 0.28, 0.40], "palm": [0, 0, 1], "point": [-0.42, 0.91, 0], "elbow": [-0.055, -0.22, 0.974], "contact": false}},
+        {"at": 1, "phase": "hold", "right": {"target": [0.54, 0.28, 0.40], "palm": [0, 0, 1], "point": [-0.42, 0.91, 0], "elbow": [-0.055, -0.22, 0.974], "contact": false}}
+      ]
+    },
+    "good": {
+      "variant": "Fingertips leave chin; dominant palm turns up onto the support hand",
+      "references": ["https://www.lifeprint.com/asl101/pages-signs/g/good.htm"],
+      "duration_ms": {"isolated": 1500, "continuous": 1050},
+      "right_handshape": "b", "left_handshape": "b",
+      "keyframes": [
+        {"at": 0, "phase": "chin contact", "right": {"target": [0.04, -0.10, 0.25], "palm": [0, 0, -1], "point": [0, 1, 0], "contact": true}, "left": {"target": [-0.21, -0.35, 0.58], "palm": [0, 1, 0], "point": [1, 0, 0], "contact": true}},
+        {"at": 0.18, "phase": "chin contact", "right": {"target": [0.04, -0.10, 0.25], "palm": [0, 0, -1], "point": [0, 1, 0], "contact": true}, "left": {"target": [-0.21, -0.35, 0.58], "palm": [0, 1, 0], "point": [1, 0, 0], "contact": true}},
+        {"at": 0.72, "phase": "palm up / support contact", "right": {"target": [0.04, -0.30, 0.44], "palm": [0, 1, 0], "point": [0, 0, 1], "contact": true}, "left": {"target": [-0.21, -0.35, 0.58], "palm": [0, 1, 0], "point": [1, 0, 0], "contact": true}},
+        {"at": 1, "phase": "hold", "right": {"target": [0.04, -0.30, 0.44], "palm": [0, 1, 0], "point": [0, 0, 1], "contact": true}, "left": {"target": [-0.21, -0.35, 0.58], "palm": [0, 1, 0], "point": [1, 0, 0], "contact": true}}
+      ]
+    },
+    "morning": {
+      "variant": "Two-handed MORNING: small rising motion above a flat horizon hand",
+      "references": ["https://www.lifeprint.com/asl101/pages-signs/m/morning.htm"],
+      "duration_ms": {"isolated": 1500, "continuous": 1150},
+      "right_handshape": "b", "left_handshape": "b",
+      "keyframes": [
+        {"at": 0, "phase": "right chest", "right": {"target": [0.30, -0.18, 0.55], "palm": [0, 1, 0], "point": [0, 0, 1], "elbow": [0, -0.84, 0.54], "contact": true}, "left": {"target": [0.071, -0.472, 0.172], "palm": [0, -1, 0], "point": [1, 0, 0], "contact": true}},
+        {"at": 0.18, "phase": "right chest", "right": {"target": [0.30, -0.18, 0.55], "palm": [0, 1, 0], "point": [0, 0, 1], "elbow": [0, -0.84, 0.54], "contact": true}, "left": {"target": [0.071, -0.472, 0.172], "palm": [0, -1, 0], "point": [1, 0, 0], "contact": true}},
+        {"at": 0.48, "phase": "rising beside face", "right": {"target": [0.34, 0.02, 0.42], "palm": [0, 0.7071, -0.7071], "point": [0, 0.7071, 0.7071], "elbow": [0, -0.84, 0.54], "contact": true}, "left": {"target": [0.08, -0.29, 0.34], "palm": [0, -1, 0], "point": [1, 0, 0], "contact": true}},
+        {"at": 0.75, "phase": "face height", "right": {"target": [0.38, 0.23, 0.18], "palm": [0, 0, -1], "point": [0, 1, 0], "elbow": [0, -0.84, 0.54], "contact": true}, "left": {"target": [0.089, -0.108, 0.512], "palm": [0, -1, 0], "point": [1, 0, 0], "contact": true}},
+        {"at": 1, "phase": "hold", "right": {"target": [0.38, 0.23, 0.18], "palm": [0, 0, -1], "point": [0, 1, 0], "elbow": [0, -0.84, 0.54], "contact": true}, "left": {"target": [0.089, -0.108, 0.512], "palm": [0, -1, 0], "point": [1, 0, 0], "contact": true}}
+      ]
+    }
+  },
+  "sequences": {
+    "good_morning": {
+      "clips": ["good", "morning"],
+      "references": ["https://www.lifeprint.com/asl101/pages-signs/sentences/goodmorning.htm"],
+      "variant": "GOOD followed by the two-handed MORNING variant"
+    }
+  }
+}

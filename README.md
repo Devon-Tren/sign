@@ -169,15 +169,20 @@ python scripts/build_avatar.py Adults Male_Adult_09  # a different one
 
 ## How the motion is generated
 
-Avatar motion is composed from published phonological descriptors rather than hand-invented joint angles. `data/asl_lex_params.json` holds the handshape, selected fingers, flexion, thumb position, location, movement and sign-type values for 11 catalog entries, extracted from **ASL-LEX 2.0**. At runtime `frontend/src/clips.ts` combines three libraries — handshapes, location anchors and movement primitives — into a pose expressed in a **normalised body frame** (origin at the shoulder midpoint, unit of one arm reach), and `frontend/src/signerRig.ts` resolves that pose onto the skeleton with two-bone IK and explicit palm orientation. Because the pose schema is rig-agnostic, swapping the character does not touch the motion code.
+Avatar motion combines published descriptors with procedural interpretation. `data/asl_lex_params.json` holds handshape, selected fingers, flexion, thumb position, location, movement, sign type and frequency for 1,279 catalog entries from **ASL-LEX 2.0**. Six additional motions are application-authored. `frontend/src/clips.ts` composes poses in a **normalised body frame** (origin at the shoulder midpoint, unit of one arm reach), and `frontend/src/signerRig.ts` resolves them onto the skeleton with two-bone IK and explicit palm orientation.
+
+**ASL-Phono** adds consensus-gated palm and movement-direction estimates. Of 720 exact source-entry matches, 133 palm estimates and 40 movement estimates exceed 50% frame agreement. Authored orientations, contact relations, compounds and existing relocation paths take precedence: 86 signs currently use the new palm prior and 7 use the new movement direction. These are noisy estimates, not signer validation. See [source evaluation and remaining work](docs/ASL_DATA_COMPLETION.md).
 
 Regenerate or extend the extract with:
 
 ```bash
 python scripts/extract_asl_lex.py
+python scripts/extract_asl_phono.py  # pinned, checksum-verified Zenodo release
+npm --prefix frontend run audit
+npm --prefix frontend test
 ```
 
-**This is still not validated ASL.** ASL-LEX *describes* signs; it is not an animation specification. Rendering "Curved movement at Head/Mouth" as a trajectory is interpretation, and palm orientation is an authored layer that ASL-LEX does not supply at all. Every entry stays `illustrative` until a qualified Deaf signer reviews it.
+**This is still not validated ASL.** ASL-LEX does not encode palm orientation, movement size/direction or non-manual grammar. Uncovered orientations remain authored or derived. The Motion audit view captures start, stroke and hold frames, with a top-100 frequency queue, ASL-Phono comparison toggle and downloadable contact sheet. Every entry remains a candidate until a qualified Deaf signer reviews it.
 
 ## Contributing
 
@@ -189,12 +194,13 @@ Anything that adds linguistic data must state its source and license, and must g
 
 ## License
 
-This repository is **dual-licensed**. The two licenses are not interchangeable:
+Code and datasets have separate licenses:
 
 | Path | License | Notes |
 |---|---|---|
 | Everything except `data/` | [MIT](LICENSE) | Commercial use permitted |
-| `data/` | [CC BY-NC 4.0](data/LICENSE) | **NonCommercial only**; attribution required |
+| `data/`, except the ASL-Phono file | [CC BY-NC 4.0](data/LICENSE) | **NonCommercial only**; attribution required |
+| `data/asl_phono_priors.json` | [CC BY 4.0](data/LICENSE) | Attribution required |
 
 `data/asl_lex_params.json` is derived from [ASL-LEX 2.0](https://asl-lex.org/) (Sehyr, Caselli, Cohen-Goldberg & Emmorey, 2021), licensed CC BY-NC 4.0. Full attribution is in [NOTICE](NOTICE), and the app credits it in the Phrase library preview.
 

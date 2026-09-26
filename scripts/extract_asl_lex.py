@@ -39,6 +39,7 @@ OUT = Path(__file__).resolve().parent.parent / "data" / "asl_lex_params.json"
 MAPPING: dict[str, tuple[str, str, str]] = {
     # -- exact lemma matches -------------------------------------------------
     "hello":       ("hello",      "exact", ""),
+    "morning":     ("morning",    "exact", ""),
     "thank_you":   ("thank_you",  "exact", ""),
     "help":        ("help",       "exact", ""),
     "no":          ("no",         "exact", ""),
@@ -118,9 +119,6 @@ MAPPING: dict[str, tuple[str, str, str]] = {
     "you":         ("you",        "exact", ""),
 
     # -- approximate: nearest single lemma, NOT the same sign ---------------
-    "good_morning": ("morning", "approximate",
-                     "GOOD MORNING is a compound; only the MORNING component is "
-                     "described here. The GOOD component is not represented."),
     "question":     ("ask", "approximate",
                      "Nearest single lexeme is ASK. English 'question' has no "
                      "single ASL equivalent; QMwg (question-mark wiggle) differs."),
@@ -185,6 +183,12 @@ MORPHEME_COLUMNS = [
 ]
 # Sign-level columns that are not per-morpheme.
 SIGN_COLUMNS = ["Initialized", "FingerspelledLoanSign", "Compound", "NumberOfMorphemes"]
+
+#: Sign-level columns without the ".2.0" suffix that the renderer uses.
+#: LexicalClass drives the noun/verb movement contrast: related noun-verb pairs
+#: in ASL are distinguished by movement, nouns being restrained and smaller.
+#: Recording it lets that contrast come from the database instead of a guess.
+PLAIN_COLUMNS = ["LexicalClass"]
 
 MAX_MORPHEMES = 6
 
@@ -296,6 +300,14 @@ def main() -> None:
             "asl_lex_entry": row.get("EntryID"),
             "fidelity": fidelity,
             "duration_ms": int(float(duration)) if duration else None,
+            "SignFrequency": _frequency(row),
+            # Sign-level features the renderer uses. LexicalClass carries the
+            # noun/verb contrast, which in ASL is expressed through MOVEMENT -
+            # related noun-verb pairs differ by the noun being restrained and
+            # smaller. FingerspelledLoanSign marks a lexicalised fingerspelling,
+            # which must be spelled rather than posed as a single handshape.
+            **{col: _blank(row.get(f"{col}.2.0")) for col in SIGN_COLUMNS},
+            **{col: _blank(row.get(col)) for col in PLAIN_COLUMNS},
             # Morpheme 1 is promoted to the top level so the renderer reads one
             # descriptor block; `morphemes` carries the full sequence, and is
             # omitted entirely for the single-morpheme majority.
@@ -307,6 +319,10 @@ def main() -> None:
             record["morphemes"] = morphemes
             record["NumberOfMorphemes"] = str(len(morphemes))
         # Null fields carry no information and are ~40% of the file at this size.
+        # The sign-level flags are only kept when set, for the same reason.
+        for flag in ("Initialized", "FingerspelledLoanSign", "Compound"):
+            if record.get(flag) in (None, "0"):
+                record.pop(flag, None)
         signs[phrase_id] = {k: v for k, v in record.items() if v is not None}
 
     OUT.write_text(json.dumps({

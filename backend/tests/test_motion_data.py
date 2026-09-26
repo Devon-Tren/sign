@@ -199,8 +199,13 @@ def test_connected_durations_stay_inside_the_corpus_band():
     for clip_id in motion_data.all_signs():
         continuous = motion_data.clip_duration_ms(clip_id, 'continuous')
         isolated = motion_data.clip_duration_ms(clip_id, 'isolated')
-        assert motion_data.CONTINUOUS_MIN_MS <= continuous <= motion_data.CONTINUOUS_MAX_MS
-        assert motion_data.ISOLATED_MIN_MS <= isolated <= motion_data.ISOLATED_MAX_MS
+        components = motion_data.clip_sequence(clip_id)
+        assert (motion_data.CONTINUOUS_MIN_MS * len(components)
+                <= continuous
+                <= motion_data.CONTINUOUS_MAX_MS * len(components))
+        assert (motion_data.ISOLATED_MIN_MS * len(components)
+                <= isolated
+                <= motion_data.ISOLATED_MAX_MS * len(components))
         assert continuous < isolated, clip_id
 
 

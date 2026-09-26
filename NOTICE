@@ -5,11 +5,12 @@ This product includes software developed by the sign project, licensed
 under the MIT License (see LICENSE).
 
 ================================================================================
-THIS REPOSITORY IS DUAL-LICENSED
+THIS REPOSITORY CONTAINS SEPARATELY LICENSED CODE AND DATA
 ================================================================================
 
   Source code .................. MIT License               -> LICENSE
-  Linguistic data in data/ ..... CC BY-NC 4.0              -> data/LICENSE
+  ASL-LEX and default data ..... CC BY-NC 4.0              -> data/LICENSE
+  data/asl_phono_priors.json ... CC BY 4.0                 -> data/LICENSE
 
 These are NOT interchangeable. The MIT License does not apply to anything
 in data/. The NonCommercial restriction on data/ does not apply to the
@@ -32,15 +33,28 @@ ASL-LEX 2.0
     Journal of Deaf Studies and Deaf Education, 26(2), 263-277.
     https://doi.org/10.1093/deafed/enaa038
 
-  Scope of use: this repository contains phonological descriptors for 11
-  lexical entries only. The ASL-LEX database itself, its reference videos,
-  and its ratings data are NOT redistributed here. Reference videos on
+  Scope of use: phonological descriptors and mean sign-frequency ratings for
+  1,279 catalog entries. The complete ASL-LEX database, its reference videos,
+  and other ratings are NOT redistributed here. Reference videos on
   asl-lex.org are excluded from the CC BY-NC license and are not used.
 
   IMPORTANT: CC BY-NC prohibits commercial use. If this project is ever
   used commercially, data/asl_lex_params.json must be removed and the
   phonological parameters independently sourced or licensed. See
-  data/README.md before shipping anything revenue-generating.
+  data/LICENSE for the applicable terms.
+
+ASL-Phono
+  File:     data/asl_phono_priors.json
+  License:  Creative Commons Attribution 4.0 International (CC BY 4.0)
+            https://creativecommons.org/licenses/by/4.0/
+  Authors:  Cleison Correia de Amorim and Cleber Zanchettin (2021)
+  Source:   https://doi.org/10.5281/zenodo.5484145
+  Paper:    ASL-Skeleton3D and ASL-Phono: Two Novel Datasets for the American
+            Sign Language. https://arxiv.org/abs/2201.02065
+  Changes:  exact entry matching; frame-vote aggregation; >50% consensus gate;
+            body-frame unit-vector mapping. See scripts/extract_asl_phono.py.
+  Scope:    weak dominant-hand orientation/movement priors with evidence.
+            No source video or source generator code is redistributed.
 
 Microsoft Rocketbox
   Files:    frontend/public/avatar/signer.fbx

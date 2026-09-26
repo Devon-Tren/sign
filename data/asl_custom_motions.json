@@ -9,7 +9,10 @@
       "movement_size": "Multiplier on the movement primitive amplitude.",
       "movement_axis": "vertical | lateral | forward - constrains the primitive.",
       "hand_relation": "on_palm | on_back | on_radial | on_tip | on_heel | on_wrist | crossed | tip_to_tip | beside. Derived from ASL-LEX MinorLocation where possible; listed here only when the surface name is not enough.",
-      "carried": "True when both hands move together as one contacted unit."
+      "carried": "True when both hands move together as one contacted unit.",
+      "orientation": "Palm and finger direction at the start of the sign, as unit vectors in the normalised body frame. ASL-LEX does not code palm orientation, so this is authored; without it a sign falls back to a direction derived from its region and whether it travels off the body.",
+      "orientation_end": "Orientation at the end, for signs that rotate as they travel.",
+      "orientation_note": "Citation-form interpretation, source URL, and scope of an orientation override; not a claim of sign-language validation."
     }
   },
   "signs": {
@@ -84,6 +87,19 @@
       "SecondMinorLocation": "Palm",
       "NonDominantHandshape": "c",
       "app_authored": true
+    },
+    "good_morning": {
+      "app_authored": true,
+      "duration_ms": null,
+      "Handshape": "flat_b",
+      "SignType": "AsymmetricalSameHandshapes",
+      "Movement": "Other",
+      "RepeatedMovement": "0",
+      "MajorLocation": "Neutral",
+      "MinorLocation": "Neutral",
+      "SecondMinorLocation": "Neutral",
+      "NonDominantHandshape": "flat_b",
+      "mapping_note": "Application-authored sequence: GOOD then MORNING. See asl_authored_motions.json."
     }
   },
   "augment": {
@@ -103,12 +119,47 @@
       "movement_size": 0.72,
       "movement_axis": "lateral"
     },
+    "computer": {
+      "orientation": {
+        "palm": [
+          -0.9,
+          0.1,
+          0.42
+        ],
+        "point": [
+          0.15,
+          0.8,
+          0.58
+        ]
+      }
+    },
     "friend": {
       "repeat_count": 2
     },
-    "good_morning": {
-      "nonmanual": {
-        "mouth": 0.3
+    "good": {
+      "orientation": {
+        "palm": [
+          0,
+          0.55,
+          -0.83
+        ],
+        "point": [
+          0.1,
+          0.9,
+          0.42
+        ]
+      },
+      "orientation_end": {
+        "palm": [
+          0,
+          0.92,
+          0.39
+        ],
+        "point": [
+          0.2,
+          0.3,
+          0.93
+        ]
       }
     },
     "goodbye": {
@@ -120,11 +171,47 @@
     "hello": {
       "nonmanual": {
         "mouth": 0.3
+      },
+      "orientation": {
+        "palm": [
+          0.35,
+          0,
+          0.94
+        ],
+        "point": [
+          0.12,
+          0.99,
+          0
+        ]
+      },
+      "orientation_end": {
+        "palm": [
+          0.55,
+          0.05,
+          0.83
+        ],
+        "point": [
+          0.2,
+          0.96,
+          0.18
+        ]
       }
     },
     "help": {
       "hand_relation": "on_palm",
-      "carried": true
+      "carried": true,
+      "orientation": {
+        "palm": [
+          -0.95,
+          0.05,
+          0.3
+        ],
+        "point": [
+          0,
+          0.98,
+          0.2
+        ]
+      }
     },
     "how": {
       "nonmanual": {
@@ -134,8 +221,36 @@
     "last": {
       "hand_relation": "tip_to_tip"
     },
+    "learn": {
+      "orientation": {
+        "palm": [
+          0,
+          -0.9,
+          0.44
+        ],
+        "point": [
+          0.1,
+          0.1,
+          0.99
+        ]
+      }
+    },
     "loop": {
       "repeat_count": 3
+    },
+    "me": {
+      "orientation": {
+        "palm": [
+          0,
+          0.1,
+          -0.99
+        ],
+        "point": [
+          0,
+          0.35,
+          -0.94
+        ]
+      }
     },
     "name": {
       "repeat_count": 2,
@@ -143,10 +258,22 @@
     },
     "no": {
       "nonmanual": {
-        "headShake": 1.0,
+        "headShake": 1,
         "browFurrow": 0.3
       },
-      "movement_size": 0.45
+      "movement_size": 0.45,
+      "orientation": {
+        "palm": [
+          0,
+          0.1,
+          0.99
+        ],
+        "point": [
+          0.1,
+          0.95,
+          0.3
+        ]
+      }
     },
     "not": {
       "nonmanual": {
@@ -163,7 +290,19 @@
     },
     "question": {
       "nonmanual": {
-        "browRaise": 1.0
+        "browRaise": 1
+      },
+      "orientation": {
+        "palm": [
+          0,
+          0,
+          1
+        ],
+        "point": [
+          0.1,
+          0.98,
+          0.15
+        ]
       }
     },
     "run": {
@@ -196,7 +335,32 @@
     },
     "thank_you": {
       "movement_size": 0.55,
-      "movement_axis": "forward"
+      "movement_axis": "forward",
+      "orientation": {
+        "palm": [
+          0,
+          0,
+          -1
+        ],
+        "point": [
+          0,
+          1,
+          0
+        ]
+      },
+      "orientation_end": {
+        "palm": [
+          0,
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "point": [
+          0,
+          0.7071067811865476,
+          0.7071067811865476
+        ]
+      },
+      "orientation_note": "Palm starts inward at lips and tilts upward as fingers move toward the addressee; it does not flip to an outward-facing palm. Angles are an interpretation of the citation images, not motion capture. https://www.lifeprint.com/asl101/pages-signs/t/thankyou.htm"
     },
     "tired": {
       "nonmanual": {
@@ -208,9 +372,35 @@
         ]
       }
     },
+    "today": {
+      "orientation": {
+        "palm": [
+          0,
+          1,
+          0
+        ],
+        "point": [
+          0.1,
+          0.25,
+          0.96
+        ]
+      }
+    },
     "understand": {
       "nonmanual": {
         "browRaise": 0.35
+      },
+      "orientation": {
+        "palm": [
+          0,
+          0.2,
+          -0.98
+        ],
+        "point": [
+          0,
+          1,
+          0
+        ]
       }
     },
     "water": {
@@ -220,7 +410,20 @@
     "what": {
       "nonmanual": {
         "browFurrow": 0.85
-      }
+      },
+      "orientation": {
+        "palm": [
+          0,
+          1,
+          0
+        ],
+        "point": [
+          0,
+          0,
+          1
+        ]
+      },
+      "orientation_note": "Open-5 two-handed WHAT/HUH variant in this record has palms upward. Does not apply to the index-on-palm lexical variant. https://www.lifeprint.com/asl101/pages-signs/w/what.htm"
     },
     "when": {
       "nonmanual": {
@@ -242,7 +445,175 @@
     },
     "yes": {
       "movement_size": 0.62,
-      "movement_axis": "vertical"
+      "movement_axis": "vertical",
+      "orientation": {
+        "palm": [
+          0,
+          -0.1,
+          0.99
+        ],
+        "point": [
+          0,
+          1,
+          0
+        ]
+      }
+    },
+    "you": {
+      "orientation": {
+        "palm": [
+          -0.7071067811865476,
+          -0.7071067811865476,
+          0
+        ],
+        "point": [
+          0,
+          0,
+          1
+        ]
+      },
+      "orientation_note": "Citation indexing YOU: index forward; palm obliquely down/medial, not forward parallel to the index. Interpretation from Lifeprint YOU image. https://www.lifeprint.com/asl101/pages-signs/y/you.htm"
+    },
+    "book": {
+      "orientation": {
+        "palm": [
+          -1,
+          0,
+          0
+        ],
+        "point": [
+          0,
+          0.7071067811865476,
+          0.7071067811865476
+        ]
+      },
+      "orientation_end": {
+        "palm": [
+          0,
+          1,
+          0
+        ],
+        "point": [
+          0,
+          0,
+          1
+        ]
+      },
+      "orientation_note": "Citation BOOK: palms initially face each other and open upward. Replaces the generic outward palm plus ulnar roll. Orientation only; repeated contact timing still needs a phase-authored clip. https://www.lifeprint.com/asl101/pages-signs/b/book.htm"
+    },
+    "more": {
+      "orientation": {
+        "palm": [
+          -1,
+          0,
+          0
+        ],
+        "point": [
+          0,
+          1,
+          0
+        ]
+      },
+      "orientation_note": "Flattened O hands face each other while fingertips meet; generic neutral palms forward contradicted this. Orientation only; handshape/contact spacing need separate review. https://www.handspeak.com/word/1433/"
+    },
+    "must": {
+      "orientation": {
+        "palm": [
+          0,
+          -1,
+          0
+        ],
+        "point": [
+          0,
+          0,
+          1
+        ]
+      },
+      "orientation_note": "Citation MUST uses a clawed index with palm down and downward wrist motion. Generic neutral palm forward was incorrect. Only the orientation is corrected here. https://www.handspeak.com/word/1449/"
+    },
+    "drink": {
+      "orientation": {
+        "palm": [
+          -1,
+          0,
+          0
+        ],
+        "point": [
+          0,
+          1,
+          0
+        ]
+      },
+      "orientation_end": {
+        "palm": [
+          -1,
+          0,
+          0
+        ],
+        "point": [
+          0,
+          1,
+          0
+        ]
+      },
+      "orientation_note": "Citation C-hand drinking gesture faces sideways toward the non-dominant side, not the dominant-side/outward direction produced by HeadAway plus the generic ulnar roll. Orientation only; cup tilt and mouth trajectory require authored phases. https://www.handspeak.com/word/627/"
+    },
+    "see": {
+      "orientation": {
+        "palm": [
+          0,
+          0,
+          -1
+        ],
+        "point": [
+          0,
+          1,
+          0
+        ]
+      },
+      "orientation_end": {
+        "palm": [
+          0,
+          0,
+          -1
+        ],
+        "point": [
+          0,
+          1,
+          0
+        ]
+      },
+      "orientation_note": "Citation SEE starts with the palm facing the signer and fingers at the eyes; travelling away does not imply an outward-facing palm. Preserve inward orientation; path and handshape transitions remain descriptor-generated. https://www.strongasl.com/american-sign-language-dictionary/words/see"
+    },
+    "better": {
+      "orientation": {
+        "palm": [
+          0,
+          0,
+          -1
+        ],
+        "point": [
+          0,
+          1,
+          0
+        ]
+      },
+      "orientation_end": {
+        "palm": [
+          0,
+          0,
+          -1
+        ],
+        "point": [
+          0,
+          1,
+          0
+        ]
+      },
+      "orientation_note": "Citation BETTER presents the palm inward as the hand leaves the chin/mouth, rather than turning outward merely because the second location is HeadAway. This fixes orientation only; the B-to-A handshape transition needs further authoring. https://www.lifeprint.com/asl101/pages-signs/b/better.htm"
     }
+  },
+  "_orientation_rules": {
+    "thumb_contact_head": "anchors.orientationFor: one-handed open-thumb 5, unchanged flexion, Contact=1 at Forehead/Chin, no second location -> palm toward non-dominant side, fingers up. App-authored inference from the combined descriptors, not an ASL-LEX orientation annotation. Covers FATHER/MOTHER and matching morphemes of GRANDFATHER, MAN, PARENTS, WOMAN; excludes COLOR, HATE and MEMORIZE. Source: coordinator citation-form correction; https://www.lifeprint.com/asl101/pages-signs/p/parents.htm"
   }
 }

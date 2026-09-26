@@ -15,7 +15,11 @@ import {
   handshapeFor, parseHandshapeName, type HandPose,
 } from './handshapes'
 import { ANCHORS, isHandLocated, relationFor } from './anchors'
-import { allSignIds, augmentFor, signParams, type Morpheme, type SignParams } from './clips'
+import {
+  allSignIds, augmentFor, clipLengthMs, motionFor, signParams,
+  type Morpheme, type SignParams,
+} from './clips'
+import { acceptedDirection, phonoPriorFor } from './phono'
 
 /** Flatten a hand pose to a comparable vector: 4 fingers x (3 curl + spread) + thumb. */
 export function handVector(pose: HandPose): number[] {
@@ -105,6 +109,9 @@ export type CatalogIssue = {
     | 'hand-located-without-relation'
     | 'approximate-mapping'
     | 'no-movement-for-relocation'
+    | 'static-path'
+    | 'path-free-internal-movement'
+    | 'invalid-pose'
   detail: string
 }
 
@@ -171,6 +178,17 @@ export function catalogIssues(): CatalogIssue[] {
         }
       }
 
+      if (index === 0 && pathLength(id) < STATIC_PATH_THRESHOLD) {
+        const internal = internalMovement(id)
+        out.push({
+          sign: id, kind: internal ? 'path-free-internal-movement' : 'static-path',
+          detail: internal
+            ? `Little wrist travel; ${internal} changes during the sign. Compare with reference video.`
+            : `Little wrist travel and no measured internal movement (Movement=${m.Movement}). `
+              + 'Needs reference review; a static path alone does not prove a defective sign.',
+        })
+      }
+
       const relocates = !!m.SecondMinorLocation
         && m.SecondMinorLocation !== 'NA'
         && m.SecondMinorLocation !== m.MinorLocation
@@ -183,8 +201,84 @@ export function catalogIssues(): CatalogIssue[] {
       }
     }
   }
+  for (const id of allSignIds()) {
+    for (const fraction of [0, 0.15, 0.35, 0.65, 0.9]) {
+      const pose = motionFor(id, clipLengthMs(id) * fraction / 1000)
+      const values = [
+        ...handVector(pose.rightHand), ...handVector(pose.leftHand), ...pose.head,
+        ...[pose.rightArm, pose.leftArm].flatMap(a => a ? [...a.target, ...a.palm, ...a.point] : []),
+      ]
+      if (values.some(v => !Number.isFinite(v))) {
+        out.push({ sign: id, kind: 'invalid-pose', detail: `Non-finite pose at ${fraction} of clip.` })
+        break
+      }
+    }
+  }
   return out
 }
+
+/** A still wrist can accompany changing fingers or palm orientation. */
+export function internalMovement(id: string): string | null {
+  const total = clipLengthMs(id)
+  const first = motionFor(id, total * 0.15 / 1000)
+  let fingers = false, orientation = false
+  for (let i = 1; i <= 24; i++) {
+    const pose = motionFor(id, total * (0.15 + 0.6 * i / 24) / 1000)
+    fingers ||= handDistance(first.rightHand, pose.rightHand) > DISTINCT_THRESHOLD
+      || handDistance(first.leftHand, pose.leftHand) > DISTINCT_THRESHOLD
+    for (const side of ['rightArm', 'leftArm'] as const) {
+      const a = first[side], b = pose[side]
+      if (a && b) orientation ||= Math.hypot(...a.palm.map((v, j) => v - b.palm[j])) > 0.05
+        || Math.hypot(...a.point.map((v, j) => v - b.point[j])) > 0.05
+    }
+  }
+  return [fingers ? 'handshape' : '', orientation ? 'orientation' : ''].filter(Boolean).join(' and ') || null
+}
+
+/** Measure actual application, including overrides/contact/compound exclusions. */
+export function priorUsage(id: string): { orientation: boolean; movement: boolean } {
+  let orientation = false, movement = false
+  if (!phonoPriorFor(id)) return { orientation, movement }
+  for (const fraction of [0.25, 0.45, 0.65]) {
+    const at = clipLengthMs(id) * fraction / 1000
+    const a = motionFor(id, at).rightArm
+    const b = motionFor(id, at, { usePhonoPriors: false }).rightArm
+    if (!a || !b) continue
+    orientation ||= Math.hypot(...a.palm.map((v, j) => v - b.palm[j])) > 1e-6
+    movement ||= Math.hypot(...a.target.map((v, j) => v - b.target[j])) > 1e-6
+  }
+  return { orientation, movement }
+}
+
+/**
+ * Distance the dominant hand actually travels across the sign, in reach units.
+ *
+ * ASL-LEX codes a local path as Straight with no second location, which used to
+ * render as a hand that arrives somewhere and freezes - 628 signs were still
+ * photographs. This measures the RENDERED trajectory rather than the descriptor,
+ * so a primitive that silently returns a zero offset is caught.
+ */
+export function pathLength(id: string, samples = 12): number {
+  const total = clipLengthMs(id, 'isolated')
+  let travelled = 0
+  let previous: readonly number[] | null = null
+  for (let i = 0; i <= samples; i++) {
+    // Sample across the stroke and hold, skipping onset and release.
+    const at = total * (0.15 + 0.6 * (i / samples))
+    const arm = motionFor(id, at / 1000, { mode: 'isolated' }).rightArm
+    if (!arm) continue
+    if (previous) {
+      travelled += Math.hypot(
+        arm.target[0] - previous[0], arm.target[1] - previous[1], arm.target[2] - previous[2],
+      )
+    }
+    previous = arm.target
+  }
+  return travelled
+}
+
+/** Below this the hand is not perceptibly moving at all. */
+export const STATIC_PATH_THRESHOLD = 0.02
 
 export type AuditReport = {
   signs: number
@@ -193,6 +287,14 @@ export type AuditReport = {
   approximate: number
   multiMorpheme: number
   handshapesCovered: number
+  authoredOrientation: number
+  staticPaths: number
+  pathFreeInternal: number
+  phonoMatched: number
+  phonoOrientationAccepted: number
+  phonoMovementAccepted: number
+  phonoOrientationApplied: number
+  phonoMovementApplied: number
   handshapeCollisions: Collision[]
   fingerspellCollisions: Collision[]
   issues: CatalogIssue[]
@@ -204,6 +306,7 @@ export function auditReport(): AuditReport {
   const signs = ids.map((id) => signParams(id)!).filter(Boolean)
   const issues = catalogIssues()
   const byKind: Record<string, number> = {}
+  const usage = ids.map(priorUsage)
   for (const issue of issues) byKind[issue.kind] = (byKind[issue.kind] ?? 0) + 1
   return {
     signs: ids.length,
@@ -214,6 +317,14 @@ export function auditReport(): AuditReport {
     handshapesCovered: ASL_LEX_HANDSHAPES.filter(
       (n) => BASE_FORMS[parseHandshapeName(n).base],
     ).length,
+    authoredOrientation: ids.filter((id) => augmentFor(id).orientation).length,
+    staticPaths: issues.filter((i) => i.kind === 'static-path').length,
+    pathFreeInternal: issues.filter((i) => i.kind === 'path-free-internal-movement').length,
+    phonoMatched: ids.filter(id => phonoPriorFor(id)).length,
+    phonoOrientationAccepted: ids.filter(id => acceptedDirection(phonoPriorFor(id)?.orientation_dh)).length,
+    phonoMovementAccepted: ids.filter(id => acceptedDirection(phonoPriorFor(id)?.movement_dh)).length,
+    phonoOrientationApplied: usage.filter(u => u.orientation).length,
+    phonoMovementApplied: usage.filter(u => u.movement).length,
     handshapeCollisions: handshapeCollisions(),
     fingerspellCollisions: fingerspellCollisions(),
     issues,
@@ -230,6 +341,12 @@ export function formatAuditReport(report: AuditReport = auditReport()): string {
   lines.push(`  approximate        ${report.approximate}`)
   lines.push(`  multi-morpheme     ${report.multiMorpheme}`)
   lines.push(`handshapes covered   ${report.handshapesCovered}/${ASL_LEX_HANDSHAPES.length}`)
+  lines.push(`authored orientation ${report.authoredOrientation}`)
+  lines.push(`ASL-Phono matches    ${report.phonoMatched}`)
+  lines.push(`  orientation priors ${report.phonoOrientationAccepted} pass gate; ${report.phonoOrientationApplied} change playback`)
+  lines.push(`  movement priors    ${report.phonoMovementAccepted} pass gate; ${report.phonoMovementApplied} change playback`)
+  lines.push(`path-free / internal ${report.pathFreeInternal}`)
+  lines.push(`static needs review  ${report.staticPaths}`)
   lines.push(`handshape collisions ${report.handshapeCollisions.length}`)
   for (const c of report.handshapeCollisions) {
     lines.push(`  ${c.a} = ${c.b} (max joint delta ${c.distance.toFixed(4)} rad)`)

@@ -11,21 +11,14 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import {
-  loadSigner, solveArmIK, setHandOrientation, applyHand, setMorph,
-  applySpine, applyHead, applyGazeTarget, setMorphDirect, smoothTarget,
-  type ArmChain, type SignerRig,
+  loadSigner, setMorph,
+  applyHead, applyGazeTarget, setMorphDirect,
+  type SignerRig,
 } from '../signerRig'
-import { motionFor, idlePose, blendPoses, breathAt, type Pose, type Vec3 } from '../clips'
+import { motionFor, blendPoses, type Pose } from '../clips'
+import { applyManualPose, rigSnapshot, type RigSnapshot } from '../rigPose'
 import { poseAt } from '../playback'
 import type { PlaybackTimeline } from '../types'
-
-/**
- * ../clips emits positions in a normalised body frame: origin at the shoulder
- * midpoint, unit of one arm reach, +x toward the dominant hand, +y up,
- * +z forward. This rig is modelled facing +z, which in a right-handed frame
- * puts the character's RIGHT at -x - hence DOMINANT_X.
- */
-const DOMINANT_X = -1
 
 type AvatarProps = {
   clipId: string
@@ -36,6 +29,10 @@ type AvatarProps = {
   /** Review-gated playback: a backend-planned timeline overrides clipId. */
   timeline?: PlaybackTimeline
   onComplete?: () => void
+  /** Inspector-controlled time; normal playback keeps its own clock. */
+  timeMs?: number
+  view?: 'default' | 'front' | 'side' | 'hands'
+  onRig?: (snapshot: RigSnapshot) => void
 }
 
 /** The FBX is parsed once and the result shared by every Avatar instance. */
@@ -45,49 +42,9 @@ function getSigner() {
   return signerPromise
 }
 
-const _t = new THREE.Vector3()
-const _p = new THREE.Vector3()
-const _q = new THREE.Vector3()
-const _shL = new THREE.Vector3()
-const _shR = new THREE.Vector3()
-const _mid = new THREE.Vector3()
 const _gazeTarget = new THREE.Vector3()
 const _eyeA = new THREE.Vector3()
 const _eyeB = new THREE.Vector3()
-
-/**
- * Normalised body-frame position -> world.
- *
- * `contact` carries the ASL-LEX Contact=1 descriptor. The clearance field below
- * exists because procedural anchors are approximate and a hand that drifts
- * behind the torso plane phases through clothing - but roughly 1,694 of the
- * 2,723 ASL-LEX entries are coded Contact=1, and those signs are SUPPOSED to
- * reach the body. HELLO touches the forehead; PLEASE and SORRY circle on the
- * chest. Applying the same push-off to them fought the descriptor, so a
- * contacting sign keeps only a thin skin offset.
- */
-function toWorld(rig: SignerRig, n: Vec3, out: THREE.Vector3, contact = false) {
-  rig.left.upper.getWorldPosition(_shL)
-  rig.right.upper.getWorldPosition(_shR)
-  _mid.addVectors(_shL, _shR).multiplyScalar(0.5)
-  const reach = rig.right.upperLen + rig.right.foreLen
-  // An elliptical torso clearance field is more useful than one flat z-plane:
-  // central, waist-height targets need more room for fingers and clothing,
-  // while lateral and head-level signs may naturally sit closer to the body.
-  const center = 1 - THREE.MathUtils.clamp(Math.abs(n[0]) / 0.58, 0, 1)
-  const torsoBand = 1 - THREE.MathUtils.clamp(Math.abs(n[1] + 0.22) / 0.46, 0, 1)
-  // A contacting sign still needs the wrist clear of the mesh surface, just not
-  // held out in neutral space.
-  const minForward = contact ? 0.15 : 0.22 + center * torsoBand * 0.13
-  return out.set(
-    _mid.x + n[0] * DOMINANT_X * reach,
-    _mid.y + n[1] * reach,
-    _mid.z + Math.max(n[2], minForward) * reach,
-  )
-}
-
-/** Direction vectors live in the same frame, so x flips with the body. */
-const toDir = (d: Vec3, out: THREE.Vector3) => out.set(d[0] * DOMINANT_X, d[1], d[2]).normalize()
 
 /** How long to cross-fade when the displayed sign changes. */
 const FADE_S = 0.18
@@ -111,7 +68,7 @@ type Life = {
   gaze: { pitch: number; yaw: number }
 }
 
-function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & { paused: boolean; speed: number }) {
+function Signer({ clipId, paused, speed, timeline, onComplete, timeMs, onRig }: AvatarProps & { paused: boolean; speed: number }) {
   const [rig, setRig] = useState<SignerRig | null>(null)
   const elapsed = useRef(0)
   // Cross-fade state. `shown` tracks what the frame loop last rendered, because
@@ -125,6 +82,8 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
   })
   const clock = useRef(0)
   const finished = useRef(false)
+  const lastSeek = useRef<number | undefined>(undefined)
+  const lastReport = useRef(0)
 
   useEffect(() => {
     let alive = true
@@ -146,21 +105,22 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
     const dt = Math.min(rawDelta, 0.07)
     clock.current += dt
     if (!paused) elapsed.current += dt * speed
+    const at = timeMs === undefined ? elapsed.current : timeMs / 1000
 
     let pose: Pose
     if (timeline) {
       // A planned timeline sequences its own clips, so the per-clip cross-fade
       // does not apply; poseAt handles the switching.
-      const ms = elapsed.current * 1000
+      const ms = at * 1000
       if (ms >= timeline.duration_ms && !finished.current) {
         finished.current = true
         onComplete?.()
       }
       pose = poseAt(timeline, ms)
     } else {
-      shown.current = { clip: clipId, at: elapsed.current }
-      pose = motionFor(clipId, elapsed.current)
-      if (fade.current < 1 && prev.current) {
+      shown.current = { clip: clipId, at }
+      pose = motionFor(clipId, at)
+      if (timeMs === undefined && fade.current < 1 && prev.current) {
         fade.current = Math.min(1, fade.current + dt / FADE_S)
         const outgoing = motionFor(prev.current.clip, prev.current.at)
         const t = fade.current
@@ -168,26 +128,17 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
       }
     }
 
-    const idle = idlePose(elapsed.current)
-
-    // Spine first: the arms hang off it, so IK must see the updated shoulders.
-    applySpine(rig.face, pose.torso, breathAt(elapsed.current) * 0.018, dt)
-
-    const drive = (a: ArmChain, sign: number, arm: Pose['rightArm'], fallback: NonNullable<Pose['rightArm']>) => {
-      const resolved = arm ?? fallback
-      toWorld(rig, resolved.target, _t, resolved.contact === true)
-      const pole = resolved.elbow ? toDir(resolved.elbow, _q) : undefined
-      solveArmIK(a, smoothTarget(a, _t, dt), sign, dt, pole)
-      setHandOrientation(a, toDir(resolved.palm, _p), toDir(resolved.point, _q), dt, resolved.wristMax)
+    if (paused && timeMs !== undefined && lastSeek.current !== timeMs) {
+      for (let step = 0; step < 90; step++) {
+        rig.root.updateMatrixWorld(true)
+        applyManualPose(rig, pose, at, 1 / 60)
+      }
+    } else applyManualPose(rig, pose, at, dt)
+    lastSeek.current = timeMs
+    if (onRig && clock.current - lastReport.current > 0.12) {
+      lastReport.current = clock.current
+      onRig(rigSnapshot(rig))
     }
-    const idleR = idle.rightArm!
-    const idleL = idle.leftArm!
-
-    drive(rig.right, DOMINANT_X, pose.rightArm, idleR)
-    drive(rig.left, -DOMINANT_X, pose.leftArm, idleL)
-
-    applyHand(rig.right, pose.rightHand.fingers, pose.rightHand.thumb, dt)
-    applyHand(rig.left, pose.leftHand.fingers, pose.leftHand.thumb, dt)
 
     // --- life -------------------------------------------------------------
     const L = life.current
@@ -235,7 +186,7 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
     // grammar, however correct the manual articulation is. ~3.1 Hz is inside the
     // range reported for natural negative headshake.
     const shake = pose.headShake > 0
-      ? Math.sin(elapsed.current * Math.PI * 2 * 3.1) * pose.headShake * 0.16
+      ? Math.sin(at * Math.PI * 2 * 3.1) * pose.headShake * 0.16
       : 0
     // Head follows gaze slightly and lags it, which is how real gaze shifts read.
     applyHead(rig.face,
@@ -254,7 +205,12 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
   return <primitive object={rig.root} />
 }
 
-export default function Avatar({ clipId, paused = false, speed = 1, compact = false, showGround = true, timeline, onComplete }: AvatarProps) {
+export default function Avatar({ clipId, paused = false, speed = 1, compact = false, showGround = true, timeline, onComplete,
+  timeMs, view = 'default', onRig }: AvatarProps) {
+  const cameraPosition: [number, number, number] = view === 'front' ? [0, 0.65, 3.2]
+    : view === 'side' ? [-3.2, 0.65, 0.65]
+      : view === 'hands' ? [-0.6, 0.95, 1.85]
+        : compact ? [-0.90, 0.60, 2.78] : [-0.98, 0.52, 3.02]
   const groundTexture = useMemo(() => {
     const size = 128
     const canvas = document.createElement('canvas')
@@ -279,6 +235,7 @@ export default function Avatar({ clipId, paused = false, speed = 1, compact = fa
       aria-label="3D person signing. Motions are composed from published phonological descriptors and are unverified placeholders, not authentic ASL."
     >
       <Canvas
+        key={view}
         shadows
         /**
          * A three-quarter default, not a frontal one. ASL uses movement toward
@@ -289,7 +246,7 @@ export default function Avatar({ clipId, paused = false, speed = 1, compact = fa
          * a learner rotate to frontal.
          */
         camera={{
-          position: compact ? [-0.90, 0.60, 2.78] : [-0.98, 0.52, 3.02],
+          position: cameraPosition,
           fov: 38,
         }}
         gl={{ alpha: true, antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
@@ -335,9 +292,9 @@ export default function Avatar({ clipId, paused = false, speed = 1, compact = fa
             </>
           )}
 
-          <Signer clipId={clipId} paused={paused} speed={speed} timeline={timeline} onComplete={onComplete} />
+          <Signer clipId={clipId} paused={paused} speed={speed} timeline={timeline} onComplete={onComplete} timeMs={timeMs} onRig={onRig} />
           <OrbitControls
-            target={[0, compact ? 0.60 : 0.52, 0]}
+            target={[0, view === 'hands' ? 0.95 : view !== 'default' ? 0.65 : compact ? 0.60 : 0.52, 0]}
             enablePan={false}
             minDistance={1.4}
             maxDistance={6}

@@ -20,18 +20,21 @@ joint trajectory and lets each layer be evaluated independently.
 
 ## Current repository state
 
-- SQLite exposes 104 searchable illustrative phrase/sign rows.
-- The planning catalog contains 103 playable procedural motion entries and 74
+- The planning catalog contains 1,285 playable procedural motion entries and 74
   candidate sentence examples.
-- **97 motion entries are parameterised from ASL-LEX 2.0 phonological
-  descriptors** (78 exact lemma matches, 19 documented approximate mappings).
+- **1,279 motion entries are parameterised from ASL-LEX 2.0 phonological
+  descriptors** (1,260 exact lemma matches, 19 documented approximate mappings).
   Six entries remain application-authored because no plausible ASL-LEX lemma
   exists: `compile`, `do`, `explain`, `five`, `part`, `refill`.
-- Six entries carry the full ASL-LEX morpheme sequence rather than a single
+- 119 entries carry the full ASL-LEX morpheme sequence rather than a single
   descriptor block, so a compound such as `LEARN` (gather from the palm, then to
   the forehead) plays as two articulations instead of holding the first.
 - No construction or motion has an approved signer-review record.
 - Unknown concepts remain visibly labelled fingerspelling approximations.
+- ASL-Phono contributes weak orientation/direction priors under CC BY 4.0.
+  Strict majority frame agreement admits 133 orientation and 40 movement
+  estimates; precedence rules leave 86 and 7 applied in playback. See
+  [source evaluation and outstanding review](ASL_DATA_COMPLETION.md).
 
 ### Descriptor coverage
 
@@ -122,8 +125,9 @@ above shipped. Two halves now exist:
 
 - `npm --prefix frontend run audit` — numeric. Pose distinctness, vocabulary
   coverage and provenance, exiting non-zero on any collision.
-- The **Motion audit** tab — visual. Renders all 103 motions on the real rig at
-  their hold frame and captures a contact sheet, with provenance badges.
+- The **Motion audit** tab — visual. Captures start/stroke/hold frames on the
+  real rig, with top-100 frequency, applied-prior, static-review and whole-catalog
+  queues, source evidence, comparison toggle and standalone sheet export.
 
 `backend/tests/test_motion_data.py` asserts the data-side invariants: the two
 descriptor files stay disjoint, every handshape resolves to a base form, every

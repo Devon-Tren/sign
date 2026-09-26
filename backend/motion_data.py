@@ -8,6 +8,8 @@ Two files describe motions and both are load-bearing:
   handful of catalog ids that have no plausible ASL-LEX lemma, plus an
   ``augment`` block of app-authored values layered on top of licensed
   descriptors.
+* ``data/asl_phono_priors.json`` - separate CC BY 4.0 orientation/direction
+  evidence. It does not replace either descriptor file or register new motions.
 
 ``catalog_store`` and ``playback`` previously each read only the custom file
 when registering playable motions, so a sign described by the licensed extract
@@ -25,6 +27,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 LEX_FILE = ROOT / 'data/asl_lex_params.json'
 CUSTOM_FILE = ROOT / 'data/asl_custom_motions.json'
+PHONO_FILE = ROOT / 'data/asl_phono_priors.json'
+AUTHORED_FILE = ROOT / 'data/asl_authored_motions.json'
 
 #: Motion asset format tags, kept in sync with the frontend renderer.
 LEX_FORMAT = 'asl-lex-procedural-v1'
@@ -47,6 +51,29 @@ def custom_signs() -> dict[str, dict]:
 def augment() -> dict[str, dict]:
     """App-authored values layered on top of licensed descriptors."""
     return json.loads(CUSTOM_FILE.read_text()).get('augment', {})
+
+
+@lru_cache(maxsize=1)
+def phono_priors() -> dict[str, dict]:
+    """Weak orientation/direction evidence, kept separate from descriptors."""
+    return json.loads(PHONO_FILE.read_text())['signs']
+
+
+@lru_cache(maxsize=1)
+def authored_motions() -> dict:
+    return json.loads(AUTHORED_FILE.read_text())
+
+
+def clip_sequence(clip_id: str) -> list[str]:
+    """Resolve an authored phrase to its lexical clips, rejecting cycles."""
+    def expand(id, parents):
+        if id in parents:
+            raise ValueError(f'cyclic motion sequence: {id}')
+        sequence = authored_motions()['sequences'].get(id)
+        if not sequence:
+            return [id]
+        return [child for item in sequence['clips'] for child in expand(item, {*parents, id})]
+    return expand(clip_id, set())
 
 
 @lru_cache(maxsize=1)
@@ -87,6 +114,11 @@ def _clamp(value: float, low: int, high: int) -> int:
 
 def clip_duration_ms(clip_id: str, mode: str = 'continuous') -> int:
     """Playback length for a clip, matching ``clipLengthMs`` in the frontend."""
+    if clip_id in authored_motions()['sequences']:
+        return sum(clip_duration_ms(child, mode) for child in clip_sequence(clip_id))
+    authored = authored_motions()['clips'].get(clip_id)
+    if authored:
+        return authored['duration_ms']['isolated' if mode == 'isolated' else 'continuous']
     record = descriptors_for(clip_id) or {}
     citation = record.get('duration_ms') or 600
     if mode == 'isolated':
@@ -97,11 +129,31 @@ def clip_duration_ms(clip_id: str, mode: str = 'continuous') -> int:
 def provenance_for(clip_id: str) -> dict:
     """Provenance record for the catalog, distinguishing licensed from authored."""
     record = descriptors_for(clip_id) or {}
-    if clip_id in lex_signs():
+    authored = authored_motions()['clips'].get(clip_id) or authored_motions()['sequences'].get(clip_id)
+    if authored:
         return {
+            'source': '../asl_authored_motions.json', 'fidelity': 'candidate',
+            'motion_source': 'application-authored-keyframes',
+            'variant': authored['variant'], 'references': authored['references'],
+            'components': clip_sequence(clip_id),
+            'asl_lex_entry': record.get('asl_lex_entry'),
+        }
+    if clip_id in lex_signs():
+        provenance = {
             'source': '../asl_lex_params.json',
             'fidelity': record.get('fidelity') or 'candidate',
             'asl_lex_entry': record.get('asl_lex_entry'),
             'mapping_note': record.get('mapping_note'),
         }
+        prior = phono_priors().get(clip_id)
+        if prior:
+            provenance['asl_phono'] = {
+                'source': '../asl_phono_priors.json',
+                'license': 'CC BY 4.0', 'label': prior['label'],
+                'sample_count': prior['sample_count'],
+                'orientation': prior['orientation_dh'],
+                'movement_direction': prior['movement_dh'],
+                'status': 'weak-prior; renderer precedence and eligibility still apply',
+            }
+        return provenance
     return {'source': '../asl_custom_motions.json', 'fidelity': 'candidate'}

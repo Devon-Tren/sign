@@ -1,0 +1,178 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+import { allSignIds, augmentFor, clipLengthMs, handshapeFor, motionFor, signParams } from '../src/clips'
+import { acceptedDirection, phonoPriorFor, pointForPalm, type DirectionEvidence } from '../src/phono'
+import { auditReport, internalMovement, priorUsage } from '../src/audit'
+import { authoredClipFor } from '../src/authored'
+import { offlinePlan } from '../src/offlinePlan'
+import { poseAt } from '../src/playback'
+import './rig.test'
+import { orientationFor } from '../src/anchors'
+
+const evidence = (votes: number, observations: number): DirectionEvidence => ({
+  direction: 'up', vector: [0, 1, 0], votes, observations, consensus: votes / observations,
+  mean_confidence: 0.99, supporting_samples: 2, accepted: true,
+})
+
+test('strict gate rejects ties, corrupt evidence and invalid vectors', () => {
+  assert.equal(acceptedDirection(evidence(5, 10)), null)
+  assert.equal(acceptedDirection(evidence(0, 0)), null)
+  assert.equal(acceptedDirection(evidence(11, 10)), null)
+  assert.equal(acceptedDirection({ ...evidence(6, 10), vector: [0, 0, 0] }), null)
+  assert.equal(acceptedDirection({ ...evidence(6, 10), vector: [NaN, 0, 0] }), null)
+  assert.deepEqual(acceptedDirection(evidence(6, 10)), [0, 1, 0])
+})
+
+test('parallel finger and palm axes produce a finite orthonormal basis', () => {
+  for (const palm of [[0, 1, 0], [0, 0, 1], [1, 0, 0]] as const) {
+    const point = pointForPalm(palm, palm)
+    assert.ok(Math.abs(Math.hypot(...point) - 1) < 1e-6)
+    assert.ok(Math.abs(point.reduce((sum, v, i) => sum + v * palm[i], 0)) < 1e-6)
+  }
+})
+
+test('generated and blended stroke frames preserve palm normals with perpendicular pointing', () => {
+  for (const id of allSignIds()) {
+    const p = signParams(id)
+    // Lexicalised fingerspelling uses a separate, letter-specific path.
+    if (p?.FingerspelledLoanSign === '1') continue
+    for (const phase of [0.12, 0.35, 0.55, 0.75, 0.93]) {
+      const pose = motionFor(id, clipLengthMs(id) * phase / 1000)
+      for (const arm of [pose.rightArm, pose.leftArm]) {
+        if (!arm) continue
+        assert.ok(Math.abs(arm.palm.reduce((s, v, i) => s + v * arm.point[i], 0)) < 1e-6, id)
+      }
+    }
+  }
+})
+
+test('thumb-to-head family rule is descriptor based and excludes other 5-hand head signs', () => {
+  for (const id of ['father', 'mother', 'parents', 'grandfather', 'man', 'woman']) {
+    const p = signParams(id)!
+    const m = p.morphemes?.[0] ?? p
+    assert.deepEqual(orientationFor(m.MajorLocation, m.SecondMinorLocation, m).palm, [-1, 0, 0], id)
+  }
+  for (const id of ['color', 'hate', 'memorize', 'ocean']) {
+    const m = signParams(id)!
+    assert.notDeepEqual(orientationFor(m.MajorLocation, m.SecondMinorLocation, m).palm, [-1, 0, 0], id)
+  }
+})
+
+test('citation overrides reach playback and contact relations respect explicit orientation', () => {
+  for (const [id, palm] of [['what', [0, 1, 0]], ['must', [0, -1, 0]], ['more', [-1, 0, 0]]] as const) {
+    assert.deepEqual(motionFor(id, clipLengthMs(id) * .55 / 1000).rightArm!.palm, palm)
+    assert.ok(augmentFor(id).orientation_note?.startsWith('Citation') || augmentFor(id).orientation_note)
+  }
+  assert.ok(motionFor('thank_you', clipLengthMs('thank_you') * .75 / 1000).rightArm!.palm[2] < 0)
+  const help = motionFor('help', clipLengthMs('help') * .55 / 1000).rightArm!
+  const expected = augmentFor('help').orientation!.palm
+  assert.ok(help.palm.reduce((s, v, i) => s + v * expected[i], 0) > .99)
+})
+
+test('all signs retain ASL-LEX handshape, location anchors and timing', () => {
+  for (const id of allSignIds()) {
+    for (const mode of ['isolated', 'continuous'] as const) {
+      const at = clipLengthMs(id, mode) * 0.45 / 1000
+      const enabled = motionFor(id, at, { mode })
+      const disabled = motionFor(id, at, { mode, usePhonoPriors: false })
+      assert.deepEqual(enabled.rightHand, disabled.rightHand, id)
+      assert.deepEqual(enabled.leftHand, disabled.leftHand, id)
+      assert.equal(enabled.browRaise, disabled.browRaise, id)
+      assert.equal(enabled.browFurrow, disabled.browFurrow, id)
+      assert.equal(enabled.mouth, disabled.mouth, id)
+      const sign = signParams(id)!
+      if ((sign.morphemes?.length ?? 1) > 1 || sign.FingerspelledLoanSign === '1') {
+        assert.deepEqual(enabled, disabled, id)
+      }
+      const a = augmentFor(id)
+      if (a.orientation || a.orientation_end) {
+        assert.deepEqual(enabled.rightArm?.palm, disabled.rightArm?.palm, id)
+      }
+      if (sign.SecondMinorLocation && sign.SecondMinorLocation !== 'NA'
+          && sign.SecondMinorLocation !== sign.MinorLocation) {
+        assert.deepEqual(enabled.rightArm?.target, disabled.rightArm?.target, id)
+      }
+    }
+  }
+})
+
+test('accepted orientation changes the actual rendered palm, with no double rotation', () => {
+  let checked = 0
+  for (const id of allSignIds()) {
+    if (!priorUsage(id).orientation) continue
+    const prior = acceptedDirection(phonoPriorFor(id)?.orientation_dh)!
+    const arm = motionFor(id, clipLengthMs(id) * 0.45 / 1000).rightArm!
+    assert.ok(Math.hypot(...arm.palm.map((v, i) => v - prior[i])) < 1e-6, id)
+    assert.ok(Math.abs(arm.point.reduce((s, v, i) => s + v * arm.palm[i], 0)) < 1e-6, id)
+    checked++
+  }
+  assert.ok(checked > 50, 'prior stopped reaching playback')
+})
+
+test('HIGH moves upward in signer space and symmetric local paths move both wrists', () => {
+  assert.equal(phonoPriorFor('high')?.movement_dh?.direction, 'up')
+  const start = motionFor('high', 0.18).rightArm!.target
+  const end = motionFor('high', 0.65).rightArm!.target
+  assert.ok(end[1] > start[1])
+  assert.ok(Math.abs(end[0] - start[0]) < 1e-6)
+  for (const id of allSignIds()) {
+    if (!priorUsage(id).movement || signParams(id)?.SignType !== 'SymmetricalOrAlternating') continue
+    const p = motionFor(id, 0.45)
+    assert.ok(Math.abs(p.rightArm!.target[0] + p.leftArm!.target[0]) < 1e-6, id)
+    assert.ok(Math.abs(p.rightArm!.target[1] - p.leftArm!.target[1]) < 1e-6, id)
+  }
+})
+
+test('catalog audit separates internal motion and catches invalid poses', () => {
+  const report = auditReport()
+  assert.equal(report.handshapeCollisions.length, 0)
+  assert.equal(report.fingerspellCollisions.length, 0)
+  assert.equal(report.byKind['invalid-pose'] ?? 0, 0)
+  assert.ok(report.phonoOrientationApplied > 50)
+  assert.ok(report.phonoMovementApplied > 0)
+  assert.ok(report.pathFreeInternal > 0)
+  for (const issue of report.issues.filter(i => i.kind === 'path-free-internal-movement')) {
+    assert.ok(internalMovement(issue.sign))
+  }
+})
+
+test('greeting keyframes use straight B hands and keep MORNING beside the face', () => {
+  const hello = authoredClipFor('hello')!
+  const good = authoredClipFor('good')!
+  const morning = authoredClipFor('morning')!
+  assert.equal(good.right_handshape, 'b')
+  assert.equal(good.left_handshape, 'b')
+  assert.equal(morning.right_handshape, 'b')
+  assert.equal(morning.left_handshape, 'b')
+
+  const helloContact = hello.keyframes.find(f => f.phase === 'fingertips at brow')!
+  assert.ok(helloContact.right.elbow![1] < 0 && helloContact.right.elbow![2] > 0.9)
+
+  const start = morning.keyframes.find(f => f.phase === 'right chest')!
+  const middle = morning.keyframes.find(f => f.phase === 'rising beside face')!
+  const end = morning.keyframes.find(f => f.phase === 'face height')!
+  assert.ok(start.right.target[1] > -0.25 && start.right.target[2] > 0.5)
+  assert.ok(middle.right.target[1] > start.right.target[1])
+  assert.ok(end.right.target[0] > start.right.target[0])
+  assert.ok(end.right.target[1] > 0.2 && end.right.target[2] < 0.25)
+  assert.ok(start.right.point[2] > 0.99 && end.right.point[1] > 0.99)
+  assert.deepEqual(start.right.elbow, end.right.elbow)
+  assert.ok(end.left!.target[1] > start.left!.target[1])
+  assert.ok(end.left!.target[2] > start.left!.target[2])
+})
+
+test('rest fan closes B while explicit spread opens away from the middle', () => {
+  const closed = handshapeFor('b').fingers.map(f => f.spread)
+  const spread = handshapeFor('5').fingers.map(f => f.spread)
+  assert.ok(closed[0] > 0 && closed[1] > 0 && closed[2] < 0 && closed[3] < 0)
+  assert.ok(spread[0] < 0 && spread[1] < 0 && spread[2] > 0 && spread[3] > 0)
+})
+
+test('GOOD MORNING expands into two continuous lexical clips', () => {
+  const planned = offlinePlan('Good morning')!.timeline
+  assert.deepEqual(planned.clips.map(c => c.clip_id), ['good', 'morning'])
+  const boundary = planned.clips[0].end_ms
+  const before = poseAt(planned, boundary - 0.01)
+  const after = poseAt(planned, boundary)
+  assert.ok(Math.hypot(...before.rightArm!.target.map((v, i) => v - after.rightArm!.target[i])) < 0.001)
+})

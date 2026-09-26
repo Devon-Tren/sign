@@ -324,3 +324,47 @@ export const ORIENTATION_BY_LOCATION: Record<string, { palm: Vec3; point: Vec3 }
   Neutral: { palm: [0, 0, 1], point: [0.10, 0.95, 0.30] },
   Other: { palm: [0, 0, 1], point: [0.10, 0.95, 0.30] },
 }
+
+/** ASL-LEX location names meaning "off the body, out in space". */
+const AWAY = /Away$/
+
+/**
+ * Starting palm and finger direction for a sign.
+ *
+ * Palm orientation is one of the five classical ASL parameters and ASL-LEX does
+ * not code it, so every value here is interpretation. What it must not be is
+ * one constant per region: that gave all 340 head-located signs the same palm
+ * vector, facing the signer's own face, which is 180 degrees wrong for any sign
+ * that presents outward.
+ *
+ * The legacy "...Away" heuristic below is only a fallback, not a linguistic
+ * rule: leaving the body does NOT determine palm orientation (SEE and BETTER
+ * are counterexamples). Authored orientations and accepted priors take
+ * precedence in clips.ts. Retain this approximation for unreviewed entries
+ * until their citation variants can be checked rather than flipping them all.
+ */
+export function orientationFor(
+  major?: string | null,
+  second?: string | null,
+  form?: { Handshape: string | null; SignType: string | null; MinorLocation: string | null;
+    Contact?: string | null; ThumbPosition?: string | null; FlexionChange?: string | null },
+): { palm: Vec3; point: Vec3 } {
+  // The open-5 thumb-contact family (MOTHER/FATHER and their compound
+  // morphemes) presents its palm toward the non-dominant side. A head region
+  // alone cannot distinguish this from fingertips touching the face. This
+  // narrowly scoped authored inference excludes changing-finger COLOR and
+  // two-handed chin signs such as HATE; ASL-LEX does not code contact digits.
+  if (major === 'Head' && form?.Handshape === '5' && form.SignType === 'OneHanded'
+      && form.Contact === '1' && form.ThumbPosition === 'Open' && form.FlexionChange === '0'
+      && (form.MinorLocation === 'Forehead' || form.MinorLocation === 'Chin')
+      && (!second || second === 'NA')) return { palm: [-1, 0, 0], point: [0, 1, 0] }
+  const base = ORIENTATION_BY_LOCATION[major ?? 'Neutral'] ?? ORIENTATION_BY_LOCATION.Neutral
+  if (!second || second === 'NA' || !AWAY.test(second)) return base
+  // Turn the palm out without discarding the region's own character: keep the
+  // lateral component, halve the vertical, and flip the forward component so it
+  // presents to the addressee.
+  return {
+    palm: [base.palm[0], base.palm[1] * 0.5, Math.abs(base.palm[2])],
+    point: base.point,
+  }
+}

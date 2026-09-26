@@ -1,4 +1,4 @@
-export type Tab = 'home' | 'live' | 'learn' | 'library' | 'audit' | 'settings'
+export type Tab = 'home' | 'live' | 'learn' | 'library' | 'audit' | 'inspect' | 'settings'
 export type Phrase = {
   id: string
   english: string

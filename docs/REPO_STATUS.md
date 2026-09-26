@@ -125,8 +125,9 @@ Browser fallback is expected to work best in current Chrome and Edge releases. I
 
 ### Motion Audit
 
-- A **Motion audit** view renders all 103 motions on the real rig at their hold
-  frame and captures a contact sheet with provenance badges. The catalog could
+- A **Motion audit** view renders start, stroke and hold poses for the 1,285-motion
+  catalog, with top-100 frequency, applied-prior and static-review queues. It
+  exports a standalone contact sheet and supports comparison with priors disabled. The catalog could
   previously only be inspected one sign at a time, which is how two defects
   shipped unnoticed: three distinct handshapes resolved to identical poses, and
   19 of the 26 fingerspelled letters shared a shape with another letter.
@@ -135,6 +136,15 @@ Browser fallback is expected to work best in current Chrome and Edge releases. I
   handshapes or letters become indistinguishable.
 - `backend/tests/test_motion_data.py` asserts the data-side invariants, including
   that every handshape resolves to a base form and every location has an anchor.
+- ASL-Phono matches 720 source entries; 133 orientation and 40 movement estimates
+  pass a strict >50% frame-vote gate. Authored/contact/compound/path precedence
+  leaves 86 orientation and 7 movement changes in playback. All remain candidates.
+- The 66 low-travel signs split into 11 with internal motion and 55 needing
+  reference review. Low wrist travel is no longer described as proof of a defect.
+- `npm --prefix frontend test` exercises the gate and renderer integration.
+  `backend/tests/test_asl_phono.py` checks import evidence and review fingerprints.
+  [Completion notes](ASL_DATA_COMPLETION.md) track source access and outstanding
+  signer work; no fabricated approvals or 100-sign authored table are bundled.
   A descriptor value with no renderer entry does not crash, it silently degrades,
   so these are checked rather than observed.
 

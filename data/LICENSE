@@ -1,7 +1,9 @@
 Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
 ================================================================================
 
-THIS LICENSE APPLIES ONLY TO THE CONTENTS OF THIS data/ DIRECTORY.
+This is the default license for this data/ directory, with one exception:
+asl_phono_priors.json is CC BY 4.0, as described below. It is not subject to
+the NonCommercial term of the ASL-LEX extract.
 
 The source code of this repository is licensed separately under the MIT
 License (see ../LICENSE). The MIT License does NOT apply to these files.
@@ -13,8 +15,8 @@ Human-readable:   https://creativecommons.org/licenses/by-nc/4.0/
 Licensed material
 --------------------------------------------------------------------------------
 
-  asl_lex_params.json - phonological descriptors for 11 ASL lexical entries,
-  derived from the ASL-LEX 2.0 database.
+  asl_lex_params.json - phonological descriptors and mean sign-frequency
+  ratings for 1,279 catalog entries, derived from ASL-LEX 2.0.
 
 --------------------------------------------------------------------------------
 Attribution (required)
@@ -28,10 +30,32 @@ Attribution (required)
   for 2,723 Signs in American Sign Language. Journal of Deaf Studies and Deaf
   Education, 26(2), 263-277. https://doi.org/10.1093/deafed/enaa038
 
-  Modifications: a subset of 11 entries was selected and 18 phonological
-  columns were retained. Column names were normalized (the ".2.0" suffix was
-  removed) and values were left otherwise unchanged. No ratings, frequency,
-  iconicity or video data were copied.
+  Modifications: entries selected by curated mapping and frequency threshold;
+  phonological descriptors, morpheme sequences, lexical class, citation
+  duration and mean sign frequency retained. Column names normalized and
+  null fields omitted. Reference video and iconicity data are not bundled.
+
+--------------------------------------------------------------------------------
+ASL-Phono exception: Creative Commons Attribution 4.0 International
+--------------------------------------------------------------------------------
+
+  File: asl_phono_priors.json
+  Authors: Cleison Correia de Amorim and Cleber Zanchettin (2021)
+  Dataset: ASL-Phono, https://doi.org/10.5281/zenodo.5484145
+  License: https://creativecommons.org/licenses/by/4.0/
+  Legal code: https://creativecommons.org/licenses/by/4.0/legalcode
+  Paper: https://arxiv.org/abs/2201.02065
+
+  Modifications: exact ASL-LEX entry-name matching; aggregation of valid
+  dominant-hand orientation and movement frame votes; strict >50% consensus
+  gating; conversion to unit vectors in signer-relative body coordinates.
+  Counts, confidence, sample identifiers and rejected estimates are retained
+  for auditing. No source videos, handshape estimates or facial estimates are
+  redistributed in this extract. These are vision estimates, not annotations.
+
+  Attribution, a license link and indication of changes are required. This
+  file's CC BY license does not remove the ASL-LEX file's NonCommercial term.
+  Source generator code was inspected for coordinate conventions, not copied.
 
 --------------------------------------------------------------------------------
 You may
