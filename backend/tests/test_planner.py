@@ -243,3 +243,16 @@ def test_uncatalogued_modal_is_preserved_instead_of_silently_dropped():
     assert result['mode'] == 'fingerspell-fallback'
     sequence = [step['sign_id'] for step in result['plan']['manual_sequence']]
     assert 'FS:MIGHT' in sequence and sequence[0] == 'FS:MIGHT'
+
+
+def test_hector_introduction_uses_possessive_chest_touch_and_fingerspelling():
+    result = asyncio.run(create_plan(PlanRequest(text='Hello, my name is Hector.', fast=True)))
+    assert [s['sign_id'] for s in result['plan']['manual_sequence']] == [
+        'HELLO', 'MY', 'NAME', 'FS:HECTOR']
+    assert [c['clip_id'] for c in result['playback']['clips']] == [
+        'hello', 'my', 'name', 'fs:HECTOR']
+
+
+def test_his_name_introduction():
+    result = asyncio.run(create_plan(PlanRequest(text='His name is Hector.', fast=True)))
+    assert [c['clip_id'] for c in result['playback']['clips']] == ['his', 'name', 'fs:HECTOR']

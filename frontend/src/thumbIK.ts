@@ -27,15 +27,17 @@ export type ThumbSite = {
   lift: number
   /** Offset toward the index (radial) side, in palm widths. */
   radial: number
+  /** Offset along the extended-finger axis, in palm widths. */
+  distal: number
   /** 0 = angle model only, 1 = fully placed by position. */
   weight: number
 }
 
 /** Build a site from sparse [landmark, weight] pairs. */
-export function site(pairs: readonly (readonly [number, number])[], lift = 0, radial = 0): ThumbSite {
+export function site(pairs: readonly (readonly [number, number])[], lift = 0, radial = 0, distal = 0): ThumbSite {
   const w = new Array(LANDMARK_COUNT).fill(0)
   for (const [i, v] of pairs) w[i] += v
-  return { w, lift, radial, weight: 1 }
+  return { w, lift, radial, distal, weight: 1 }
 }
 
 export function blendSites(a: ThumbSite | undefined, b: ThumbSite | undefined, t: number): ThumbSite | undefined {
@@ -45,6 +47,7 @@ export function blendSites(a: ThumbSite | undefined, b: ThumbSite | undefined, t
     w: x.w.map((v, i) => v + (y.w[i] - v) * t),
     lift: x.lift + (y.lift - x.lift) * t,
     radial: x.radial + (y.radial - x.radial) * t,
+    distal: x.distal + (y.distal - x.distal) * t,
     weight: x.weight + (y.weight - x.weight) * t,
   }
 }
@@ -77,6 +80,8 @@ export function siteWorld(arm: ArmChain, s: ThumbSite, out: THREE.Vector3): THRE
   arm.hand.getWorldQuaternion(_q).multiply(_bq.copy(arm.handRestWorldQ).invert())
   _a.copy(arm.palmNormal).applyQuaternion(_q)
   out.addScaledVector(_a, s.lift * width)
+  _a.copy(arm.along).applyQuaternion(_q)
+  out.addScaledVector(_a, s.distal * width)
   _b.subVectors(_pts[landmark(0, 0)], _pts[landmark(1, 0)]).normalize()
   return out.addScaledVector(_b, s.radial * width)
 }

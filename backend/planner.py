@@ -163,7 +163,7 @@ def lexical_steps(source_words: list[str], refs: dict) -> list[Sign]:
             tokens = tuple(re.findall(r'[a-z0-9]+', exact_key(expression)))
             if tokens:
                 expressions[tokens] = sign['id']
-    expressions.update({('i',): 'ME', ('my',): 'ME', ('mine',): 'ME', ('your',): 'YOU'})
+    expressions.update({('i',): 'ME', ('my',): 'MY', ('mine',): 'MY', ('your',): 'YOU'})
     max_span = max((len(key) for key in expressions), default=1)
     # English function words that ASL does not lexicalise. Spelling one letter by
     # letter is worse than omitting it: F-S-O-N asserts a lexical item that is

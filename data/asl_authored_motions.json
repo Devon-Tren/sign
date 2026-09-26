@@ -539,6 +539,470 @@
           }
         }
       ]
+    },
+    "my": {
+      "variant": "Flat palm touches the upper chest",
+      "references": [],
+      "duration_ms": {
+        "isolated": 1300,
+        "continuous": 950
+      },
+      "right_handshape": "open_b",
+      "keyframes": [
+        {
+          "at": 0,
+          "phase": "approach chest",
+          "right": {
+            "target": [
+              0.1,
+              -0.16,
+              0.43
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              -0.32,
+              0.947,
+              0
+            ],
+            "elbow": [
+              0.65,
+              -0.76,
+              0
+            ],
+            "contact": false,
+            "reach": {
+              "palm": 1
+            },
+            "attach": {
+              "torso": 1
+            }
+          }
+        },
+        {
+          "at": 0.35,
+          "phase": "palm on chest",
+          "right": {
+            "target": [
+              0.1,
+              -0.16,
+              0.3
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              -0.32,
+              0.947,
+              0
+            ],
+            "elbow": [
+              0.65,
+              -0.76,
+              0
+            ],
+            "contact": true,
+            "reach": {
+              "palm": 1
+            },
+            "attach": {
+              "torso": 1
+            }
+          }
+        },
+        {
+          "at": 1,
+          "phase": "hold chest contact",
+          "right": {
+            "target": [
+              0.1,
+              -0.16,
+              0.3
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              -0.32,
+              0.947,
+              0
+            ],
+            "elbow": [
+              0.65,
+              -0.76,
+              0
+            ],
+            "contact": true,
+            "reach": {
+              "palm": 1
+            },
+            "attach": {
+              "torso": 1
+            }
+          }
+        }
+      ]
+    },
+    "name": {
+      "variant": "Index and middle fingers together on both hands, crossing at 80 degrees with two taps",
+      "references": [],
+      "duration_ms": {
+        "isolated": 1650,
+        "continuous": 1350
+      },
+      "right_handshape": "h",
+      "left_handshape": "h",
+      "keyframes": [
+        {
+          "at": 0,
+          "phase": "lift for tap",
+          "right": {
+            "target": [
+              0.115,
+              -0.165,
+              0.59
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              -0.643,
+              0.766,
+              0
+            ],
+            "elbow": [
+              0.8,
+              -0.6,
+              0
+            ],
+            "contact": true
+          },
+          "left": {
+            "target": [
+              -0.115,
+              -0.26,
+              0.56
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0.643,
+              0.766,
+              0
+            ],
+            "elbow": [
+              -0.8,
+              -0.6,
+              0
+            ],
+            "contact": true
+          }
+        },
+        {
+          "at": 0.23,
+          "phase": "crossed two-finger contact",
+          "right": {
+            "target": [
+              0.115,
+              -0.23,
+              0.59
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              -0.643,
+              0.766,
+              0
+            ],
+            "elbow": [
+              0.8,
+              -0.6,
+              0
+            ],
+            "contact": true
+          },
+          "left": {
+            "target": [
+              -0.115,
+              -0.26,
+              0.56
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0.643,
+              0.766,
+              0
+            ],
+            "elbow": [
+              -0.8,
+              -0.6,
+              0
+            ],
+            "contact": true
+          }
+        },
+        {
+          "at": 0.4,
+          "phase": "lift for tap",
+          "right": {
+            "target": [
+              0.115,
+              -0.165,
+              0.59
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              -0.643,
+              0.766,
+              0
+            ],
+            "elbow": [
+              0.8,
+              -0.6,
+              0
+            ],
+            "contact": true
+          },
+          "left": {
+            "target": [
+              -0.115,
+              -0.26,
+              0.56
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0.643,
+              0.766,
+              0
+            ],
+            "elbow": [
+              -0.8,
+              -0.6,
+              0
+            ],
+            "contact": true
+          }
+        },
+        {
+          "at": 0.63,
+          "phase": "crossed two-finger contact",
+          "right": {
+            "target": [
+              0.115,
+              -0.23,
+              0.59
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              -0.643,
+              0.766,
+              0
+            ],
+            "elbow": [
+              0.8,
+              -0.6,
+              0
+            ],
+            "contact": true
+          },
+          "left": {
+            "target": [
+              -0.115,
+              -0.26,
+              0.56
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0.643,
+              0.766,
+              0
+            ],
+            "elbow": [
+              -0.8,
+              -0.6,
+              0
+            ],
+            "contact": true
+          }
+        },
+        {
+          "at": 1,
+          "phase": "crossed two-finger contact",
+          "right": {
+            "target": [
+              0.115,
+              -0.23,
+              0.59
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              -0.643,
+              0.766,
+              0
+            ],
+            "elbow": [
+              0.8,
+              -0.6,
+              0
+            ],
+            "contact": true
+          },
+          "left": {
+            "target": [
+              -0.115,
+              -0.26,
+              0.56
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0.643,
+              0.766,
+              0
+            ],
+            "elbow": [
+              -0.8,
+              -0.6,
+              0
+            ],
+            "contact": true
+          }
+        }
+      ],
+      "notes": [
+        "User-requested introduction pose: crossed two-finger hands in front of the chest, with bent elbows."
+      ]
+    },
+    "his": {
+      "variant": "User-requested forward index point with the right elbow open beyond 90 degrees",
+      "references": [],
+      "duration_ms": {
+        "isolated": 1400,
+        "continuous": 1050
+      },
+      "right_handshape": "1",
+      "keyframes": [
+        {
+          "at": 0,
+          "phase": "prepare forward point",
+          "right": {
+            "target": [
+              0.28,
+              -0.2,
+              0.72
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              0,
+              1
+            ],
+            "elbow": [
+              0.3,
+              -0.95,
+              0
+            ]
+          }
+        },
+        {
+          "at": 0.35,
+          "phase": "point forward",
+          "right": {
+            "target": [
+              0.28,
+              -0.2,
+              0.78
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              0,
+              1
+            ],
+            "elbow": [
+              0.3,
+              -0.95,
+              0
+            ]
+          }
+        },
+        {
+          "at": 1,
+          "phase": "hold forward point",
+          "right": {
+            "target": [
+              0.28,
+              -0.2,
+              0.78
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              0,
+              1
+            ],
+            "elbow": [
+              0.3,
+              -0.95,
+              0
+            ]
+          }
+        }
+      ]
     }
   },
   "sequences": {

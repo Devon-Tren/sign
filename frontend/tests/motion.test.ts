@@ -253,3 +253,25 @@ test('handshape codes compose as ASL-LEX defines them', () => {
   for (const name of ['closed_b', 's', '1', 'o', 'f', 't', 'a']) assert.ok(handshapeFor(name).thumb.site, name)
   assert.equal(handshapeFor('5').thumb.site, undefined)
 })
+
+
+test('introduction plays HELLO MY NAME then each letter of HECTOR', () => {
+  const plan = offlinePlan('Hello, my name is Hector.')!
+  assert.deepEqual(plan.timeline.clips.map(c => c.clip_id), ['hello', 'my', 'name', 'fs:hector'])
+  for (const [i, letter] of [...'HECTOR'].entries()) {
+    const pose = motionFor('fs:hector', i * .36 + .04)
+    assert.deepEqual(pose.rightHand, handshapeFor(FINGERSPELL[letter].shape))
+  }
+  const name = motionFor('name', 1.1)
+  assert.deepEqual(name.rightHand, handshapeFor('h'))
+  assert.deepEqual(name.leftHand, handshapeFor('h'))
+})
+
+
+test('his introduction keeps the requested forward point before NAME and HECTOR', () => {
+  const plan = offlinePlan('His name is Hector.')!
+  assert.deepEqual(plan.timeline.clips.map(c => c.clip_id), ['his', 'name', 'fs:hector'])
+  const pose = motionFor('his', .8)
+  assert.deepEqual(pose.rightHand, handshapeFor('1'))
+  assert.deepEqual(pose.rightArm!.point, [0, 0, 1])
+})

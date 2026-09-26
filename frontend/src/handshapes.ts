@@ -325,6 +325,8 @@ export function composeHandshape(
       else curl = [0.62, 0.78, 0.30]
     }
     let spread = spreadOf(selected, magnitude, i) + (magnitude === 0 ? REST_FAN[i] : 0)
+    // T needs a small channel for the thumb between the folded index/middle.
+    if (form.thumbUnder === 1 && i < 2) spread = i === 0 ? -0.10 : 0.08
     // R crosses index over middle: equal and opposite abduction, no gap.
     if (form.crossed && (i === 0 || i === 1)) spread = i === 0 ? 0.17 : -0.19
     fingers.push(f(curl, spread))
@@ -369,6 +371,10 @@ function thumbSiteFor(role: ThumbRole, form: BaseForm, fingers: readonly FingerP
       return site([[landmark(0, 1), .25], [landmark(0, 2), .25], [landmark(1, 1), .25], [landmark(1, 2), .25]], 0.15)
     case 'between': {
       // T under the index, N under index+middle, M under three fingers.
+      if (form.thumbUnder === 1) {
+        // Let the tip emerge above the knuckles instead of burying it in the fist.
+        return site([[landmark(0, 1), .5], [landmark(1, 1), .5]], .08, 0, .60)
+      }
       const u = Math.min(3, Math.max(1, form.thumbUnder ?? 1)) as 1 | 2 | 3
       return site([[landmark((u - 1) as FingerIndex, 1), 0.5], [landmark(u, 1), 0.5]], 0.02)
     }

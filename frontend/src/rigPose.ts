@@ -58,11 +58,11 @@ function followBody(rig: SignerRig, attach: { head?: number; torso?: number }, t
 
 const reachScratch = new THREE.Vector3()
 /** Push a world-space wrist target forward if it lies in or against the torso. */
-function keepOutOfTorso(rig: SignerRig, wrist: THREE.Vector3) {
+function keepOutOfTorso(rig: SignerRig, wrist: THREE.Vector3, palmContact = 0) {
   const mid = bodyOrigin(rig), reach = rig.right.upperLen + rig.right.foreLen
   const x = -(wrist.x - mid.x) / reach, y = (wrist.y - mid.y) / reach, z = (wrist.z - mid.z) / reach
   if (Math.abs(x) > 0.32 || y > 0.12) return
-  const front = torsoFrontZ(y) + bodyTuning.wristClearance
+  const front = torsoFrontZ(y) + bodyTuning.wristClearance * (1 - palmContact)
   if (z < front) wrist.z = mid.z + front * reach
 }
 /** How far in front of the torso surface a derived wrist must stay (arm reach). */
@@ -121,7 +121,11 @@ export function applyManualPose(rig: SignerRig, pose: Pose, at: number, dt: numb
         bodyToWorld(rig, value.target, target, true, true)
         if (value.attach) followBody(rig, value.attach, target)
         target.sub(reachOffset(arm, palmW, pointW, value.reach!, reachScratch))
-        keepOutOfTorso(rig, target)
+        // A palm placed on the chest needs surface contact, not the normal
+        // hovering clearance. Blend the allowance with the contact weights.
+        const palmContact = Math.min(1, (value.reach?.palm ?? 0) * (value.attach?.torso ?? 0))
+          * Math.max(0, -value.palm[2])
+        keepOutOfTorso(rig, target, palmContact)
       } else {
         bodyToWorld(rig, value.target, target, value.contact)
         // Authored and relation wrist targets obey the same rule: never inside

@@ -73,3 +73,54 @@ test('production FBX reaches database targets within anatomical limits', async (
   // SINCE) whose ORIENTATION DATA needs review, not a looser solver.
   assert.ok(errors.filter((v) => v > 30).length < 45, `palm >30: ${errors.filter((v) => v > 30).length}`)
 })
+
+
+test('introduction reaches chest and crosses two-finger hands with 70–90 degree elbows', async () => {
+  const rig = await loadTestSigner()
+  const settle = (id: string, t: number) => {
+    const pose = motionFor(id, t)
+    for (let k = 0; k < 45; k++) applyManualPose(rig, pose, t, 1 / 30)
+    return rigSnapshot(rig)
+  }
+  const chest = settle('my', .8).right.palmCentre
+  assert.ok(Math.abs(chest[2] - .30) < .025, `palm must touch chest: ${chest}`)
+  for (const t of [.55, .9, 1.2]) {
+    const snap = settle('name', t)
+    for (const side of ['right', 'left'] as const) {
+      const arm = snap[side]
+      const upper = new THREE.Vector3(...arm.shoulder).sub(new THREE.Vector3(...arm.elbow))
+      const fore = new THREE.Vector3(...arm.wrist).sub(new THREE.Vector3(...arm.elbow))
+      const degrees = upper.angleTo(fore) * 180 / Math.PI
+      assert.ok(degrees >= 70 && degrees <= 90, `${side} elbow: ${degrees}`)
+    }
+    const crossing = new THREE.Vector3(...snap.right.point).angleTo(new THREE.Vector3(...snap.left.point)) * 180 / Math.PI
+    assert.ok(crossing >= 70 && crossing <= 90, `finger crossing: ${crossing}`)
+  }
+})
+
+
+test('his points forward with an open elbow and T thumb emerges between index and middle', async () => {
+  const rig = await loadTestSigner()
+  const settle = (id: string, t: number) => {
+    const pose = motionFor(id, t)
+    for (let k = 0; k < 45; k++) applyManualPose(rig, pose, t, 1 / 30)
+    return { pose, arm: rigSnapshot(rig).right }
+  }
+  const { arm } = settle('his', .8)
+  const elbow = new THREE.Vector3(...arm.elbow)
+  const bend = new THREE.Vector3(...arm.shoulder).sub(elbow)
+    .angleTo(new THREE.Vector3(...arm.wrist).sub(elbow)) * 180 / Math.PI
+  assert.ok(bend >= 90 && bend < 130, `right elbow: ${bend}`)
+  assert.ok(arm.point[2] > .98, `forward point: ${arm.point}`)
+  settle('fs:t', .08)
+  const index = rig.right.fingers[0].bones[1].getWorldPosition(new THREE.Vector3())
+  const middle = rig.right.fingers[1].bones[1].getWorldPosition(new THREE.Vector3())
+  const radial = index.clone().sub(middle).normalize()
+  const tip = rig.right.thumb.bones.at(-1)!.getWorldPosition(new THREE.Vector3())
+  const previous = rig.right.thumb.bones.at(-2)!.getWorldPosition(new THREE.Vector3())
+  tip.add(tip.clone().sub(previous).multiplyScalar(.85))
+  const across = tip.clone().sub(middle).dot(radial) / index.distanceTo(middle)
+  assert.ok(across > .1 && across < .9, `thumb between fingers: ${across}`)
+  const knuckles = index.clone().add(middle).multiplyScalar(.5)
+  assert.ok(tip.y > knuckles.y, 'thumb must emerge above the folded knuckles')
+})
