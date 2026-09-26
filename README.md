@@ -118,6 +118,14 @@ The backend tests work without OpenAI credentials. `npm install` requires npm re
 - OpenAI realtime transcription: https://developers.openai.com/api/docs/guides/realtime-transcription
 - Google MediaPipe Hand Landmarker for Web: https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker/web_js
 
+## ASL video to English
+
+The webcam tutor does not recognize ASL sentences. It currently compares four
+straight/curled finger states against selected static drills. See the
+[ASL-to-English hackathon MVP design](docs/ASL_TO_ENGLISH_MVP.md) for the audited
+input gaps, temporal and contextual pipeline, uncertainty policy, edge cases,
+evaluation suite, and the strongest achievable implementation plan.
+
 ## Responsible demo language
 
 Present this as a *live caption + 3D signing architecture prototype with introductory handshape tracking*. Do not claim the bundled motions are verified ASL, that the system accurately interprets arbitrary lectures, or that its webcam tutor measures ASL fluency. If you plan a real-world trial, consult Deaf users and qualified ASL experts and include a reliable human-interpreter path.

@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "status": "specification-only-no-video-bundled",
+  "required_split": "signer-held-out",
+  "cases": [
+    {
+      "id": "meaning-understand",
+      "category": "meaning_preservation",
+      "scenario": "Reviewed affirmative UNDERSTAND construction with addressee reference",
+      "required_evidence": ["manual:UNDERSTAND", "referent:addressee"],
+      "expected_semantics": {"predicate": "understand", "polarity": "positive", "participants": ["addressee"]},
+      "forbidden_inference": ["past tense", "speaker is confused", "question without nonmanual evidence"],
+      "requires_asl_review": true
+    },
+    {
+      "id": "negation-minimal-pair",
+      "category": "negation",
+      "scenario": "UNDERSTAND versus reviewed NOT-UNDERSTAND construction under identical capture conditions",
+      "required_evidence": ["manual:UNDERSTAND", "reviewed_negation_evidence"],
+      "expected_semantics": {"predicate": "understand", "polarity": "negative"},
+      "forbidden_inference": ["positive polarity", "uncertain polarity when required articulators are visible"],
+      "requires_asl_review": true
+    },
+    {
+      "id": "reference-two-loci",
+      "category": "references",
+      "scenario": "Establish person A at left locus and person B at right locus, then refer back to A",
+      "required_evidence": ["locus:left=person_a", "locus:right=person_b", "index:left"],
+      "expected_semantics": {"referent": "person_a", "reference_consistent": true},
+      "forbidden_inference": ["invented name", "person_b", "plural referent"],
+      "requires_asl_review": true
+    },
+    {
+      "id": "question-nonmanual-scope",
+      "category": "question",
+      "scenario": "Same manual sequence with reviewed assertion and yes/no-question nonmanual variants",
+      "required_evidence": ["manual_sequence", "brow_head_scope"],
+      "expected_semantics": {"speech_act": "yes_no_question"},
+      "forbidden_inference": ["assertion", "WH question"],
+      "requires_asl_review": true
+    },
+    {
+      "id": "time-before-friday",
+      "category": "time",
+      "scenario": "Reviewed construction distinguishing BEFORE FRIDAY from ON FRIDAY",
+      "required_evidence": ["time:friday", "relation:before"],
+      "expected_semantics": {"time": "before_friday"},
+      "forbidden_inference": ["on Friday", "after Friday", "Friday completed action"],
+      "requires_asl_review": true
+    },
+    {
+      "id": "fingerspelled-name",
+      "category": "fingerspelling",
+      "scenario": "Signer fingerspells ALEX at natural speed",
+      "required_evidence": ["fingerspelling_span", "letters:A,L,E,X"],
+      "expected_semantics": {"name": "ALEX"},
+      "forbidden_inference": ["ALEXA", "ALEXANDER", "common-name autocorrection"],
+      "requires_asl_review": true
+    },
+    {
+      "id": "number-twelve",
+      "category": "numbers",
+      "scenario": "Reviewed production of the number 12 contrasted with 2 and 20",
+      "required_evidence": ["number_span", "number:12"],
+      "expected_semantics": {"quantity": 12},
+      "forbidden_inference": ["2", "20", "twelve items when no entity is signed"],
+      "requires_asl_review": true
+    },
+    {
+      "id": "unfamiliar-left-handed-signer",
+      "category": "signer_generalization",
+      "scenario": "Entirely held-out left-handed signer performs every supported phrase",
+      "required_evidence": ["detector_handedness", "dominant_hand:left", "mirror_state"],
+      "expected_semantics": {"same_as_reviewed_right_handed_variant": true},
+      "forbidden_inference": ["different meaning caused only by mirroring"],
+      "requires_asl_review": true
+    },
+    {
+      "id": "speed-variants",
+      "category": "temporal_robustness",
+      "scenario": "Same signer performs a reviewed phrase slowly, normally, and quickly",
+      "required_evidence": ["timestamped_trajectory", "sign_boundaries"],
+      "expected_semantics": {"meaning_invariant_across_speed": true},
+      "forbidden_inference": ["extra repeated sign caused by a long hold", "missing sign caused by fast transition"],
+      "requires_asl_review": true
+    },
+    {
+      "id": "occluded-discriminating-movement",
+      "category": "observation_failure",
+      "scenario": "The hand is occluded during the movement that distinguishes two supported signs",
+      "required_evidence": ["low_required_articulator_coverage"],
+      "expected_outcome": "observation_failure",
+      "forbidden_inference": ["unsupported_sign", "confident semantic choice"],
+      "requires_asl_review": false
+    },
+    {
+      "id": "clear-unknown-sign",
+      "category": "open_set",
+      "scenario": "A clearly visible reviewed ASL sign outside the supported vocabulary",
+      "required_evidence": ["high_observation_quality", "large_template_distance"],
+      "expected_outcome": "unsupported_sign",
+      "forbidden_inference": ["observation_failure", "nearest supported meaning"],
+      "requires_asl_review": true
+    },
+    {
+      "id": "self-repair",
+      "category": "correction",
+      "scenario": "Signer begins one supported phrase, cuts off, returns to neutral, and produces a different phrase",
+      "required_evidence": ["cutoff", "restart", "final_completed_span"],
+      "expected_semantics": {"use_repaired_span_only": true},
+      "forbidden_inference": ["concatenate abandoned and repaired meanings", "commit abandoned phrase"],
+      "requires_asl_review": true
+    },
+    {
+      "id": "incomplete-utterance",
+      "category": "incomplete",
+      "scenario": "Signer stops after a recognized topic but before the predicate",
+      "required_evidence": ["recognized_topic", "missing_predicate_boundary"],
+      "expected_outcome": "tentative_incomplete",
+      "forbidden_inference": ["invented predicate", "fluent completed sentence"],
+      "requires_asl_review": true
+    },
+    {
+      "id": "ambiguous-right-correct",
+      "category": "contextual_ambiguity",
+      "scenario": "Visually ambiguous RIGHT/CORRECT candidate with and without answer-question context",
+      "required_evidence": ["candidate_lattice", "optional_prior_question"],
+      "expected_semantics": {"with_context": "correct", "without_context": "right_or_correct"},
+      "forbidden_inference": ["forced single sense without context", "meaning absent from candidate lattice"],
+      "requires_asl_review": true
+    },
+    {
+      "id": "cropped-face-question",
+      "category": "capture_quality",
+      "scenario": "Manual sequence is visible but the face required to distinguish question scope is cropped",
+      "required_evidence": ["face_required", "face_not_visible"],
+      "expected_outcome": "tentative_missing_nonmanual",
+      "forbidden_inference": ["confident assertion", "confident question"],
+      "requires_asl_review": true
+    }
+  ]
+}
+
