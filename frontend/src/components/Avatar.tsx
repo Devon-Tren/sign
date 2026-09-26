@@ -16,6 +16,8 @@ import {
   type ArmChain, type SignerRig,
 } from '../signerRig'
 import { motionFor, idlePose, blendPoses, breathAt, type Pose, type Vec3 } from '../clips'
+import { poseAt } from '../playback'
+import type { PlaybackTimeline } from '../types'
 
 /**
  * ../clips emits positions in a normalised body frame: origin at the shoulder
@@ -25,7 +27,16 @@ import { motionFor, idlePose, blendPoses, breathAt, type Pose, type Vec3 } from 
  */
 const DOMINANT_X = -1
 
-type AvatarProps = { clipId: string; paused?: boolean; speed?: number; compact?: boolean; showGround?: boolean }
+type AvatarProps = {
+  clipId: string
+  paused?: boolean
+  speed?: number
+  compact?: boolean
+  showGround?: boolean
+  /** Review-gated playback: a backend-planned timeline overrides clipId. */
+  timeline?: PlaybackTimeline
+  onComplete?: () => void
+}
 
 /** The FBX is parsed once and the result shared by every Avatar instance. */
 let signerPromise: Promise<SignerRig> | null = null
@@ -82,7 +93,7 @@ type Life = {
   gaze: { pitch: number; yaw: number }
 }
 
-function Signer({ clipId, paused, speed }: { clipId: string; paused: boolean; speed: number }) {
+function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & { paused: boolean; speed: number }) {
   const [rig, setRig] = useState<SignerRig | null>(null)
   const elapsed = useRef(0)
   // Cross-fade state. `shown` tracks what the frame loop last rendered, because
@@ -95,6 +106,7 @@ function Signer({ clipId, paused, speed }: { clipId: string; paused: boolean; sp
     nextSaccade: rand(SACCADE_MIN, SACCADE_MAX), gaze: { pitch: 0, yaw: 0 },
   })
   const clock = useRef(0)
+  const finished = useRef(false)
 
   useEffect(() => {
     let alive = true
@@ -107,8 +119,9 @@ function Signer({ clipId, paused, speed }: { clipId: string; paused: boolean; sp
     prev.current = { ...shown.current }
     fade.current = 0
     elapsed.current = 0
+    finished.current = false
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clipId])
+  }, [clipId, timeline])
 
   useFrame((_, rawDelta) => {
     if (!rig) return
@@ -116,13 +129,25 @@ function Signer({ clipId, paused, speed }: { clipId: string; paused: boolean; sp
     clock.current += dt
     if (!paused) elapsed.current += dt * speed
 
-    shown.current = { clip: clipId, at: elapsed.current }
-    let pose: Pose = motionFor(clipId, elapsed.current)
-    if (fade.current < 1 && prev.current) {
-      fade.current = Math.min(1, fade.current + dt / FADE_S)
-      const outgoing = motionFor(prev.current.clip, prev.current.at)
-      const t = fade.current
-      pose = blendPoses(outgoing, pose, t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2)
+    let pose: Pose
+    if (timeline) {
+      // A planned timeline sequences its own clips, so the per-clip cross-fade
+      // does not apply; poseAt handles the switching.
+      const ms = elapsed.current * 1000
+      if (ms >= timeline.duration_ms && !finished.current) {
+        finished.current = true
+        onComplete?.()
+      }
+      pose = poseAt(timeline, ms)
+    } else {
+      shown.current = { clip: clipId, at: elapsed.current }
+      pose = motionFor(clipId, elapsed.current)
+      if (fade.current < 1 && prev.current) {
+        fade.current = Math.min(1, fade.current + dt / FADE_S)
+        const outgoing = motionFor(prev.current.clip, prev.current.at)
+        const t = fade.current
+        pose = blendPoses(outgoing, pose, t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2)
+      }
     }
 
     const idle = idlePose(elapsed.current)
@@ -204,7 +229,7 @@ function Signer({ clipId, paused, speed }: { clipId: string; paused: boolean; sp
   return <primitive object={rig.root} />
 }
 
-export default function Avatar({ clipId, paused = false, speed = 1, compact = false, showGround = true }: AvatarProps) {
+export default function Avatar({ clipId, paused = false, speed = 1, compact = false, showGround = true, timeline, onComplete }: AvatarProps) {
   const groundTexture = useMemo(() => {
     const size = 128
     const canvas = document.createElement('canvas')
@@ -266,7 +291,7 @@ export default function Avatar({ clipId, paused = false, speed = 1, compact = fa
             </>
           )}
 
-          <Signer clipId={clipId} paused={paused} speed={speed} />
+          <Signer clipId={clipId} paused={paused} speed={speed} timeline={timeline} onComplete={onComplete} />
           <OrbitControls
             target={[0, 0.5, 0]}
             enablePan={false}

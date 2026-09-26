@@ -1,0 +1,551 @@
+{
+  "version": 1,
+  "signs": [
+    {
+      "id": "IX_ADDRESSEE",
+      "meaning": "Addressee reference",
+      "english_expressions": [
+        "Addressee reference"
+      ],
+      "variant": "unspecified; needs ASL review",
+      "review_status": "candidate",
+      "motion_asset": null
+    },
+    {
+      "id": "UNDERSTAND",
+      "meaning": "Comprehend",
+      "english_expressions": [
+        "Comprehend"
+      ],
+      "variant": "unspecified; needs ASL review",
+      "review_status": "candidate",
+      "motion_asset": {
+        "format": "asl-lex-procedural-v1",
+        "clip_id": "understand"
+      },
+      "provenance": {
+        "entry": "understand",
+        "fidelity": "exact",
+        "source": "../asl_lex_params.json"
+      }
+    },
+    {
+      "id": "EXPLAIN",
+      "meaning": "Explain",
+      "english_expressions": [
+        "Explain"
+      ],
+      "variant": "unspecified; needs ASL review",
+      "review_status": "candidate",
+      "motion_asset": null
+    },
+    {
+      "id": "AGAIN",
+      "meaning": "Repeat",
+      "english_expressions": [
+        "Repeat"
+      ],
+      "variant": "unspecified; needs ASL review",
+      "review_status": "candidate",
+      "motion_asset": null
+    },
+    {
+      "id": "HELLO",
+      "meaning": "hello",
+      "english_expressions": [
+        "hello"
+      ],
+      "variant": "ASL-LEX entry hello",
+      "review_status": "candidate",
+      "motion_asset": {
+        "format": "asl-lex-procedural-v1",
+        "clip_id": "hello"
+      },
+      "provenance": {
+        "entry": "hello",
+        "fidelity": "exact",
+        "source": "../asl_lex_params.json"
+      }
+    },
+    {
+      "id": "THANK_YOU",
+      "meaning": "thank you",
+      "english_expressions": [
+        "thank you"
+      ],
+      "variant": "ASL-LEX entry thank_you",
+      "review_status": "candidate",
+      "motion_asset": {
+        "format": "asl-lex-procedural-v1",
+        "clip_id": "thank_you"
+      },
+      "provenance": {
+        "entry": "thank_you",
+        "fidelity": "exact",
+        "source": "../asl_lex_params.json"
+      }
+    },
+    {
+      "id": "HELP",
+      "meaning": "help",
+      "english_expressions": [
+        "help"
+      ],
+      "variant": "ASL-LEX entry help",
+      "review_status": "candidate",
+      "motion_asset": {
+        "format": "asl-lex-procedural-v1",
+        "clip_id": "help"
+      },
+      "provenance": {
+        "entry": "help",
+        "fidelity": "exact",
+        "source": "../asl_lex_params.json"
+      }
+    },
+    {
+      "id": "NO",
+      "meaning": "no",
+      "english_expressions": [
+        "no"
+      ],
+      "variant": "ASL-LEX entry no",
+      "review_status": "candidate",
+      "motion_asset": {
+        "format": "asl-lex-procedural-v1",
+        "clip_id": "no"
+      },
+      "provenance": {
+        "entry": "no",
+        "fidelity": "exact",
+        "source": "../asl_lex_params.json"
+      }
+    },
+    {
+      "id": "YES",
+      "meaning": "yes",
+      "english_expressions": [
+        "yes"
+      ],
+      "variant": "ASL-LEX entry yes",
+      "review_status": "candidate",
+      "motion_asset": {
+        "format": "asl-lex-procedural-v1",
+        "clip_id": "yes"
+      },
+      "provenance": {
+        "entry": "yes",
+        "fidelity": "exact",
+        "source": "../asl_lex_params.json"
+      }
+    },
+    {
+      "id": "LEARN",
+      "meaning": "learn",
+      "english_expressions": [
+        "learn"
+      ],
+      "variant": "ASL-LEX entry learn",
+      "review_status": "candidate",
+      "motion_asset": {
+        "format": "asl-lex-procedural-v1",
+        "clip_id": "learn"
+      },
+      "provenance": {
+        "entry": "learn",
+        "fidelity": "exact",
+        "source": "../asl_lex_params.json"
+      }
+    },
+    {
+      "id": "TODAY",
+      "meaning": "today",
+      "english_expressions": [
+        "today"
+      ],
+      "variant": "ASL-LEX entry today",
+      "review_status": "candidate",
+      "motion_asset": {
+        "format": "asl-lex-procedural-v1",
+        "clip_id": "today"
+      },
+      "provenance": {
+        "entry": "today",
+        "fidelity": "exact",
+        "source": "../asl_lex_params.json"
+      }
+    },
+    {
+      "id": "COMPUTER",
+      "meaning": "computer",
+      "english_expressions": [
+        "computer"
+      ],
+      "variant": "ASL-LEX entry computer",
+      "review_status": "candidate",
+      "motion_asset": {
+        "format": "asl-lex-procedural-v1",
+        "clip_id": "computer"
+      },
+      "provenance": {
+        "entry": "computer",
+        "fidelity": "exact",
+        "source": "../asl_lex_params.json"
+      }
+    },
+    {
+      "id": "GOOD_MORNING",
+      "meaning": "good morning",
+      "english_expressions": [
+        "good morning"
+      ],
+      "variant": "ASL-LEX entry morning",
+      "review_status": "candidate",
+      "motion_asset": {
+        "format": "asl-lex-procedural-v1",
+        "clip_id": "good_morning"
+      },
+      "provenance": {
+        "entry": "morning",
+        "fidelity": "approximate",
+        "source": "../asl_lex_params.json"
+      }
+    },
+    {
+      "id": "QUESTION",
+      "meaning": "question",
+      "english_expressions": [
+        "question"
+      ],
+      "variant": "ASL-LEX entry ask",
+      "review_status": "candidate",
+      "motion_asset": {
+        "format": "asl-lex-procedural-v1",
+        "clip_id": "question"
+      },
+      "provenance": {
+        "entry": "ask",
+        "fidelity": "approximate",
+        "source": "../asl_lex_params.json"
+      }
+    }
+  ],
+  "profiles": [
+    {
+      "id": "YES_NO_QUESTION_CANDIDATE",
+      "description": "Placeholder profile requiring coordinated facial/body animation and ASL review.",
+      "review_status": "candidate",
+      "motion_asset": null,
+      "controls": {
+        "brow": 0.8,
+        "mouth": 0,
+        "head": [
+          0.08,
+          0,
+          0
+        ],
+        "torso": 0
+      }
+    }
+  ],
+  "examples": [
+    {
+      "id": "understand-question",
+      "english": "Do you understand?",
+      "review_status": "candidate",
+      "meaning": {
+        "intent": "ask_whether",
+        "predicate": "understand",
+        "participants": [
+          "experiencer:addressee"
+        ],
+        "negated": false,
+        "time": [],
+        "quantities": [],
+        "entities": [],
+        "conditions": [],
+        "references": [],
+        "unresolved": []
+      },
+      "construction": {
+        "manual_sequence": [
+          {
+            "id": "s1",
+            "sign_id": "IX_ADDRESSEE"
+          },
+          {
+            "id": "s2",
+            "sign_id": "UNDERSTAND"
+          }
+        ],
+        "grammar": {
+          "question_type": "yes_no"
+        },
+        "nonmanuals": [
+          {
+            "profile_id": "YES_NO_QUESTION_CANDIDATE",
+            "start_anchor": "s1",
+            "end_anchor": "s2"
+          }
+        ],
+        "expressed_meaning": {
+          "intent": "ask_whether",
+          "predicate": "understand",
+          "participants": [
+            "experiencer:addressee"
+          ],
+          "negated": false,
+          "time": [],
+          "quantities": [],
+          "entities": [],
+          "conditions": [],
+          "references": [],
+          "unresolved": []
+        },
+        "unresolved": []
+      },
+      "context": [],
+      "context_independent": false
+    },
+    {
+      "id": "explain-again-request",
+      "english": "Could you explain that again?",
+      "review_status": "candidate",
+      "meaning": {
+        "intent": "request",
+        "predicate": "explain",
+        "participants": [
+          "agent:addressee"
+        ],
+        "negated": false,
+        "time": [],
+        "quantities": [],
+        "entities": [],
+        "conditions": [],
+        "references": [
+          "Previously discussed material"
+        ],
+        "unresolved": [
+          "What does \u201cthat\u201d refer to? Provide recent conversation context."
+        ]
+      },
+      "construction": {
+        "manual_sequence": [
+          {
+            "id": "s1",
+            "sign_id": "EXPLAIN"
+          },
+          {
+            "id": "s2",
+            "sign_id": "AGAIN"
+          }
+        ],
+        "grammar": {
+          "question_type": "none"
+        },
+        "nonmanuals": [],
+        "expressed_meaning": {
+          "intent": "request",
+          "predicate": "explain",
+          "participants": [
+            "agent:addressee"
+          ],
+          "negated": false,
+          "time": [],
+          "quantities": [],
+          "entities": [],
+          "conditions": [],
+          "references": [
+            "Previously discussed material"
+          ],
+          "unresolved": [
+            "What does \u201cthat\u201d refer to? Provide recent conversation context."
+          ]
+        },
+        "unresolved": [
+          "Request construction and nonmanual cues need ASL review."
+        ]
+      },
+      "context": [],
+      "context_independent": false
+    },
+    {
+      "id": "hello-isolated",
+      "english": "Hello",
+      "context": [],
+      "context_independent": true,
+      "review_status": "candidate",
+      "meaning": {
+        "intent": "greet",
+        "predicate": "hello",
+        "participants": [],
+        "negated": false,
+        "time": [],
+        "quantities": [],
+        "entities": [],
+        "conditions": [],
+        "references": [],
+        "unresolved": []
+      },
+      "construction": {
+        "manual_sequence": [
+          {
+            "id": "s1",
+            "sign_id": "HELLO"
+          }
+        ],
+        "grammar": {
+          "question_type": "none"
+        },
+        "nonmanuals": [],
+        "expressed_meaning": {
+          "intent": "greet",
+          "predicate": "hello",
+          "participants": [],
+          "negated": false,
+          "time": [],
+          "quantities": [],
+          "entities": [],
+          "conditions": [],
+          "references": [],
+          "unresolved": []
+        },
+        "unresolved": []
+      }
+    },
+    {
+      "id": "thank_you-isolated",
+      "english": "Thank you",
+      "context": [],
+      "context_independent": true,
+      "review_status": "candidate",
+      "meaning": {
+        "intent": "thank",
+        "predicate": "thank_you",
+        "participants": [],
+        "negated": false,
+        "time": [],
+        "quantities": [],
+        "entities": [],
+        "conditions": [],
+        "references": [],
+        "unresolved": []
+      },
+      "construction": {
+        "manual_sequence": [
+          {
+            "id": "s1",
+            "sign_id": "THANK_YOU"
+          }
+        ],
+        "grammar": {
+          "question_type": "none"
+        },
+        "nonmanuals": [],
+        "expressed_meaning": {
+          "intent": "thank",
+          "predicate": "thank_you",
+          "participants": [],
+          "negated": false,
+          "time": [],
+          "quantities": [],
+          "entities": [],
+          "conditions": [],
+          "references": [],
+          "unresolved": []
+        },
+        "unresolved": []
+      }
+    },
+    {
+      "id": "yes-isolated",
+      "english": "Yes",
+      "context": [],
+      "context_independent": true,
+      "review_status": "candidate",
+      "meaning": {
+        "intent": "respond",
+        "predicate": "yes",
+        "participants": [],
+        "negated": false,
+        "time": [],
+        "quantities": [],
+        "entities": [],
+        "conditions": [],
+        "references": [],
+        "unresolved": []
+      },
+      "construction": {
+        "manual_sequence": [
+          {
+            "id": "s1",
+            "sign_id": "YES"
+          }
+        ],
+        "grammar": {
+          "question_type": "none"
+        },
+        "nonmanuals": [],
+        "expressed_meaning": {
+          "intent": "respond",
+          "predicate": "yes",
+          "participants": [],
+          "negated": false,
+          "time": [],
+          "quantities": [],
+          "entities": [],
+          "conditions": [],
+          "references": [],
+          "unresolved": []
+        },
+        "unresolved": []
+      }
+    },
+    {
+      "id": "no-isolated",
+      "english": "No",
+      "context": [],
+      "context_independent": true,
+      "review_status": "candidate",
+      "meaning": {
+        "intent": "respond",
+        "predicate": "no",
+        "participants": [],
+        "negated": true,
+        "time": [],
+        "quantities": [],
+        "entities": [],
+        "conditions": [],
+        "references": [],
+        "unresolved": []
+      },
+      "construction": {
+        "manual_sequence": [
+          {
+            "id": "s1",
+            "sign_id": "NO"
+          }
+        ],
+        "grammar": {
+          "question_type": "none"
+        },
+        "nonmanuals": [],
+        "expressed_meaning": {
+          "intent": "respond",
+          "predicate": "no",
+          "participants": [],
+          "negated": true,
+          "time": [],
+          "quantities": [],
+          "entities": [],
+          "conditions": [],
+          "references": [],
+          "unresolved": []
+        },
+        "unresolved": []
+      }
+    }
+  ],
+  "_source": "Application-authored unreviewed fixtures; motion references point to ASL-LEX-derived parameters. See ../LICENSE and ../../NOTICE.",
+  "_license": "CC BY-NC 4.0"
+}

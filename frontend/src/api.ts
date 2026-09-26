@@ -2,7 +2,7 @@ import type { Interpretation, Phrase } from './types'
 import { LOCAL_PHRASES, localInterpret } from './data'
 const base = (import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')
 
-export async function fetchHealth(): Promise<{status: string; live_configured: boolean; transcription_model:string}|null> {
+export async function fetchHealth(): Promise<{status: string; live_configured: boolean; transcription_model:string; catalog_backend:string}|null> {
   try { const r = await fetch(`${base}/api/health`, { signal:AbortSignal.timeout(2000) }); return r.ok ? await r.json() : null }
   catch { return null }
 }
@@ -30,4 +30,13 @@ export function liveWsUrl():string {
   if (base) return `${base.replace(/^http/,'ws')}/ws/live`
   const proto=location.protocol==='https:'?'wss':'ws'
   return `${proto}://${location.host}/ws/live`
+}
+
+export async function planASL(text: string, context: string[]): Promise<import('./types').PlanResult> {
+  const response = await fetch(`${base}/api/plan`, {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({text, context}), signal: AbortSignal.timeout(30000),
+  })
+  if (!response.ok) throw new Error(`Planner API ${response.status}`)
+  return response.json()
 }

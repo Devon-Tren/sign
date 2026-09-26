@@ -31,6 +31,19 @@ npm run dev
 
 Open http://localhost:5173 (if it doesn't load, use http://127.0.0.1:5173). Click **Run sample lecture**. You can also type phrases, explore the 3D model, browse the library and visit the tutor. The demo works without the backend too, using the bundled phrase catalog.
 
+## Preview a structured ASL plan
+
+With the backend running, open **Classroom ASL plan** below the live panels.
+Try “How are you?”, “What is your name?”, or any other sentence. The preview
+shows the candidate gloss, intended meaning, expression spans, and animation.
+Unknown concepts are fingerspelled; with `OPENAI_API_KEY`, a two-stage model first
+extracts meaning and then constructs a gloss from playable signs.
+
+These are unreviewed fixtures, not verified translations. Typed text and finalized
+microphone transcripts share this planner and playback queue. Candidate sequences
+play in the hackathon UI with an experimental label. No approved constructions
+are bundled. See [the planner contract and required assets](backend/README.md#experimental-asl-planning).
+
 ## Enable real microphone transcription
 
 1. Copy `sign/backend/.env.example` to `sign/backend/.env`.
@@ -49,7 +62,7 @@ API usage incurs charges. MediaPipe webcam tracking runs on device, but the mode
 | Classroom | Simulated streaming six-line lecture | Works without API key |
 | Classroom | Server-side realtime microphone transcription | Integrated; requires API key, model access, network, browser mic permissions |
 | Classroom | Independent animation queue, replay, pause, speed, transcript history, export | Implemented |
-| Classroom | GPT-4.1 closed-catalog phrase selection / offline heuristic | Integrated / fallback |
+| Classroom | Structured gloss planning / known-sign and fingerspelling fallback | Integrated; experimental |
 | Library | SQLite phrase catalog, search, per-phrase preview and metadata | Implemented; 12 **unverified** starter clips |
 | Tutor | Webcam MediaPipe hand detection + finger-joint measurements | Integrated; browser permission and model download required |
 | Tutor | 4 handshape drills across 3 levels, per-finger corrective guidance, persistence | Implemented; **not** ASL recognition |
@@ -160,3 +173,5 @@ This repository is **dual-licensed**. The two licenses are not interchangeable:
 **Before any commercial use:** the NonCommercial term covers `data/` only, but the app reads that file at runtime. Remove `data/asl_lex_params.json` and source the phonological parameters independently, or obtain a separate license from the ASL-LEX authors. The MIT-licensed code is unaffected.
 
 The bundled gestures remain unverified placeholders regardless of license terms — see "Why the signing is marked as a placeholder" above before any accessibility deployment.
+
+See [the playback contract and reviewer workflow](docs/ASL_PLAYBACK_AND_REVIEW.md) for review packets and evaluation cases.

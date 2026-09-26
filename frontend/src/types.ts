@@ -1,4 +1,4 @@
-export type Tab = 'live' | 'learn' | 'library' | 'settings'
+export type Tab = 'home' | 'live' | 'learn' | 'library' | 'settings'
 export type Phrase = {
   id: string
   english: string
@@ -10,6 +10,8 @@ export type Phrase = {
   animation_file: string | null
 }
 export type SelectedPhrase = {
+  playback?: PlaybackTimeline
+  gloss?: string[]
   phrase_id: string
   label: string
   matched_text: string
@@ -28,6 +30,8 @@ export type Segment = {
   text: string
   timestamp: Date
   selected: SelectedPhrase[]
+  planResult?: PlanResult
+  planError?: string
   coverage?: Interpretation['coverage']
   source: 'demo' | 'microphone' | 'text'
 }
@@ -39,4 +43,29 @@ export type Drill = {
   target: 'open' | 'index' | 'fist' | 'two-open'
   clipId: string
   instructions: string[]
+}
+
+export type PlanResult = {
+  source_text: string
+  mode: 'catalog-example' | 'experimental-model' | 'fingerspell-fallback' | 'unavailable'
+  review_status: 'candidate' | 'reviewed'
+  playback: PlaybackTimeline | null
+  rehearsal: PlaybackTimeline | null
+  review_fingerprint?: string
+  unresolved: string[]
+  plan: null | {
+    meaning: { intent: string; predicate: string; negated: boolean }
+    manual_sequence: { id: string; sign_id: string }[]
+  }
+  validation: null | { issues: string[]; motion_issues: string[]; executable: boolean; playback_policy: string; linguistic_review: string }
+}
+
+export type PlaybackTimeline = {
+  version: 2
+  renderer: 'sign-procedural-v2'
+  duration_ms: number
+  clips: {anchor: string; sign_id: string; clip_id: string; start_ms: number; end_ms: number; realization: string}[]
+  nonmanuals: {profile_id: string; start_ms: number; end_ms: number; controls: {
+    brow: number; mouth: number; head: readonly [number, number, number]; torso: number
+  }}[]
 }

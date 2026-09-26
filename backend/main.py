@@ -19,7 +19,9 @@ from pydantic import BaseModel, Field
 from websockets.asyncio.client import connect as ws_connect
 
 from db import get_connection, get_phrases, init_db
+from catalog_store import catalog_backend, init_catalog_store
 from interpreter import interpret
+from planner import PlanRequest, create_plan
 
 load_dotenv(Path(__file__).parent / '.env')
 logging.basicConfig(level=logging.INFO)
@@ -27,6 +29,7 @@ log = logging.getLogger('sign')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    init_catalog_store()
     conn = get_connection()
     init_db(conn)
     app.state.db = conn
@@ -51,6 +54,7 @@ class FeedbackRequest(BaseModel):
 async def health():
     return {'status': 'ok', 'project': 'sign',
             'live_configured': bool(os.getenv('OPENAI_API_KEY', '').strip()),
+            'catalog_backend': catalog_backend(),
             'transcription_model': os.getenv('OPENAI_TRANSCRIBE_MODEL', 'gpt-live-transcribe')}
 
 @app.get('/api/phrases')
@@ -60,6 +64,10 @@ async def phrases():
 @app.post('/api/interpret')
 async def interpret_endpoint(body: InterpretationRequest):
     return await interpret(body.text, get_phrases(app.state.db))
+
+@app.post('/api/plan')
+async def plan_endpoint(body: PlanRequest):
+    return await create_plan(body)
 
 @app.post('/api/feedback')
 async def feedback(body: FeedbackRequest):
