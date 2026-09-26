@@ -56,14 +56,35 @@ export type Segment = {
   gate?: MatchGate
   source: 'demo' | 'microphone' | 'text'
 }
-export type Drill = {
+export type HandshapeTarget = 'open' | 'index' | 'fist' | 'two-open'
+export type PracticeMode = 'handshape' | 'full-sign' | 'demo-only'
+export type LearningItem = {
+  id: string
+  lessonId: string
+  name: string
+  description: string
+  animationId: string
+  instructions: string[]
+  components: {
+    handshape?: string
+    position?: string
+    movement?: string
+    orientation?: string
+    focus?: string
+  }
+  practice: {
+    enabled: boolean
+    mode: PracticeMode
+    targetHandState?: HandshapeTarget
+    scopeLabel: string
+  }
+  validationStatus: 'illustrative' | 'unverified' | 'reviewed'
+}
+export type Lesson = {
   id: string
   title: string
-  level: 1 | 2 | 3
-  intro: string
-  target: 'open' | 'index' | 'fist' | 'two-open'
-  clipId: string
-  instructions: string[]
+  subtitle: string
+  items: string[]
 }
 
 export type PlanResult = {

@@ -43,20 +43,25 @@ Browser fallback is expected to work best in current Chrome and Edge releases. I
 
 ### Classroom and Avatar
 
-- Typed text, finalized microphone speech, and a sample lecture can produce captions.
+- Typed text and finalized microphone speech produce captions.
 - Structured experimental gloss planning is exposed through `POST /api/plan`.
 - Known candidate motions and fingerspelling fallbacks compile into a shared playback timeline.
-- Avatar controls include pause, replay, speed, rotation, and zoom.
+- The current Classroom displays the partial or latest transcript over the avatar and provides transcript export; it does not currently render the earlier transcript-history panel or sample-lecture control.
 - Candidate motion sequences remain visibly labelled as experimental.
 - Unsupported or failed translations retain their English captions.
 
 ### Learning Studio
 
-- Webcam input using MediaPipe Hand Landmarker.
-- Four basic handshape drills across three levels.
-- Per-finger measurements and corrective guidance.
-- Browser-local progress persistence.
-- This feature assesses limited handshape properties and does not measure ASL fluency.
+- A guided curriculum with Foundations, Greetings, Introductions, and Classroom Basics.
+- Four preserved foundation exercises plus ten sign-oriented learning items.
+- Reference-avatar replay, pause, speed, manual rotation, and concise handshape/position/movement/orientation teaching notes.
+- Guided practice states: ready, countdown, tracking, feedback, and completed.
+- Webcam input and visible landmarks using the existing MediaPipe Hand Landmarker.
+- Per-finger measured results, specific corrections, retry history, and continue-to-next-item flow.
+- Completion still requires 12 stable frames at the existing handshape threshold and persists under the existing browser `localStorage` key.
+- Real handshape practice is enabled for Open hand, Closed hand, Index extension, Two-hand coordination, Hello, Thank you, Please, Me, You, Understand, and Question.
+- Name, Help, and Again are demonstration-only because the current analyzer cannot score their mixed handshapes, movement, position, or orientation.
+- This feature assesses finger shape only and does not validate complete signs or ASL fluency.
 
 ### Phrase Library and Review
 
@@ -91,7 +96,7 @@ Browser fallback is expected to work best in current Chrome and Edge releases. I
 Verified on September 26, 2026:
 
 - Frontend production build: passed.
-- Backend test suite: **21 passed**.
+- Backend test suite: **27 passed**.
 - Frontend development server: returned HTTP `200`.
 - Backend API documentation: returned HTTP `200`.
 - Git whitespace check: passed.

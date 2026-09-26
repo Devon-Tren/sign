@@ -1,4 +1,4 @@
-import type { Drill, Interpretation, Phrase, SelectedPhrase } from './types'
+import type { Interpretation, Phrase, SelectedPhrase } from './types'
 
 export const LOCAL_PHRASES: Phrase[] = [
   ['hello','Hello','hello','Greeting',1],
@@ -99,18 +99,3 @@ export function localInterpret(text: string, phrases: Phrase[] = LOCAL_PHRASES, 
     note: selected.length?'Illustrative animation only; English captions remain the complete message.':'No matching animation; captions remain available.',
   }
 }
-
-export const DRILLS: Drill[] = [
-  {id:'open', title:'Open hand', level:1, target:'open', clipId:'hello',
-   intro:'Start with four extended fingers. Keep your hand comfortably in view.',
-   instructions:['Face your palm toward your camera','Extend your index, middle, ring and little fingers','Hold the position until the stability ring fills']},
-  {id:'fist', title:'Closed hand', level:1, target:'fist', clipId:'yes',
-   intro:'Make a relaxed fist without straining your fingers.',
-   instructions:['Place your wrist within the camera frame','Curl all four fingers gently','Hold while the tracker checks your handshape']},
-  {id:'index', title:'Index extension', level:2, target:'index', clipId:'question',
-   intro:'Practice independent finger control using one extended index finger.',
-   instructions:['Extend your index finger','Keep your middle, ring and little fingers curled','Hold for a stable reading']},
-  {id:'two-open', title:'Two-hand coordination', level:3, target:'two-open', clipId:'learn',
-   intro:'Show an open palm with each hand, simultaneously.',
-   instructions:['Fit both hands in the camera frame','Extend all four fingers on both hands','Hold both positions together']},
-]
