@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { CircleAlert, Download, Mic2, Send, Square, Waves } from 'lucide-react'
+import { CircleAlert, Download, FileAudio, Mic2, Send, Square, Waves } from 'lucide-react'
 import Avatar from './Avatar'
 import { CLIP_LENGTH_MS } from '../clips'
 import { LOCAL_PHRASES, localInterpret } from '../data'
-import { fetchHealth, fetchPhrases, planASL } from '../api'
+import { fetchHealth, fetchPhrases, planASL, transcribeAudio } from '../api'
 import type { Phrase, Segment, SelectedPhrase } from '../types'
 import { useLiveAudio } from '../hooks/useLiveAudio'
 
@@ -13,11 +13,14 @@ export default function Live(){
   const [segments,setSegments]=useState<Segment[]>([])
   const [partial,setPartial]=useState('')
   const [draft,setDraft]=useState('')
+  const [importing,setImporting]=useState(false)
+  const [fileError,setFileError]=useState('')
   const [speed]=useState(1)
   const [paused]=useState(false)
   const [queue,setQueue]=useState<SelectedPhrase[]>([])
   const [playing,setPlaying]=useState<SelectedPhrase|null>(null)
   const nextId=useRef(1)
+  const fileInputRef=useRef<HTMLInputElement|null>(null)
   const enqueue=useCallback((items:SelectedPhrase[])=>{
     setQueue(old=>[...old,...items].slice(-32))
   },[])
@@ -76,6 +79,21 @@ export default function Live(){
     a.download=`sign-transcript-${new Date().toISOString().slice(0,10)}.txt`;a.click();URL.revokeObjectURL(a.href)
   }
   const startMic=async()=>{generation.current++;recentContext.current=[];setQueue([]);setPlaying(null);await live.start()}
+  const handleAudioImport=async(file:File|null)=>{
+    if(!file)return
+    setFileError('');setImporting(true);setPartial(`Transcribing ${file.name}...`)
+    try{
+      const result=await transcribeAudio(file)
+      setPartial('')
+      await handleFinal(result.text,'text')
+    }catch(err){
+      setPartial('')
+      setFileError(err instanceof Error?err.message:String(err))
+    }finally{
+      setImporting(false)
+      if(fileInputRef.current)fileInputRef.current.value=''
+    }
+  }
   const currentGloss=playing?.gloss?.join(' Â· ')
   const latestTranscript=segments.at(-1)?.text
   const currentLabel=partial||latestTranscript||currentGloss||playing?.label||'Ready when you are'
@@ -96,9 +114,11 @@ export default function Live(){
         <div className="playback-panel live-control-panel">
           <div className="live-control-mic">
             <button className={`mic-button ${live.status==='listening'?'mic-active':''}`} disabled={live.status==='connecting'||live.status==='stopping'} onClick={live.status==='listening'?live.stop:startMic}>{live.status==='listening'?<><Square size={15}/> Stop</>:<><Mic2 size={17}/> {live.status==='connecting'?'Connecting...':'Mic'}</>}</button>
+            <input ref={fileInputRef} className="sr-only" type="file" accept="audio/*" onChange={e=>void handleAudioImport(e.target.files?.[0]||null)}/>
+            <button className="secondary-button audio-import-button" disabled={importing} onClick={()=>fileInputRef.current?.click()}><FileAudio size={16}/> {importing?'Importing...':'Audio file'}</button>
           </div>
           <div className="live-control-text">
-            {live.error&&<div className="inline-error"><CircleAlert size={15}/>{live.error}</div>}
+            {(live.error||fileError)&&<div className="inline-error"><CircleAlert size={15}/>{live.error||fileError}</div>}
             <div className="entry-row"><input value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){void handleFinal(draft,'text');setDraft('')}}} placeholder="Type a sentence for live interpretation..." aria-label="Type sample spoken text"/><button className="send-button" title="Add sentence to transcript" disabled={!draft.trim()} onClick={()=>{void handleFinal(draft,'text');setDraft('')}}><Send size={17}/></button></div>
             <div className="connection-hint"><span className={`small-dot ${backend?.live_configured?'green':'amber'}`}/>{backend?.live_configured?'Model translation and microphone configured':backend?'Local phrases and fingerspelling available Â· add API key for model gloss':'Local demo works without the backend'}{backend?.catalog_backend?` Â· catalog: ${backend.catalog_backend}`:''}{live.connectedModel?` Â· ${live.connectedModel}`:''}</div>
           </div>

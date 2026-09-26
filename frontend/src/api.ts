@@ -40,3 +40,20 @@ export async function planASL(text: string, context: string[]): Promise<import('
   if (!response.ok) throw new Error(`Planner API ${response.status}`)
   return response.json()
 }
+
+export async function transcribeAudio(file: File): Promise<{text: string; filename?: string; model?: string}> {
+  const body = new FormData()
+  body.append('file', file)
+  const response = await fetch(`${base}/api/transcribe-audio`, {
+    method: 'POST', body, signal: AbortSignal.timeout(90000),
+  })
+  if (!response.ok) {
+    let message = `Audio transcription API ${response.status}`
+    try {
+      const error = await response.json()
+      if (error?.detail) message = error.detail
+    } catch {}
+    throw new Error(message)
+  }
+  return response.json()
+}

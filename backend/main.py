@@ -7,13 +7,14 @@ import json
 import logging
 import os
 from array import array
+from io import BytesIO
 from contextlib import asynccontextmanager
 from pathlib import Path
 from time import monotonic
 import sys
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from websockets.asyncio.client import connect as ws_connect
@@ -68,6 +69,38 @@ async def interpret_endpoint(body: InterpretationRequest):
 @app.post('/api/plan')
 async def plan_endpoint(body: PlanRequest):
     return await create_plan(body)
+
+@app.post('/api/transcribe-audio')
+async def transcribe_audio(file: UploadFile):
+    key = os.getenv('OPENAI_API_KEY', '').strip()
+    if not key:
+        raise HTTPException(status_code=503, detail='Set OPENAI_API_KEY in backend/.env, then restart the backend.')
+    if file.content_type and not file.content_type.startswith('audio/'):
+        raise HTTPException(status_code=400, detail='Upload an audio file.')
+    data = await file.read()
+    max_bytes = int(os.getenv('SIGN_AUDIO_UPLOAD_MAX_BYTES', str(25 * 1024 * 1024)))
+    if not data:
+        raise HTTPException(status_code=400, detail='Audio file is empty.')
+    if len(data) > max_bytes:
+        raise HTTPException(status_code=413, detail='Audio file is too large.')
+    try:
+        from openai import AsyncOpenAI
+        client = AsyncOpenAI(api_key=key, timeout=45, max_retries=0)
+        audio = BytesIO(data)
+        audio.name = file.filename or 'upload.webm'
+        result = await client.audio.transcriptions.create(
+            model=os.getenv('OPENAI_AUDIO_TRANSCRIBE_MODEL', 'gpt-4o-mini-transcribe'),
+            file=audio,
+        )
+        text = (getattr(result, 'text', '') or '').strip()
+        if not text:
+            raise HTTPException(status_code=422, detail='No speech was detected in that audio file.')
+        return {'text': text, 'filename': file.filename, 'model': os.getenv('OPENAI_AUDIO_TRANSCRIBE_MODEL', 'gpt-4o-mini-transcribe')}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        log.warning('Audio transcription failed: %s', str(exc))
+        raise HTTPException(status_code=502, detail='Audio transcription failed. Check your API key, model access and backend logs.') from exc
 
 @app.post('/api/feedback')
 async def feedback(body: FeedbackRequest):
