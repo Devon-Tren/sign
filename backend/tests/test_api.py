@@ -30,7 +30,35 @@ def test_interpret_without_key():
         assert data['mode'] == 'catalog-only'
         assert [p['phrase_id'] for p in data['selected']] == ['hello', 'thank_you', 'today']
         assert data['coverage'] == 'illustrative-only'
+        assert data['gate']['status'] == 'matched'
+        assert data['gate']['confidence'] >= .9
         assert client.post('/api/interpret', json={'text':'the mitochondria creates ATP'}).json()['coverage'] == 'unsupported'
+
+
+def test_context_gate_disambiguates_intelligence():
+    with TestClient(app) as client:
+        supported = client.post('/api/interpret', json={
+            'text': 'Intelligence can help computers recognize patterns.',
+            'context': ['We are studying machine learning.'],
+        }).json()
+        assert [p['phrase_id'] for p in supported['selected']] == [
+            'artificial_intelligence', 'help', 'computer']
+        assert supported['selected'][0]['match_kind'] == 'contextual'
+        assert supported['gate']['context_used'] is True
+
+        ambiguous = client.post('/api/interpret', json={
+            'text': 'Her intelligence impressed the class.',
+        }).json()
+        assert ambiguous['selected'] == []
+        assert ambiguous['gate']['status'] == 'captions-only'
+        assert 'more context' in ambiguous['gate']['reason']
+
+        conflicting = client.post('/api/interpret', json={
+            'text': 'The military intelligence report arrived.',
+            'context': ['A classified agency briefing.'],
+        }).json()
+        assert conflicting['selected'] == []
+        assert 'conflicting context' in conflicting['gate']['reason']
 
 
 def test_input_validation_and_feedback():

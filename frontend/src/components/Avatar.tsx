@@ -12,7 +12,7 @@ import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import {
   loadSigner, solveArmIK, setHandOrientation, applyHand, setMorph,
-  applySpine, applyHead, applyGazeTarget, setMorphDirect,
+  applySpine, applyHead, applyGazeTarget, setMorphDirect, smoothTarget,
   type ArmChain, type SignerRig,
 } from '../signerRig'
 import { motionFor, idlePose, blendPoses, breathAt, type Pose, type Vec3 } from '../clips'
@@ -158,7 +158,7 @@ function Signer({ clipId, paused, speed, timeline, onComplete }: AvatarProps & {
     const drive = (a: ArmChain, sign: number, arm: Vec3[] | null, fallback: Vec3[]) => {
       const [target, palm, point] = arm ?? fallback
       toWorld(rig, target, _t)
-      solveArmIK(a, _t, sign, dt)
+      solveArmIK(a, smoothTarget(a, _t, dt), sign, dt)
       setHandOrientation(a, toDir(palm, _p), toDir(point, _q), dt)
     }
     const unpack = (a: Pose['rightArm']): Vec3[] | null => (a ? [a.target, a.palm, a.point] : null)
@@ -255,7 +255,7 @@ export default function Avatar({ clipId, paused = false, speed = 1, compact = fa
     >
       <Canvas
         shadows
-        camera={{ position: [0, 0.58, compact ? 3.15 : 2.95], fov: 38 }}
+        camera={{ position: [0, 0.52, compact ? 3.35 : 3.25], fov: 38 }}
         gl={{ alpha: true, antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
         dpr={[1, 1.75]}
         onCreated={({ gl }) => { gl.shadowMap.type = THREE.PCFSoftShadowMap }}

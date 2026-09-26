@@ -8,6 +8,11 @@ export type Phrase = {
   validation_status: 'illustrative' | 'validated'
   notes: string
   animation_file: string | null
+  meaning: string
+  context_aliases: string
+  positive_contexts: string
+  negative_contexts: string
+  match_threshold: number
 }
 export type SelectedPhrase = {
   playback?: PlaybackTimeline
@@ -17,12 +22,26 @@ export type SelectedPhrase = {
   matched_text: string
   validation_status: 'illustrative' | 'validated'
   animation_file: string | null
+  meaning?: string
+  match_confidence: number
+  match_threshold: number
+  match_kind: 'exact' | 'contextual' | 'fallback'
+  match_reason: string
+  rendering_source?: 'catalog' | 'catalog-plan' | 'fingerspelling-fallback'
+}
+export type MatchGate = {
+  status: 'matched' | 'captions-only'
+  strategy: 'context-aware-catalog-v1'
+  confidence: number
+  context_used: boolean
+  reason: string
 }
 export type Interpretation = {
   spoken: string
   selected: SelectedPhrase[]
   mode: string
   coverage: 'illustrative-only' | 'unsupported'
+  gate: MatchGate
   note: string
 }
 export type Segment = {
@@ -30,9 +49,11 @@ export type Segment = {
   text: string
   timestamp: Date
   selected: SelectedPhrase[]
+  catalogMatches?: SelectedPhrase[]
   planResult?: PlanResult
   planError?: string
   coverage?: Interpretation['coverage']
+  gate?: MatchGate
   source: 'demo' | 'microphone' | 'text'
 }
 export type Drill = {

@@ -153,6 +153,17 @@ def test_arbitrary_phrase_fingerspells_unknown_concepts():
     assert all(step['sign_id'].startswith('FS:') for step in result['plan']['manual_sequence'])
 
 
+def test_fast_plan_never_waits_for_model(monkeypatch):
+    monkeypatch.setenv('OPENAI_API_KEY', 'configured-but-not-called')
+    async def should_not_run(*args, **kwargs):
+        raise AssertionError('fast planning called the model')
+    monkeypatch.setattr('planner.model_output', should_not_run)
+    result = asyncio.run(create_plan(PlanRequest(
+        text='Quantum entanglement is fascinating.', fast=True)))
+    assert result['mode'] == 'fingerspell-fallback'
+    assert result['playback']
+
+
 def test_fallback_preserves_negation_time_and_quantity_fields():
     result = asyncio.run(create_plan(PlanRequest(text="Don't submit two files before Friday.")))
     meaning = result['plan']['meaning']

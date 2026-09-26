@@ -11,7 +11,7 @@ uvicorn main:app --reload --host 127.0.0.1 --port 8000
 
 - `GET /api/health` live API status
 - `GET /api/phrases` phrase catalog (all seed clips illustrative / unverified)
-- `POST /api/interpret` `{ "text": "..." }` selection from closed phrase library
+- `POST /api/interpret` `{ "text": "...", "context": ["..."] }` context-aware selection from the closed phrase library
 - `POST /api/feedback` `{ "drill_name":..., "observed":..., "expected":..., "score":... }`
 - `WS /ws/live` PCM16 mono 24 kHz binary audio frames, message events (`connected`, `partial`, `final`, `error`)
 
@@ -22,9 +22,10 @@ Run tests: `python -m pytest tests -q`.
 ## Experimental ASL planning
 
 `POST /api/plan` accepts `{"text":"Could you explain that again?", "context":[]}`.
-The classroom screen has a separate **Classroom ASL plan** preview. Typed input
-and finalized microphone transcripts call this same endpoint and enter one
-ordered playback queue.
+It remains an experimental planning and evaluation endpoint. Live typed and
+finalized microphone input first use the closed-catalog Smart Sign Gate, then
+use the deterministic `fast` planner path for visibly labelled fingerspelling
+when the database has no match.
 
 Without a key, bundled examples such as `How are you?`, `What is your name?`,
 and `Where is the bathroom?` use candidate gloss plans. Other input matches
@@ -41,9 +42,9 @@ full catalog. See the [OpenAI structured-output guide](https://developers.openai
 The model can use registered signs or `FS:WORD` tokens for unsupported concepts.
 Model failures fall back to the same visible fingerspelling path.
 
-The seed examples and rendered motions are unreviewed. Typed and microphone
-inputs now share the planner. Candidate playback is enabled for this hackathon
-prototype and remains labelled experimental. Set `SIGN_PLAYBACK_POLICY=reviewed-only`
+The seed examples and rendered motions are unreviewed. Candidate playback is
+enabled for this hackathon prototype and remains labelled experimental. Set
+`SIGN_PLAYBACK_POLICY=reviewed-only`
 to block everything without a current review fingerprint. The motion contract
 and reviewer workflow are described in
 [ASL playback and review](../docs/ASL_PLAYBACK_AND_REVIEW.md).

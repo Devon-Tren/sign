@@ -31,18 +31,19 @@ npm run dev
 
 Open http://localhost:5173 (if it doesn't load, use http://127.0.0.1:5173). Click **Run sample lecture**. You can also type phrases, explore the 3D model, browse the library and visit the tutor. The demo works without the backend too, using the bundled phrase catalog.
 
-## Preview a structured ASL plan
+## Structured ASL planning
 
-With the backend running, open **Classroom ASL plan** below the live panels.
-Try “How are you?”, “What is your name?”, or any other sentence. The preview
-shows the candidate gloss, intended meaning, expression spans, and animation.
-Unknown concepts are fingerspelled; with `OPENAI_API_KEY`, a two-stage model first
-extracts meaning and then constructs a gloss from playable signs.
+The backend planner produces a candidate gloss, intended meaning, expression
+spans, and animation timeline. Unknown concepts are fingerspelled; with
+`OPENAI_API_KEY`, a two-stage model can first extract meaning and then construct
+a gloss from playable signs. The live screen calls the deterministic fast path
+so typing does not wait for a model round trip.
 
-These are unreviewed fixtures, not verified translations. Typed text and finalized
-microphone transcripts share this planner and playback queue. Candidate sequences
-play in the hackathon UI with an experimental label. No approved constructions
-are bundled. See [the planner contract and required assets](backend/README.md#experimental-asl-planning).
+These are unreviewed fixtures, not verified translations. Live typed text and
+finalized microphone transcripts use the fast Smart Sign Gate: exact stored phrases pass immediately,
+ambiguous aliases require supporting recent context, and unmatched text gets a
+clearly labelled deterministic fingerspelling fallback. No approved constructions are bundled. See
+[the planner contract and required assets](backend/README.md#experimental-asl-planning).
 
 The hackathon demo includes a [48-input classroom dataset](data/asl/demo_utterances.json)
 covering help, clarification, introductions, directions, basic needs,
@@ -62,7 +63,12 @@ For server-side OpenAI transcription:
 3. Restart the backend. The frontend connection indicator should say **Live API configured**.
 4. Click **Start microphone**, speak clearly, and pause between clauses.
 
-The backend sends mono 24 kHz PCM through a server-only WebSocket, segments speech with simple energy VAD, and uses `gpt-live-transcribe`. If that connection is unavailable, the app automatically tries browser speech recognition. GPT-4.1, if configured, plans supported avatar motions from the finalized transcript. Unsupported content stays visible as English captions.
+The backend sends mono 24 kHz PCM through a server-only WebSocket, segments
+speech with simple energy VAD, and uses `gpt-live-transcribe`. If that connection
+is unavailable, the app automatically tries browser speech recognition. Final
+text is checked against the stored catalog and recent context. Unsupported text
+remains captioned and gets a clearly labelled deterministic fingerspelling
+fallback; it is never presented as a database match.
 
 API usage incurs charges. MediaPipe webcam tracking runs on device, but the model and WASM runtime are downloaded from Google's model host and jsDelivr at first launch. Never record or transmit someone else's lecture without permission.
 
@@ -74,8 +80,9 @@ API usage incurs charges. MediaPipe webcam tracking runs on device, but the mode
 | Classroom | Simulated streaming six-line lecture | Works without API key |
 | Classroom | Browser microphone transcription | Integrated; requires browser support, network, and microphone permission |
 | Classroom | Server-side realtime microphone transcription | Integrated; requires API key, model access, network, browser mic permissions |
-| Classroom | Independent animation queue, replay, pause, speed, transcript history, export | Implemented |
-| Classroom | Structured gloss planning / known-sign and fingerspelling fallback | Integrated; experimental |
+| Classroom | Ordered animation queue and transcript export | Implemented |
+| Classroom | Context-aware Smart Sign Gate with confidence threshold and visible fingerspelling fallback | Integrated; 12 starter concepts |
+| API/evaluation | Structured gloss planning and fingerspelling fallback | Integrated; experimental |
 | Library | SQLite phrase catalog, search, per-phrase preview and metadata | Implemented; 12 **unverified** starter clips |
 | Tutor | Webcam MediaPipe hand detection + finger-joint measurements | Integrated; browser permission and model download required |
 | Tutor | 4 handshape drills across 3 levels, per-finger corrective guidance, persistence | Implemented; **not** ASL recognition |

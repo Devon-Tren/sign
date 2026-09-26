@@ -51,7 +51,7 @@ def compile_timeline(construction, refs):
                 issues.append(f'Invalid fingerspelling token: {step.sign_id}')
                 continue
             clip = f'fs:{word}'
-            duration = max(900, len(word.replace('-', '')) * 650)
+            duration = max(700, len(word.replace('-', '')) * 360)
             clips.append({'anchor': step.id, 'sign_id': step.sign_id, 'clip_id': clip,
                           'start_ms': offset, 'end_ms': offset + duration,
                           'realization': 'fingerspelling-approximation'})

@@ -10,13 +10,13 @@ export async function fetchPhrases(): Promise<Phrase[]> {
   try { const r = await fetch(`${base}/api/phrases`,{signal:AbortSignal.timeout(3000)}); return r.ok ? await r.json() : LOCAL_PHRASES }
   catch { return LOCAL_PHRASES }
 }
-export async function interpret(text:string, phrases:Phrase[]): Promise<Interpretation> {
+export async function interpret(text:string, phrases:Phrase[], context:string[]=[]): Promise<Interpretation> {
   try {
     const r = await fetch(`${base}/api/interpret`, {method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({text}), signal:AbortSignal.timeout(18000)})
+      body:JSON.stringify({text,context}), signal:AbortSignal.timeout(4000)})
     if (!r.ok) throw new Error(`API ${r.status}`)
     return await r.json() as Interpretation
-  } catch { return localInterpret(text,phrases) }
+  } catch { return localInterpret(text,phrases,context) }
 }
 export async function generateFeedback(drill_name:string, observed:string, expected:string, score:number):Promise<string> {
   try {
@@ -32,11 +32,16 @@ export function liveWsUrl():string {
   return `${proto}://${location.host}/ws/live`
 }
 
-export async function planASL(text: string, context: string[]): Promise<import('./types').PlanResult> {
-  const response = await fetch(`${base}/api/plan`, {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({text, context}), signal: AbortSignal.timeout(30000),
+export async function planASL(text: string, context: string[], fast = false): Promise<import('./types').PlanResult> {
+  const request = (includeFast: boolean) => fetch(`${base}/api/plan`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(includeFast ? {text,context,fast} : {text,context}),
+    signal: AbortSignal.timeout(fast ? 6000 : 30000),
   })
+  let response = await request(true)
+  // A dev server may still be running the pre-fast schema. Keep typing useful
+  // immediately; after backend restart the deterministic fast flag takes over.
+  if (fast && response.status === 422) response = await request(false)
   if (!response.ok) throw new Error(`Planner API ${response.status}`)
   return response.json()
 }

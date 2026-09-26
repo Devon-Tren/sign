@@ -419,9 +419,10 @@ export function blendPoses(a: Pose, b: Pose, t: number): Pose {
 function fingerspellPose(word: string, elapsedSeconds: number): Pose {
   const letters = word.toUpperCase().replace(/[^A-Z0-9]/g, '').split('')
   if (!letters.length) return idlePose(elapsedSeconds)
-  const letterIndex = Math.min(letters.length - 1, Math.floor(elapsedSeconds / 0.65))
+  const letterSeconds = 0.36
+  const letterIndex = Math.min(letters.length - 1, Math.floor(elapsedSeconds / letterSeconds))
   const letter = letters[letterIndex]
-  const phase = (elapsedSeconds / 0.65) % 1
+  const phase = (elapsedSeconds / letterSeconds) % 1
   const tracing: Vec3 = letter === 'J'
     ? [Math.sin(phase * Math.PI) * 0.11, -phase * 0.15, 0]
     : letter === 'Z'
@@ -452,18 +453,18 @@ const mirror = (v: Vec3): Vec3 => [-v[0], v[1], v[2]]
  * which is what read as a shop dummy. A person at rest carries a bend in the
  * elbow, keeps the hands clear of the body, and is never symmetrical.
  */
-const REST_RIGHT: Vec3 = [0.375, -0.80, 0.17]
-const REST_LEFT: Vec3 = [-0.35, -0.825, 0.14]
-const REST_PALM_RIGHT: Vec3 = [-0.42, 0.0, -0.91]
-const REST_PALM_LEFT: Vec3 = [0.42, 0.0, -0.91]
+const REST_RIGHT: Vec3 = [0.36, -0.77, 0.31]
+const REST_LEFT: Vec3 = [-0.345, -0.79, 0.29]
+const REST_PALM_RIGHT: Vec3 = [-0.70, 0.0, -0.71]
+const REST_PALM_LEFT: Vec3 = [0.70, 0.0, -0.71]
 const REST_POINT_RIGHT: Vec3 = [0.04, -0.98, 0.17]
 const REST_POINT_LEFT: Vec3 = [-0.03, -0.985, 0.14]
 
 /** Hands at rest curl slightly, each finger a little more than the last. */
 const IDLE_HAND: HandPose = hand(
-  [f([0.22, 0.32, 0.18], -0.005), f([0.26, 0.36, 0.20], 0.0),
-   f([0.30, 0.40, 0.22], 0.005), f([0.35, 0.44, 0.24], 0.012)],
-  { abduct: 0.22, rotate: 0.36, curl: [0.30, 0.26] },
+  [f([0.20, 0.30, 0.17], -0.004), f([0.24, 0.35, 0.20], 0.0),
+   f([0.29, 0.40, 0.23], 0.005), f([0.34, 0.45, 0.26], 0.012)],
+  { abduct: 0.21, rotate: 0.34, curl: [0.28, 0.24] },
 )
 
 export function idlePose(t: number): Pose {

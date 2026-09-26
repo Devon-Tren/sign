@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from time import monotonic
 import sys
+from typing import Annotated
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
@@ -44,6 +45,7 @@ app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=Fals
 
 class InterpretationRequest(BaseModel):
     text: str = Field(min_length=1, max_length=3000)
+    context: list[Annotated[str, Field(max_length=3000)]] = Field(default_factory=list, max_length=5)
 
 class FeedbackRequest(BaseModel):
     drill_name: str = Field(max_length=100)
@@ -64,7 +66,7 @@ async def phrases():
 
 @app.post('/api/interpret')
 async def interpret_endpoint(body: InterpretationRequest):
-    return await interpret(body.text, get_phrases(app.state.db))
+    return await interpret(body.text, get_phrases(app.state.db), body.context)
 
 @app.post('/api/plan')
 async def plan_endpoint(body: PlanRequest):

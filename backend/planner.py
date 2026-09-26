@@ -53,6 +53,9 @@ class Construction(StrictModel):
 class PlanRequest(StrictModel):
     text: str = Field(min_length=1, max_length=3000, pattern=r'\S')
     context: list[Annotated[str, Field(max_length=3000)]] = Field(default_factory=list, max_length=10)
+    # Live playback uses the deterministic catalog/fingerspelling path so a
+    # typed sentence never waits on two model calls before anything moves.
+    fast: bool = False
 
 
 def catalog():
@@ -236,7 +239,7 @@ async def create_plan(request: PlanRequest):
     if example:
         meaning = Meaning.model_validate(example['meaning'])
         construction = Construction.model_validate(example['construction'])
-    elif os.getenv('OPENAI_API_KEY', '').strip():
+    elif not request.fast and os.getenv('OPENAI_API_KEY', '').strip():
         try:
             from openai import AsyncOpenAI
             async with AsyncOpenAI(timeout=12, max_retries=0) as client:

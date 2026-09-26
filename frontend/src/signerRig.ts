@@ -95,6 +95,10 @@ export type ArmChain = {
   restQ: { upper: THREE.Quaternion; fore: THREE.Quaternion; hand: THREE.Quaternion }
   /** Direction each bone points in its own local frame, at rest. */
   axis: { upper: THREE.Vector3; fore: THREE.Vector3 }
+  /** Forearm aim target from the IK, before pronation is folded in. */
+  foreAim: THREE.Quaternion
+  /** Critically-damped follower for the IK target, see smoothTarget. */
+  smooth: { pos: THREE.Vector3; vel: THREE.Vector3; started: boolean }
   /** Hand frame at rest, in world space. */
   palmNormal: THREE.Vector3
   across: THREE.Vector3
@@ -230,6 +234,8 @@ function buildArm(root: THREE.Object3D, side: 'L' | 'R'): ArmChain {
     upperLen: wUpper.distanceTo(wFore),
     foreLen: wFore.distanceTo(wHand),
     restQ: { upper: upper.quaternion.clone(), fore: fore.quaternion.clone(), hand: hand.quaternion.clone() },
+    foreAim: fore.quaternion.clone(),
+    smooth: { pos: new THREE.Vector3(), vel: new THREE.Vector3(), started: false },
     axis: { upper: localAxisToChild(upper), fore: localAxisToChild(fore) },
     palmNormal, across, along,
   }
@@ -372,17 +378,57 @@ const ARM_LAMBDA = 9
 const WRIST_LAMBDA = 12
 const FINGER_LAMBDA = 19
 
-/** Rotate `b` so that its local `axis` points along world direction `dir`. */
-function aimBone(b: THREE.Bone, axis: THREE.Vector3, restQ: THREE.Quaternion, dir: THREE.Vector3, dt: number, lambda = 13) {
+/**
+ * Local quaternion that points `b`'s local `axis` along world direction `dir`.
+ * Written into `out` rather than applied, so a caller can fold in extra
+ * rotation before committing - the forearm needs its aim and its pronation
+ * applied as one target, not as two writes that fight each other.
+ */
+function aimQuaternion(b: THREE.Bone, axis: THREE.Vector3, restQ: THREE.Quaternion, dir: THREE.Vector3, out: THREE.Quaternion) {
   b.parent?.getWorldQuaternion(_pq)
   _rw.copy(_pq).multiply(restQ)
   _cur.copy(axis).applyQuaternion(_rw).normalize()
   _dq.setFromUnitVectors(_cur, dir)
-  _want.copy(_dq).multiply(_rw)
+  out.copy(_dq).multiply(_rw)
   _pq.invert()
-  _want.premultiply(_pq)
+  out.premultiply(_pq)
+}
+
+/** Rotate `b` so that its local `axis` points along world direction `dir`. */
+function aimBone(b: THREE.Bone, axis: THREE.Vector3, restQ: THREE.Quaternion, dir: THREE.Vector3, dt: number, lambda = 13) {
+  aimQuaternion(b, axis, restQ, dir, _want)
   b.quaternion.slerp(_want, damp(dt, lambda))
   b.updateMatrixWorld(true)
+}
+
+const _springOffset = new THREE.Vector3()
+const _springStep = new THREE.Vector3()
+
+/**
+ * Follow `raw` with a critically-damped spring.
+ *
+ * Damping the joint rotations smooths position but leaves acceleration free, so
+ * a target that jumps still produces a visible snap. Running the target itself
+ * through a second-order follower bounds acceleration, which is what makes the
+ * arm read as carrying weight rather than being teleported.
+ */
+export function smoothTarget(arm: ArmChain, raw: THREE.Vector3, dt: number, omega = 19) {
+  const s = arm.smooth
+  if (!s.started) {
+    s.pos.copy(raw)
+    s.vel.set(0, 0, 0)
+    s.started = true
+    return s.pos
+  }
+  // Closed-form critically damped step for a target held over this frame.
+  // Unlike explicit Euler this stays stable after a dropped/slow frame.
+  const decay = Math.exp(-omega * dt)
+  _springOffset.subVectors(s.pos, raw)
+  _springStep.copy(s.vel).addScaledVector(_springOffset, omega)
+  s.vel.addScaledVector(_springStep, -omega * dt).multiplyScalar(decay)
+  _springOffset.addScaledVector(_springStep, dt).multiplyScalar(decay)
+  s.pos.copy(raw).add(_springOffset)
+  return s.pos
 }
 
 /**
@@ -401,7 +447,7 @@ export function solveArmIK(arm: ArmChain, targetWorld: THREE.Vector3, side: numb
   const offset = Math.acos(THREE.MathUtils.clamp(cosS, -1, 1))
 
   // Elbow pole: down, outward, slightly back, so arms clear the torso.
-  _pole.set(side * 0.62, -1, -0.34).normalize()
+  _pole.set(side * 0.32, -1, -0.20).normalize()
   _bend.crossVectors(_dir, _pole)
   if (_bend.lengthSq() < 1e-6) _bend.set(side, 0, 0)
   _bend.normalize()
@@ -411,8 +457,10 @@ export function solveArmIK(arm: ArmChain, targetWorld: THREE.Vector3, side: numb
   _wr.copy(_sh).addScaledVector(_dir, d)            // wrist position
 
   aimBone(arm.upper, arm.axis.upper, arm.restQ.upper, _tmp, dt, ARM_LAMBDA)
+  // The forearm's aim is recorded, not applied: setHandOrientation folds the
+  // pronation into it and commits both together.
   _tmp.subVectors(_wr, _el).normalize()
-  aimBone(arm.fore, arm.axis.fore, arm.restQ.fore, _tmp, dt, ARM_LAMBDA)
+  aimQuaternion(arm.fore, arm.axis.fore, arm.restQ.fore, _tmp, arm.foreAim)
 }
 
 /**
@@ -423,16 +471,90 @@ export function solveArmIK(arm: ArmChain, targetWorld: THREE.Vector3, side: numb
  * rotation is computed as the delta between the rest hand basis and the
  * desired one, then applied to the hand's rest world rotation.
  */
+const _twist = new THREE.Quaternion()
+const _swing = new THREE.Quaternion()
+const _inv = new THREE.Quaternion()
+const _swingAxis = new THREE.Vector3()
+const _foreAimWorld = new THREE.Quaternion()
+const _foreTarget = new THREE.Quaternion()
+const _rel = new THREE.Quaternion()
+const _canon = new THREE.Quaternion()
+
+/**
+ * The wrist can bend and deviate but cannot twist: rotation about the forearm's
+ * long axis is pronation/supination, which happens along the FOREARM as the
+ * radius crosses the ulna. Roughly 70 degrees of bend is the human limit.
+ */
+const MAX_WRIST_SWING = 1.15
+
+/**
+ * Split `q` into a twist about `axis` and the swing that remains.
+ *
+ * Both outputs are canonicalised to the w >= 0 hemisphere. q and -q are the
+ * same rotation, but the axis extracted from them points opposite ways, so
+ * without this the decomposition flips sign as w crosses zero and the joint
+ * snaps mid-motion.
+ */
+function canonicalise(q: THREE.Quaternion) {
+  if (q.w < 0) q.set(-q.x, -q.y, -q.z, -q.w)
+}
+
+function swingTwist(q: THREE.Quaternion, axis: THREE.Vector3) {
+  _canon.copy(q)
+  canonicalise(_canon)
+  const d = _canon.x * axis.x + _canon.y * axis.y + _canon.z * axis.z
+  _twist.set(axis.x * d, axis.y * d, axis.z * d, _canon.w)
+  if (_twist.lengthSq() < 1e-8) _twist.set(0, 0, 0, 1)
+  else _twist.normalize()
+  canonicalise(_twist)
+  _inv.copy(_twist).invert()
+  _swing.copy(_canon).multiply(_inv)
+  canonicalise(_swing)
+}
+
+/**
+ * Orient the hand so the palm faces `palm` and the fingers point along `point`.
+ *
+ * Palm orientation carries meaning in ASL, so it must be set explicitly rather
+ * than inherited from whatever roll the IK produced. But applying the whole
+ * rotation to the wrist bends it backwards through the forearm and drives the
+ * hand into the body. Instead the required rotation is split: the twist goes to
+ * the forearm as pronation, and only the clamped swing reaches the wrist.
+ */
 export function setHandOrientation(arm: ArmChain, palm: THREE.Vector3, point: THREE.Vector3, dt: number) {
-  basisQuaternion(point, palm, _want)          // desired basis
+  // Desired hand orientation, in world space.
+  basisQuaternion(point, palm, _want)
   _rw.copy(arm.restBasisQ).invert()
   _want.multiply(_rw)                          // delta = desired * rest^-1
-  _want.multiply(arm.handRestWorldQ)           // apply to the rest world rotation
+  _want.multiply(arm.handRestWorldQ)
 
-  arm.hand.parent?.getWorldQuaternion(_pq)
-  _pq.invert()
-  _want.premultiply(_pq)
-  arm.hand.quaternion.slerp(_want, damp(dt, WRIST_LAMBDA))
+  // Where the forearm will be once its IK aim is committed. Measuring against
+  // the aim rather than the forearm's current rotation keeps this stable; using
+  // the current value makes the roll chase itself frame to frame.
+  arm.fore.parent?.getWorldQuaternion(_pq)
+  _foreAimWorld.copy(_pq).multiply(arm.foreAim)
+
+  // Rotation still needed, expressed in the forearm's frame.
+  _rel.copy(_foreAimWorld).invert().multiply(_want)
+  swingTwist(_rel, arm.axis.fore)
+
+  // Pronation belongs to the forearm: the radius rotating over the ulna is what
+  // turns your palm over, not the wrist. Fold it into the aim and commit once.
+  _foreTarget.copy(arm.foreAim).multiply(_twist)
+  arm.fore.quaternion.slerp(_foreTarget, damp(dt, ARM_LAMBDA))
+  arm.fore.updateMatrixWorld(true)
+
+  // Whatever remains is wrist bend, clamped to a human range. Without this the
+  // wrist folds backwards through the forearm and the hand enters the body.
+  const angle = 2 * Math.acos(THREE.MathUtils.clamp(_swing.w, -1, 1))
+  if (angle > MAX_WRIST_SWING) {
+    _swingAxis.set(_swing.x, _swing.y, _swing.z)
+    if (_swingAxis.lengthSq() > 1e-8) {
+      _swingAxis.normalize()
+      _swing.setFromAxisAngle(_swingAxis, MAX_WRIST_SWING)
+    }
+  }
+  arm.hand.quaternion.slerp(_swing, damp(dt, WRIST_LAMBDA))
   arm.hand.updateMatrixWorld(true)
 }
 

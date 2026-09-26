@@ -20,6 +20,30 @@ SEED = [
     ('computer', 'Computer', 'computer|computers', 'Technology', 3, 'illustrative', 'Animation placeholder; NOT verified ASL.'),
 ]
 
+# Matching metadata is deliberately separate from the display aliases above.
+# A context alias is never enough on its own: it must be supported by one of
+# the positive context phrases and must not conflict with a negative phrase.
+SEMANTIC_METADATA = {
+    'hello': ('A greeting or acknowledgment.', '', '', '', .90),
+    'thank_you': ('An expression of thanks or gratitude.', '', '', '', .90),
+    'yes': ('An affirmative answer or confirmation.', '', '', '', .90),
+    'no': ('A negative answer or rejection.', '', '', '', .90),
+    'help': ('A request for or offer of assistance.', '', '', '', .90),
+    'good_morning': ('A greeting used in the morning.', '', '', '', .90),
+    'question': ('A question or request for an answer.', '', '', '', .90),
+    'learn': ('Learning or gaining knowledge.', '', '', '', .90),
+    'understand': ('Understanding or comprehending something.', '', '', '', .90),
+    'today': ('The current day.', '', '', '', .90),
+    'artificial_intelligence': (
+        'Artificial intelligence, machine learning, or computer intelligence.',
+        'intelligence',
+        'artificial|machine learning|computer|computers|algorithm|model|software|technology|data|automation',
+        'military|classified|spy|espionage|intelligence agency|intelligence report|intelligence officer',
+        .88,
+    ),
+    'computer': ('An electronic computer or computers.', '', '', '', .90),
+}
+
 def get_connection(path: str | Path | None = None) -> sqlite3.Connection:
     if path is None:
         path = os.getenv('SIGN_DB_PATH') or DEFAULT_DB
@@ -36,9 +60,26 @@ def init_db(conn: sqlite3.Connection) -> None:
       validation_status TEXT NOT NULL CHECK(validation_status IN ('illustrative','validated')),
       notes TEXT NOT NULL, animation_file TEXT
     )''')
+    # Migrate existing local catalogs in place. SQLite only permits constant
+    # defaults here, which also keeps older user-created rows usable.
+    existing = {row['name'] for row in conn.execute('PRAGMA table_info(phrases)')}
+    migrations = {
+        'meaning': "TEXT NOT NULL DEFAULT ''",
+        'context_aliases': "TEXT NOT NULL DEFAULT ''",
+        'positive_contexts': "TEXT NOT NULL DEFAULT ''",
+        'negative_contexts': "TEXT NOT NULL DEFAULT ''",
+        'match_threshold': 'REAL NOT NULL DEFAULT 0.90',
+    }
+    for column, definition in migrations.items():
+        if column not in existing:
+            conn.execute(f'ALTER TABLE phrases ADD COLUMN {column} {definition}')
     conn.executemany('''INSERT OR IGNORE INTO phrases
       (id, english, aliases, category, level, validation_status, notes)
       VALUES (?, ?, ?, ?, ?, ?, ?)''', SEED)
+    conn.executemany('''UPDATE phrases SET
+      meaning = ?, context_aliases = ?, positive_contexts = ?,
+      negative_contexts = ?, match_threshold = ? WHERE id = ?''',
+      [(*metadata, phrase_id) for phrase_id, metadata in SEMANTIC_METADATA.items()])
     conn.commit()
 
 def get_phrases(conn: sqlite3.Connection) -> list[dict]:
