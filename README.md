@@ -113,9 +113,22 @@ Present this as a *live caption + 3D signing architecture prototype with introdu
 
 From a terminal in the unzipped folder, run `./start.sh`. On macOS you can also use `START_HERE.command` if your system allows local scripts. The first run installs dependencies and may take a few minutes. It will not automatically open the browser; visit http://localhost:5173. If macOS blocks the script, run `bash start.sh` from Terminal. The script creates an empty `backend/.env`; add your API key there and restart when needed.
 
+## The avatar
+
+The signer is a [Microsoft Rocketbox](https://github.com/microsoft/Microsoft-Rocketbox) avatar (MIT licensed). It has a full hand rig — 30 finger bones, three joints per finger plus an opposable thumb — which is what makes distinct ASL handshapes possible, and 175 blend shapes including FACS action units. The eight the app drives are kept and the rest discarded before upload, which saves roughly 70 MB of GPU memory.
+
+Non-manual markers run on those action units: **AU 1+2** (inner and outer brow raise) marks yes/no questions, **AU 4** (brow lowerer) marks WH-questions. This is how ASL linguistics describes non-manuals, so the mapping is direct rather than invented.
+
+Rebuild or swap the avatar with:
+
+```bash
+python scripts/build_avatar.py                     # current signer
+python scripts/build_avatar.py Adults Male_Adult_09  # a different one
+```
+
 ## How the motion is generated
 
-Avatar motion is composed from published phonological descriptors rather than hand-invented joint angles. `data/asl_lex_params.json` holds the handshape, selected fingers, flexion, thumb position, location, movement and sign-type values for 11 catalog entries, extracted from **ASL-LEX 2.0**. At runtime `frontend/src/clips.ts` combines three libraries — handshapes, location anchors and movement primitives — into a pose, and `Avatar.tsx` resolves that pose with two-bone IK and explicit palm orientation.
+Avatar motion is composed from published phonological descriptors rather than hand-invented joint angles. `data/asl_lex_params.json` holds the handshape, selected fingers, flexion, thumb position, location, movement and sign-type values for 11 catalog entries, extracted from **ASL-LEX 2.0**. At runtime `frontend/src/clips.ts` combines three libraries — handshapes, location anchors and movement primitives — into a pose expressed in a **normalised body frame** (origin at the shoulder midpoint, unit of one arm reach), and `frontend/src/signerRig.ts` resolves that pose onto the skeleton with two-bone IK and explicit palm orientation. Because the pose schema is rig-agnostic, swapping the character does not touch the motion code.
 
 Regenerate or extend the extract with:
 

@@ -42,6 +42,26 @@ ASL-LEX 2.0
   phonological parameters independently sourced or licensed. See
   data/README.md before shipping anything revenue-generating.
 
+Microsoft Rocketbox
+  Files:    frontend/public/avatar/signer.fbx
+            frontend/public/avatar/f014_*.webp
+  License:  MIT License, Copyright (c) Microsoft Corporation
+  Source:   https://github.com/microsoft/Microsoft-Rocketbox
+
+  Citation:
+    Gonzalez-Franco, M., Ofek, E., Pan, Y., Antley, A., Steed, A., Spanlang, B.,
+    Maselli, A., Banakou, D., Pelechano, N., Orts-Escolano, S., Orvalho, V.,
+    Trutoiu, L., Wojcik, M., Sanchez-Vives, M. V., Bailenson, J., Slater, M., &
+    Lanier, J. (2020). The Rocketbox Library and the Utility of Freely Available
+    Rigged Avatars. Frontiers in Virtual Reality, 1, 561558.
+    https://doi.org/10.3389/frvir.2020.561558
+
+  Scope of use: one avatar (Professions/Business_Female_01) is redistributed
+  here. Textures were downsampled and re-encoded from TGA to WebP; the mesh is
+  unmodified. Regenerate with scripts/build_avatar.py.
+
+  MIT terms, so no NonCommercial restriction applies to these files.
+
 --------------------------------------------------------------------------------
 RUNTIME DEPENDENCIES (not redistributed; fetched at runtime)
 --------------------------------------------------------------------------------

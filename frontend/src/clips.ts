@@ -35,7 +35,10 @@ export type Pose = {
   leftHand: HandPose
   head: Vec3
   torso: number
-  brow: number
+  /** Non-manual markers. Brow raise marks yes/no questions in ASL; brow
+   *  furrow marks WH-questions. Kept separate because they are not opposites. */
+  browRaise: number
+  browFurrow: number
   mouth: number
 }
 
@@ -103,26 +106,36 @@ export function handshapeFor(name: string | null | undefined): HandPose {
 // Location anchors, in the avatar's body space (same frame as the shoulders).
 // Keyed to ASL-LEX `MajorLocation` / `MinorLocation`.
 // ---------------------------------------------------------------------------
+/**
+ * Location anchors in a NORMALISED BODY FRAME, so they fit any humanoid rig:
+ *   origin  the midpoint between the shoulders
+ *   unit    arm reach (shoulder to wrist)
+ *   +x      the dominant-hand side, +y up, +z forward
+ *
+ * Values are human proportions measured from the rig, not the cartoon
+ * proportions of the earlier primitive avatar.
+ * Keyed to ASL-LEX `MajorLocation` / `MinorLocation`.
+ */
 const ANCHORS: Record<string, Vec3> = {
-  Neutral: [0.34, 1.95, 0.78],
-  Head: [0.36, 2.92, 0.5],
-  Forehead: [0.3, 3.08, 0.46],
-  Eye: [0.3, 2.97, 0.5],
-  Nose: [0.22, 2.86, 0.56],
-  Mouth: [0.24, 2.76, 0.54],
-  Chin: [0.24, 2.64, 0.54],
-  Cheek: [0.48, 2.83, 0.46],
-  HeadAway: [0.82, 2.86, 0.66],
-  UnderChin: [0.26, 2.58, 0.58],
-  Body: [0.3, 1.74, 0.72],
-  Neck: [0.28, 2.4, 0.56],
-  Chest: [0.3, 1.95, 0.76],
-  Hand: [-0.02, 1.86, 0.76],
-  Palm: [-0.02, 1.86, 0.76],
-  Arm: [-0.24, 1.82, 0.7],
-  Other: [0.34, 1.95, 0.78],
+  Neutral: [0.28, -0.32, 0.50],
+  Head: [0.20, 0.29, 0.12],
+  Forehead: [0.18, 0.39, 0.13],
+  Eye: [0.19, 0.32, 0.13],
+  Nose: [0.10, 0.26, 0.16],
+  Mouth: [0.11, 0.21, 0.15],
+  Chin: [0.11, 0.14, 0.15],
+  Cheek: [0.28, 0.25, 0.09],
+  HeadAway: [0.52, 0.30, 0.28],
+  UnderChin: [0.12, 0.10, 0.17],
+  Body: [0.24, -0.48, 0.40],
+  Neck: [0.15, 0.04, 0.15],
+  Chest: [0.24, -0.22, 0.42],
+  Hand: [-0.02, -0.32, 0.52],
+  Palm: [-0.02, -0.32, 0.52],
+  Arm: [-0.30, -0.30, 0.38],
+  Other: [0.28, -0.32, 0.50],
 }
-const NON_DOMINANT_REST: Vec3 = [-0.2, 1.82, 0.74]
+const NON_DOMINANT_REST: Vec3 = [-0.24, -0.34, 0.50]
 
 function anchor(minor?: string | null, major?: string | null): Vec3 {
   return ANCHORS[minor ?? ''] ?? ANCHORS[major ?? ''] ?? ANCHORS.Neutral
@@ -141,10 +154,10 @@ function movementOffset(kind: string | null | undefined, phase: number): Vec3 {
   const p = phase
   switch (kind) {
     case 'Straight':     return [0, 0, 0]
-    case 'Curved':       return [0, Math.sin(p * Math.PI) * 0.17, Math.sin(p * Math.PI) * 0.1]
-    case 'Circular':     return [Math.cos(p * TAU) * 0.15, Math.sin(p * TAU) * 0.15, 0]
-    case 'BackAndForth': return [0, 0, Math.sin(p * TAU) * 0.16]
-    case 'Z-shaped':     return [Math.sin(p * TAU * 1.5) * 0.14, -p * 0.12, 0]
+    case 'Curved':       return [0, Math.sin(p * Math.PI) * 0.14, Math.sin(p * Math.PI) * 0.09]
+    case 'Circular':     return [Math.cos(p * TAU) * 0.12, Math.sin(p * TAU) * 0.12, 0]
+    case 'BackAndForth': return [0, 0, Math.sin(p * TAU) * 0.13]
+    case 'Z-shaped':     return [Math.sin(p * TAU * 1.5) * 0.14, Math.cos(p * TAU) * 0.06 - 0.06, 0]
     case 'X-shaped':     return [Math.sin(p * TAU) * 0.13, Math.sin(p * TAU * 2) * 0.1, 0]
     case 'None':         return [0, Math.sin(p * TAU) * 0.014, 0]
     default:             return [0, 0, 0]
@@ -193,17 +206,6 @@ export const CLIP_LENGTH_MS: Record<string, number> = Object.fromEntries(
 )
 CLIP_LENGTH_MS.idle = 2600
 CLIP_LENGTH_MS.artificial_intelligence = 2350
-
-const REST_POSE: Pose = {
-  rightArm: null,
-  leftArm: null,
-  rightHand: RELAXED,
-  leftHand: RELAXED,
-  head: [0, 0, 0],
-  torso: 0,
-  brow: 0,
-  mouth: 0,
-}
 
 /** Blend two hand poses, used for ASL-LEX `FlexionChange`. */
 function blendHands(a: HandPose, b: HandPose, t: number): HandPose {
@@ -282,10 +284,22 @@ export function motionFor(id: string, elapsedSeconds: number): Pose {
   const sign = SIGNS[id]
   if (!sign) return idlePose(elapsedSeconds)
 
+  // A sign is not a loop: it travels, holds briefly, then releases toward
+  // neutral before repeating. Cutting straight back to the start is what makes
+  // playback read as a slideshow.
   const durationS = (CLIP_LENGTH_MS[id] ?? 1600) / 1000
+  const SIGN = 0.72, HOLD = 0.84, RELEASE = 1, ONSET = 0.1
+  const cycle = (elapsedSeconds / (durationS / SIGN)) % 1
+  const raw = Math.min(1, cycle / SIGN)
+  const release = cycle <= HOLD ? 0 : easeInOut((cycle - HOLD) / (RELEASE - HOLD))
+  // Ramp into the sign as well as out of it. Releasing to neutral and then
+  // snapping back to the sign's start pose put a jump at every loop point.
+  const onset = easeInOut(Math.min(1, cycle / ONSET))
+
+  // The movement repeats; the location path does not. Driving both from one
+  // sawtooth made the hand jump back at each repeat.
   const repeats = sign.RepeatedMovement === '1' ? 2 : 1
-  const raw = (elapsedSeconds / durationS) % 1
-  const phase = (raw * repeats) % 1
+  const phase = (elapsedSeconds / (durationS / repeats)) % 1
 
   // Path: MinorLocation -> SecondMinorLocation when the sign relocates.
   const start = anchor(sign.MinorLocation, sign.MajorLocation)
@@ -294,12 +308,12 @@ export function motionFor(id: string, elapsedSeconds: number): Pose {
     : null
   const end = second && second !== start ? second : start
 
-  const travel = easeInOut(Math.min(1, phase * 1.15))
+  const travel = easeInOut(Math.min(1, raw * 1.1))
   const atBaseHand = sign.MajorLocation === 'Hand'
   // A sign located at the non-dominant hand rests on top of it; anchoring it
   // absolutely makes the two hands interpenetrate.
-  const contactStart: Vec3 = atBaseHand ? add(NON_DOMINANT_REST, [0.12, 0.2, 0.02]) : start
-  const contactEnd: Vec3 = atBaseHand ? add(contactStart, [0.06, 0.16, 0.04]) : end
+  const contactStart: Vec3 = atBaseHand ? add(NON_DOMINANT_REST, [0.14, 0.15, 0.03]) : start
+  const contactEnd: Vec3 = atBaseHand ? add(contactStart, [0.06, 0.13, 0.04]) : end
   const base = mix(contactStart, contactEnd, travel)
   const target = add(base, movementOffset(sign.Movement, phase))
 
@@ -318,8 +332,11 @@ export function motionFor(id: string, elapsedSeconds: number): Pose {
     ? mix(orient.palm, [orient.palm[0], Math.abs(orient.palm[1]) * 0.5, Math.abs(orient.palm[2])], travel * 0.7)
     : orient.palm
 
-  let nonDominant: HandPose = RELAXED
-  let leftArm: ArmPose | null = null
+  const resting = idlePose(elapsedSeconds)
+  let nonDominant: HandPose = resting.leftHand
+  // Never null: a null arm made blendPoses switch hard at the midpoint rather
+  // than interpolate, which put a snap in every one-handed sign.
+  let leftArm: ArmPose = resting.leftArm!
   if (twoHanded) {
     nonDominant = handshapeFor(sign.NonDominantHandshape ?? sign.Handshape)
     const alt = sign.Movement === 'Circular' ? (phase + 0.5) % 1 : phase
@@ -336,29 +353,103 @@ export function motionFor(id: string, elapsedSeconds: number): Pose {
 
   // Non-manual markers. ASL-LEX does not encode these; the brow raise on
   // question forms is a deliberate, clearly-labelled approximation.
-  const brow = id === 'question' ? 0.9 : sign.MajorLocation === 'Head' ? 0.16 : 0
+  // ASK is elicited as a citation form, not a marked question; the raise is an
+  // authored approximation of the yes/no question marker. Furrow (WH-questions)
+  // has no catalog entry yet.
+  const browRaise = id === 'question' ? 1 : sign.MajorLocation === 'Head' ? 0.12 : 0
   const mouth = id === 'hello' || id === 'good_morning' ? 0.3 : 0.06
 
-  return {
+  const active: Pose = {
     rightArm: { target, palm, point: orient.point },
     leftArm,
     rightHand: dominant,
     leftHand: nonDominant,
-    head: [0, twoHanded ? 0 : -0.03, Math.sin(elapsedSeconds * 1.2) * 0.012],
-    torso: Math.sin(elapsedSeconds * 0.9) * 0.014,
-    brow,
+    head: [0, twoHanded ? 0 : -0.03, 0],
+    torso: 0,
+    browRaise,
+    browFurrow: 0,
     mouth,
+  }
+  if (release > 0) return blendPoses(active, resting, release)
+  if (onset < 1) return blendPoses(resting, active, onset)
+  return active
+}
+
+/** Linear blend between two poses, used for the release and for sign changes. */
+export function blendPoses(a: Pose, b: Pose, t: number): Pose {
+  if (t <= 0) return a
+  if (t >= 1) return b
+  const arm = (x: ArmPose | null, y: ArmPose | null): ArmPose | null => {
+    if (!x || !y) return t < 0.5 ? x : y
+    return { target: mix(x.target, y.target, t), palm: mix(x.palm, y.palm, t), point: mix(x.point, y.point, t) }
+  }
+  const n = (p: number, q: number) => p + (q - p) * t
+  return {
+    rightArm: arm(a.rightArm, b.rightArm),
+    leftArm: arm(a.leftArm, b.leftArm),
+    rightHand: blendHands(a.rightHand, b.rightHand, t),
+    leftHand: blendHands(a.leftHand, b.leftHand, t),
+    head: mix(a.head, b.head, t),
+    torso: n(a.torso, b.torso),
+    browRaise: n(a.browRaise, b.browRaise),
+    browFurrow: n(a.browFurrow, b.browFurrow),
+    mouth: n(a.mouth, b.mouth),
   }
 }
 
 const mirror = (v: Vec3): Vec3 => [-v[0], v[1], v[2]]
 
-function idlePose(t: number): Pose {
-  const breathe = Math.sin(t * 1.1)
+/**
+ * Neutral stance.
+ *
+ * The previous version left the arms 95% extended and pinned to the thighs,
+ * which is what read as a shop dummy. A person at rest carries a bend in the
+ * elbow, keeps the hands clear of the body, and is never symmetrical.
+ */
+const REST_RIGHT: Vec3 = [0.375, -0.80, 0.17]
+const REST_LEFT: Vec3 = [-0.35, -0.825, 0.14]
+const REST_PALM_RIGHT: Vec3 = [-0.42, 0.0, -0.91]
+const REST_PALM_LEFT: Vec3 = [0.42, 0.0, -0.91]
+const REST_POINT_RIGHT: Vec3 = [0.04, -0.98, 0.17]
+const REST_POINT_LEFT: Vec3 = [-0.03, -0.985, 0.14]
+
+/** Hands at rest curl slightly, each finger a little more than the last. */
+const IDLE_HAND: HandPose = hand(
+  [f([0.22, 0.32, 0.18], -0.005), f([0.26, 0.36, 0.20], 0.0),
+   f([0.30, 0.40, 0.22], 0.005), f([0.35, 0.44, 0.24], 0.012)],
+  { abduct: 0.22, rotate: 0.36, curl: [0.30, 0.26] },
+)
+
+export function idlePose(t: number): Pose {
+  // Breathing, plus a much slower weight shift. The two are deliberately at
+  // unrelated frequencies so the loop never becomes obvious.
+  const breath = Math.sin(t * 1.35)
+  const shift = Math.sin(t * 0.21)
+  const sway = Math.sin(t * 0.17 + 1.1)
+
+  const right: Vec3 = [
+    REST_RIGHT[0] + shift * 0.012,
+    REST_RIGHT[1] + breath * 0.008,
+    REST_RIGHT[2] + breath * 0.012,
+  ]
+  const left: Vec3 = [
+    REST_LEFT[0] + shift * 0.010,
+    REST_LEFT[1] + breath * 0.007 + shift * 0.006,
+    REST_LEFT[2] + breath * 0.010,
+  ]
+
   return {
-    ...REST_POSE,
-    head: [0, Math.sin(t * 0.7) * 0.05, Math.sin(t * 0.5) * 0.02],
-    torso: breathe * 0.02,
-    mouth: 0.05,
+    rightArm: { target: right, palm: REST_PALM_RIGHT, point: REST_POINT_RIGHT },
+    leftArm: { target: left, palm: REST_PALM_LEFT, point: REST_POINT_LEFT },
+    rightHand: IDLE_HAND,
+    leftHand: IDLE_HAND,
+    head: [Math.sin(t * 0.31) * 0.02, sway * 0.045, shift * 0.012],
+    torso: sway * 0.018,
+    browRaise: 0,
+    browFurrow: 0,
+    mouth: 0,
   }
 }
+
+/** Breathing amount for the spine, exported so the rig can drive the chest. */
+export const breathAt = (t: number) => Math.sin(t * 1.35)
