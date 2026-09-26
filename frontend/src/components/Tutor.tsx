@@ -10,7 +10,9 @@ type Point={x:number;y:number;z:number}
 type Stage='observe'|'rehearse'|'attempt'|'results'
 type AttemptPhase='idle'|'countdown'|'tracking'
 type FingerCheck={name:string;expected:'straight'|'curled';actual:'straight'|'curled';matched:boolean}
-type HandshapeResult={score:number;matched:boolean;observed:string;expected:string;tip:string;hands:number;fingerStates:number[][];fingerChecks:FingerCheck[]}
+type QualityCheck={name:string;passed:boolean;detail:string}
+type HandAssessment={state:number[];fingerScore:number;visibilityScore:number;sizeScore:number;orientationScore:number;score:number;qualityChecks:QualityCheck[]}
+type HandshapeResult={score:number;matched:boolean;observed:string;expected:string;tip:string;hands:number;fingerStates:number[][];fingerChecks:FingerCheck[];qualityChecks:QualityCheck[]}
 
 const CONNECTIONS:[[number,number],...Array<[number,number]>]=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]]
 const NAMES=['Index','Middle','Ring','Little']
@@ -46,17 +48,54 @@ export function fingerState(points:Point[]):number[]{
   return [[5,6,8],[9,10,12],[13,14,16],[17,18,20]].map(([m,p,t])=>angle(points[m],points[p],points[t])>145?1:0)
 }
 
+function handBox(points:Point[]){
+  const xs=points.map(point=>point.x),ys=points.map(point=>point.y)
+  return {minX:Math.min(...xs),maxX:Math.max(...xs),minY:Math.min(...ys),maxY:Math.max(...ys),width:Math.max(...xs)-Math.min(...xs),height:Math.max(...ys)-Math.min(...ys)}
+}
+
+function palmOrientationScore(points:Point[]){
+  const indexBase=points[5],littleBase=points[17],wrist=points[0]
+  const across={x:littleBase.x-indexBase.x,y:littleBase.y-indexBase.y,z:littleBase.z-indexBase.z}
+  const up={x:wrist.x-indexBase.x,y:wrist.y-indexBase.y,z:wrist.z-indexBase.z}
+  const normalZ=across.x*up.y-across.y*up.x
+  return Math.min(1,Math.abs(normalZ)/0.018)
+}
+
+function frameQuality(points:Point[]):Pick<HandAssessment,'visibilityScore'|'sizeScore'|'orientationScore'|'qualityChecks'>{
+  const box=handBox(points)
+  const inFrame=points.filter(point=>point.x>=.02&&point.x<=.98&&point.y>=.02&&point.y<=.98).length/points.length
+  const visibilityScore=inFrame
+  const handSpan=Math.max(box.width,box.height)
+  const sizeScore=Math.max(0,Math.min(1,(handSpan-.18)/.18))
+  const orientationScore=palmOrientationScore(points)
+  const centered=box.minX>.05&&box.maxX<.95&&box.minY>.05&&box.maxY<.95
+  return {visibilityScore,sizeScore,orientationScore,qualityChecks:[
+    {name:'Visibility',passed:visibilityScore>=.98&&centered,detail:centered?'Full hand is in frame':'Move the full hand away from the camera edge'},
+    {name:'Size',passed:sizeScore>=.9,detail:sizeScore>=.9?'Hand is close enough to measure':'Move closer so the tracker can read the hand'},
+    {name:'Palm orientation',passed:orientationScore>=.78,detail:orientationScore>=.78?'Palm plane is readable':'Turn the palm more toward the camera'}
+  ]}
+}
+
 export function assessHands(landmarks:Point[][],target:HandshapeTarget):HandshapeResult{
   const goals=TARGETS[target],states=landmarks.map(fingerState)
-  if(!states.length)return {score:0,matched:false,observed:'No hands detected',expected:goals.length===2?'Both palms open':'One hand in frame',tip:'Bring your full hand into the camera frame.',hands:0,fingerStates:[],fingerChecks:[]}
-  const scoreFor=(state:number[])=>goals[0].reduce((sum,expected,index)=>sum+(state[index]===expected?1:0),0)/4
-  const ranked=states.map(state=>({state,score:scoreFor(state)})).sort((a,b)=>b.score-a.score)
+  if(!states.length)return {score:0,matched:false,observed:'No hands detected',expected:goals.length===2?'Both palms open':'One hand in frame',tip:'Bring your full hand into the camera frame.',hands:0,fingerStates:[],fingerChecks:[],qualityChecks:[]}
+  const assessOne=(points:Point[],state:number[]):HandAssessment=>{
+    const fingerScore=goals[0].reduce((sum,expected,index)=>sum+(state[index]===expected?1:0),0)/4
+    const quality=frameQuality(points)
+    const score=fingerScore*.7+quality.visibilityScore*.1+quality.sizeScore*.1+quality.orientationScore*.1
+    return {state,fingerScore,score,...quality}
+  }
+  const ranked=states.map((state,index)=>assessOne(landmarks[index],state)).sort((a,b)=>b.score-a.score)
+  const enoughHands=goals.length===1||states.length>=2
+  const requiredHands=ranked.slice(0,goals.length)
+  const allRequiredChecksPass=enoughHands&&requiredHands.every(hand=>hand.fingerScore===1&&hand.qualityChecks.every(check=>check.passed))
   const score=(goals.length===2?(ranked[0].score+(ranked[1]?.score??0))/2:ranked[0].score)*100
-  const best=ranked[0].state
-  const fingerChecks=best.map((value,index)=>({name:NAMES[index],expected:goals[0][index]?'straight':'curled',actual:value?'straight':'curled',matched:value===goals[0][index]} as FingerCheck))
+  const best=ranked[0]
+  const fingerChecks=best.state.map((value,index)=>({name:NAMES[index],expected:goals[0][index]?'straight':'curled',actual:value?'straight':'curled',matched:value===goals[0][index]} as FingerCheck))
   const wrong=fingerChecks.find(check=>!check.matched)
-  const tip=goals.length===2&&states.length<2?'Keep both hands visible at the same time.':wrong?`Try ${wrong.expected==='straight'?'straightening':'curling'} your ${wrong.name.toLowerCase()} finger.`:'Your measured finger positions match the target.'
-  return {score:Math.round(score),matched:score>=87&&(goals.length===1||states.length>=2),observed:fingerChecks.map(check=>`${check.name.toLowerCase()} ${check.actual}`).join(', '),expected:fingerChecks.map(check=>`${check.name.toLowerCase()} ${check.expected}`).join(', '),tip,hands:states.length,fingerStates:states,fingerChecks}
+  const qualityIssue=best.qualityChecks.find(check=>!check.passed)
+  const tip=goals.length===2&&states.length<2?'Keep both hands visible at the same time.':wrong?`Try ${wrong.expected==='straight'?'straightening':'curling'} your ${wrong.name.toLowerCase()} finger.`:qualityIssue?qualityIssue.detail:'Your measured finger positions, framing, and palm orientation match the target.'
+  return {score:Math.round(score),matched:score>=92&&allRequiredChecksPass,observed:[...fingerChecks.map(check=>`${check.name.toLowerCase()} ${check.actual}`),...best.qualityChecks.map(check=>`${check.name.toLowerCase()} ${check.passed?'passed':'needs work'}`)].join(', '),expected:fingerChecks.map(check=>`${check.name.toLowerCase()} ${check.expected}`).join(', '),tip,hands:states.length,fingerStates:states,fingerChecks,qualityChecks:best.qualityChecks}
 }
 
 export default function Tutor(){
@@ -101,7 +140,7 @@ export default function Tutor(){
   },[releaseCamera,resetAttempt])
 
   const finishAttempt=useCallback((matched:boolean)=>{
-    const best=bestRef.current??{score:0,matched:false,observed:'No hands detected',expected:'A visible handshape',tip:'Keep your whole hand visible during the attempt.',hands:0,fingerStates:[],fingerChecks:[]}
+    const best=bestRef.current??{score:0,matched:false,observed:'No hands detected',expected:'A visible handshape',tip:'Keep your whole hand visible during the attempt.',hands:0,fingerStates:[],fingerChecks:[],qualityChecks:[]}
     setResult(best);recordAttempt(best.score);if(matched)persistCompletion(selectedRef.current.id)
     setPhase('idle');phaseRef.current='idle';setStage('results');releaseCamera()
   },[persistCompletion,recordAttempt,releaseCamera])
@@ -180,7 +219,7 @@ export default function Tutor(){
   const trackingLabel=loading?'Loading hand tracker...':phase==='countdown'?`Starting in ${countdown}`:phase==='tracking'?(handsDetected?'Measuring handshape...':'Move your hand fully into frame'):handsDetected?'Hand detected':'Camera ready - show your hand'
 
   const avatar=<div className="reference-view"><div className="view-label"><Eye size={16}/> REFERENCE MOTION</div><Avatar key={`${selected.animationId}-${avatarRun}`} clipId={selected.animationId} compact paused={avatarPaused} speed={avatarSpeed}/><div className="avatar-learning-controls"><button className="round-control" aria-label="Replay reference motion" onClick={()=>{setAvatarPaused(false);setAvatarRun(run=>run+1)}}><RotateCcw size={15}/></button><button className="round-control" aria-label={avatarPaused?'Resume reference motion':'Pause reference motion'} onClick={()=>setAvatarPaused(value=>!value)}>{avatarPaused?<Play size={15}/>:<Pause size={15}/>}</button>{[.5,.75,1].map(value=><button key={value} className={`speed-button ${avatarSpeed===value?'active':''}`} aria-label={`Play reference at ${value} times speed`} onClick={()=>setAvatarSpeed(value)}>{value}x</button>)}</div><div className="reference-caption">Illustrative reference - drag to rotate - not validated ASL</div></div>
-  const camera=<div className="camera-view"><div className="view-label"><ScanLine size={16}/> YOUR CAMERA {cameraActive&&<span className="camera-live"><span className="pulse-dot"/> LIVE</span>}</div><video ref={videoRef} muted playsInline autoPlay className={`camera-video ${cameraActive?'visible':''}`}/><canvas ref={canvasRef} className={`camera-overlay ${cameraActive?'visible':''}`}/>{!cameraActive&&<div className="camera-empty"><div className="camera-outline"><Camera size={34}/></div><strong>{loading?'Requesting camera access...':'Camera needed for rehearsal'}</strong><span>{loading?'Use the browser prompt to allow camera access.':'Try camera access again when your browser permission is ready.'}</span>{!loading&&<button className="secondary-button" onClick={()=>{setError('');setCameraRequested(true)}}><Camera size={16}/> Try camera</button>}</div>}{cameraActive&&<><div className="camera-corner" aria-live="polite"><span>{trackingLabel}</span></div>{phase==='countdown'&&<div className="practice-countdown" aria-live="assertive">{countdown}</div>}</>}</div>
+  const camera=<div className="camera-view"><div className="view-label"><ScanLine size={16}/> YOUR CAMERA {cameraActive&&<span className="camera-live"><span className="pulse-dot"/> LIVE</span>}</div><video ref={videoRef} muted playsInline autoPlay className={`camera-video ${cameraActive?'visible':''}`}/><canvas ref={canvasRef} className={`camera-overlay ${cameraActive?'visible':''}`}/>{!cameraActive&&<div className="camera-empty"><div className="camera-outline"><Camera size={34}/></div><strong>{loading?'Requesting camera access...':'Camera needed for rehearsal'}</strong><span>{loading?'Use the browser prompt to allow camera access.':'Try camera access again when your browser permission is ready.'}</span>{!loading&&<button className="secondary-button" onClick={()=>{setError('');setCameraRequested(true)}}><Camera size={16}/> Try camera</button>}</div>}{cameraActive&&<><div className="camera-corner" aria-live="polite"><span>{trackingLabel}</span></div>{stage==='attempt'&&phase==='tracking'&&<div className="hold-counter" aria-live="polite"><strong>{stability}</strong><span>/ 12 frames</span></div>}{phase==='countdown'&&<div className="practice-countdown" aria-live="assertive">{countdown}</div>}</>}</div>
 
   return <div className="page-content tutor-page">
     <div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/> LEARNING STUDIO</div><h1>Learn it. Practice it. Keep going<span className="heading-period">.</span></h1><p>Observe the reference, rehearse beside it, then complete a focused handshape attempt.</p></div><div className="lesson-total" aria-label={`${completedEnabled} of ${enabledItems.length} practice items completed`}><GraduationCap size={19}/><span><strong>{completedEnabled} / {enabledItems.length}</strong> practice items</span></div></div>
@@ -194,8 +233,8 @@ export default function Tutor(){
 
         {stage==='observe'&&<div className="learning-stage-panel observe-stage"><div className="practice-stage observe-layout">{avatar}</div><div className="practice-controls"><div className="practice-instruction"><Eye size={17}/><span>Watch the complete reference before moving on.</span></div><div className="practice-action-row">{scorable?<button className="primary-button" onClick={enterRehearse}>Start rehearsal <ArrowRight size={14}/></button>:nextItem&&<button className="primary-button" onClick={continueLearning}>Next item <ArrowRight size={14}/></button>}</div></div>{!scorable&&<div className="inline-notice"><Info size={17}/><span>This item needs movement, position, orientation, or mixed handshape analysis. The current four-finger analyzer cannot grade it honestly.</span></div>}</div>}
         {stage==='rehearse'&&<div className="learning-stage-panel"><div className="practice-stage rehearse-layout">{avatar}{camera}</div><div className="practice-controls"><div className="practice-instruction"><Target size={17}/><span>Rehearsal is ungraded. Compare your handshape with the reference.</span></div><div className="practice-action-row"><button className="primary-button" disabled={!cameraActive||loading} onClick={beginAttempt}>Start scored attempt <ArrowRight size={14}/></button><button className="secondary-button" onClick={enterObserve}><CameraOff size={16}/> Stop practice</button></div></div></div>}
-        {stage==='attempt'&&<div className="learning-stage-panel"><div className="attempt-heading"><div><span>HANDSHAPE ATTEMPT</span><strong>{selected.practice.scopeLabel}</strong></div><small>Position, orientation, movement, and complete-sign accuracy are not scored.</small></div><div className="practice-stage attempt-layout">{camera}</div><div className="attempt-progress"><div className="stability-bar"><span style={{width:`${stability/12*100}%`}}/></div><span>{phase==='tracking'?`Matching hold: ${stability}/12 frames`:'Get ready to hold the target handshape.'}</span></div><div className="practice-action-row attempt-stop"><button className="secondary-button" onClick={enterObserve}><CameraOff size={16}/> Stop attempt</button></div></div>}
-        {stage==='results'&&result&&<div className="learning-stage-panel results-stage" aria-live="polite"><div className="results-score"><span>{result.score}<small>%</small></span><div><strong>Measured handshape match</strong><p>This percentage checks four non-thumb finger states{selected.practice.targetHandState==='two-open'?' across two visible hands':''}. It is not a complete ASL-sign score.</p></div></div><div className="results-feedback"><strong>{result.tip}</strong><div className="finger-checks">{result.fingerChecks.map(check=><span key={check.name} className={check.matched?'matched':'needs-work'}>{check.matched?<Check size={13}/>:<CircleAlert size={13}/>} {check.name}: {check.actual}</span>)}</div>{itemAttempts.length>1&&<p className="attempt-improvement">Attempts: {itemAttempts.join('% -> ')}%{itemAttempts.at(-1)!>itemAttempts[0]?' - Nice improvement.':''}</p>}{explanation&&<p className="ai-explanation">{explanation}</p>}</div><div className="feedback-actions"><button className="primary-button" onClick={retry}><RotateCcw size={15}/> Retry</button><button className="secondary-button" onClick={()=>void explain()} disabled={feedbackLoading}>{feedbackLoading?'Generating...':'Explain feedback'} <Sparkles size={13}/></button>{completed.includes(selected.id)&&nextItem&&<button className="secondary-button" onClick={continueLearning}>Continue to {nextItem.name} <ArrowRight size={14}/></button>}</div></div>}
+        {stage==='attempt'&&<div className="learning-stage-panel"><div className="attempt-heading"><div><span>HANDSHAPE ATTEMPT</span><strong>{selected.practice.scopeLabel}</strong></div><small>Finger shape, full visibility, hand size, and palm orientation must all line up for a top score.</small></div><div className="practice-stage attempt-layout">{camera}</div><div className="attempt-progress"><div className="stability-bar"><span style={{width:`${stability/12*100}%`}}/></div><span>{phase==='tracking'?`Matching hold: ${stability}/12 frames`:'Get ready to hold the target handshape.'}</span></div><div className="practice-action-row attempt-stop"><button className="secondary-button" onClick={enterObserve}><CameraOff size={16}/> Stop attempt</button></div></div>}
+        {stage==='results'&&result&&<div className="learning-stage-panel results-stage" aria-live="polite"><div className="results-score"><span>{result.score}<small>%</small></span><div><strong>Measured handshape match</strong><p>This percentage checks four non-thumb finger states, full-hand visibility, hand scale, and palm readability{selected.practice.targetHandState==='two-open'?' across two visible hands':''}. It is not a complete ASL-sign score.</p></div></div><div className="results-feedback"><strong>{result.tip}</strong><div className="finger-checks">{result.fingerChecks.map(check=><span key={check.name} className={check.matched?'matched':'needs-work'}>{check.matched?<Check size={13}/>:<CircleAlert size={13}/>} {check.name}: {check.actual}</span>)}{result.qualityChecks.map(check=><span key={check.name} className={check.passed?'matched':'needs-work'}>{check.passed?<Check size={13}/>:<CircleAlert size={13}/>} {check.name}: {check.passed?'good':'adjust'}</span>)}</div>{itemAttempts.length>1&&<p className="attempt-improvement">Attempts: {itemAttempts.join('% -> ')}%{itemAttempts.at(-1)!>itemAttempts[0]?' - Nice improvement.':''}</p>}{explanation&&<p className="ai-explanation">{explanation}</p>}</div><div className="feedback-actions"><button className="primary-button" onClick={retry}><RotateCcw size={15}/> Retry</button><button className="secondary-button" onClick={()=>void explain()} disabled={feedbackLoading}>{feedbackLoading?'Generating...':'Explain feedback'} <Sparkles size={13}/></button>{completed.includes(selected.id)&&nextItem&&<button className="secondary-button" onClick={continueLearning}>Continue to {nextItem.name} <ArrowRight size={14}/></button>}</div></div>}
 
         {error&&<div className="inline-error tutor-error"><CircleAlert size={16}/><span>{error}</span><button className="secondary-button small" onClick={()=>{setError('');setCameraRequested(true)}}>Try again</button></div>}
         <div className="tips-panel"><span className="mini-heading">WHAT TO FOCUS ON</span>{selected.instructions.map((step,index)=><div key={step} className="tip-row"><span className="tip-number">0{index+1}</span>{step}</div>)}</div>
