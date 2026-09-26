@@ -2,9 +2,11 @@
 from __future__ import annotations
 import json
 import os
+import re
 from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field
-from playback import CATALOG, approved, compile_timeline, review_digest
+from catalog_store import get_catalog
+from playback import approved, compile_timeline, review_digest
 
 
 class StrictModel(BaseModel):
@@ -54,7 +56,7 @@ class PlanRequest(StrictModel):
 
 
 def catalog():
-    return json.loads(CATALOG.read_text())
+    return get_catalog()
 
 
 def exact_key(text):
@@ -72,6 +74,11 @@ def validate_plan(meaning: Meaning, construction: Construction, refs: dict):
     if not anchors:
         errors.append('No manual sequence available.')
     for sign in construction.manual_sequence:
+        if sign.sign_id.startswith('FS:'):
+            word = sign.sign_id[3:]
+            if not word or len(word) > 32 or not word.replace('-', '').isalnum():
+                errors.append(f'Invalid fingerspelling token: {sign.sign_id}')
+            continue
         entry = signs.get(sign.sign_id)
         if entry is None:
             errors.append(f'Unknown sign ID: {sign.sign_id}')
@@ -81,7 +88,7 @@ def validate_plan(meaning: Meaning, construction: Construction, refs: dict):
         entry = profiles.get(span.profile_id)
         if entry is None:
             errors.append(f'Unknown expression profile: {span.profile_id}')
-        elif not entry.get('motion_asset'):
+        elif not entry.get('controls'):
             motion.append(f'Missing expression animation: {span.profile_id}')
         if span.start_anchor not in anchors or span.end_anchor not in anchors:
             errors.append('Expression span references a missing anchor.')
@@ -109,6 +116,56 @@ async def model_output(client, schema, instruction, payload):
     return parsed
 
 
+def fallback_plan(text: str, refs: dict) -> tuple[Meaning, Construction]:
+    """Animate arbitrary text by matching known signs then fingerspelling gaps."""
+    normalized_text = re.sub(
+        r"\b(?:don't|doesn't|didn't|can't|won't|isn't|aren't|wasn't|weren't)\b",
+        'not', text.casefold(), flags=re.IGNORECASE,
+    )
+    source_words = re.findall(r"[A-Za-z0-9]+(?:-[A-Za-z0-9]+)?", normalized_text)[:24]
+    helpers = {'a', 'an', 'the', 'is', 'are', 'am', 'do', 'does', 'did', 'to', 'of', 'and'}
+    words = [word for word in source_words if word.casefold() not in helpers][:16]
+    if not words:
+        words = source_words[:16]
+    expressions: dict[str, str] = {}
+    for sign in refs['signs']:
+        if sign.get('motion_asset'):
+            for expression in sign.get('english_expressions', []):
+                expressions[exact_key(expression)] = sign['id']
+    expressions.update({'i': 'ME', 'my': 'ME', 'mine': 'ME', 'your': 'YOU'})
+    steps = []
+    for word in words:
+        key = word.casefold()
+        sign_id = expressions.get(key) or (
+            expressions.get(key[:-1]) if key.endswith('s') else None
+        ) or f'FS:{word.upper()}'
+        steps.append(Sign(id=f's{len(steps) + 1}', sign_id=sign_id))
+    negated = 'not' in source_words or 'never' in source_words or 'no' in source_words
+    time_words = {'before', 'after', 'today', 'tomorrow', 'yesterday', 'friday', 'monday'}
+    number_words = {'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'}
+    times = [word for word in source_words if word in time_words]
+    quantities = [word for word in source_words if word.isdigit() or word in number_words]
+    meaning = Meaning(intent='communicate', predicate='unspecified', participants=[],
+                      negated=negated, time=times, quantities=quantities, entities=words,
+                      conditions=[], references=[], unresolved=[])
+    wh_words = {'how', 'what', 'where', 'when', 'why', 'who', 'which'}
+    is_question = text.strip().endswith('?')
+    question_type = 'wh' if source_words and source_words[0] in wh_words else (
+        'yes_no' if is_question else 'none')
+    nonmanuals = []
+    profile_id = ('WH_QUESTION_CANDIDATE' if question_type == 'wh' else
+                  'YES_NO_QUESTION_CANDIDATE' if question_type == 'yes_no' else None)
+    if profile_id and steps:
+        nonmanuals.append(Nonmanual(profile_id=profile_id, start_anchor='s1',
+                                    end_anchor=steps[-1].id))
+    construction = Construction(
+        manual_sequence=steps,
+        grammar=Grammar(question_type=question_type),
+        nonmanuals=nonmanuals, expressed_meaning=meaning, unresolved=[],
+    )
+    return meaning, construction
+
+
 async def create_plan(request: PlanRequest):
     refs = catalog()
     example = next((e for e in refs['examples']
@@ -128,9 +185,11 @@ async def create_plan(request: PlanRequest):
                     'Record missing or ambiguous referents in unresolved; never guess.',
                     request.model_dump())
                 construction = await model_output(client, Construction,
-                    'Construct an EXPERIMENTAL ASL candidate using only supplied sign IDs '
+                    'Construct an EXPERIMENTAL ASL gloss candidate using supplied sign IDs '
                     'and expression profiles. Catalog examples are unreviewed fixtures. '
-                    'Do not invent IDs, assume universal word order or claim ASL accuracy. '
+                    'For a concept without a registered sign, use FS:WORD (uppercase ASCII '
+                    'letters or digits, maximum 32 characters) to fingerspell it. Do not '
+                    'invent any other IDs, assume universal word order or claim ASL accuracy. '
                     'Preserve all meaning fields. expressed_meaning must describe only '
                     'what your sequence actually conveys; report omissions and unsupported '
                     'concepts in unresolved. Use unique anchors and valid inclusive spans. '
@@ -138,9 +197,11 @@ async def create_plan(request: PlanRequest):
                     {'source': request.model_dump(), 'meaning': meaning.model_dump(), 'catalog': refs})
             mode = 'experimental-model'
         except Exception:
-            failure = 'Planner unavailable or returned invalid output. Original captions retained.'
+            meaning, construction = fallback_plan(request.text, refs)
+            mode = 'fingerspell-fallback'
     else:
-        failure = 'No exact example. Configure OPENAI_API_KEY for experimental planning, or add a reviewed example.'
+        meaning, construction = fallback_plan(request.text, refs)
+        mode = 'fingerspell-fallback'
     if failure:
         return {'source_text': request.text, 'mode': 'unavailable', 'review_status': 'candidate',
                 'plan': None, 'unresolved': [failure], 'validation': None, 'playback': None, 'rehearsal': None}
@@ -149,10 +210,14 @@ async def create_plan(request: PlanRequest):
     timeline, motion_issues = compile_timeline(construction, refs)
     validation['motion_issues'] = motion_issues
     review_ok = approved(example, refs)
-    playable = bool(timeline and not validation['issues'] and not unresolved and review_ok)
+    candidate_playback = os.getenv('SIGN_PLAYBACK_POLICY', 'candidate').strip().lower() == 'candidate'
+    playable = bool(timeline and not validation['issues'] and not unresolved
+                    and (review_ok or candidate_playback))
     validation['executable'] = playable
     validation['linguistic_review'] = 'approved' if review_ok else 'required'
-    return {'source_text': request.text, 'mode': mode, 'review_status': 'reviewed' if playable else 'candidate',
+    validation['playback_policy'] = 'reviewed' if review_ok else (
+        'experimental-candidate' if playable else 'blocked')
+    return {'source_text': request.text, 'mode': mode, 'review_status': 'reviewed' if review_ok else 'candidate',
             'playback': timeline if playable else None,
             'rehearsal': timeline if not validation['issues'] else None,
             'review_fingerprint': review_digest(example, refs) if example else None,

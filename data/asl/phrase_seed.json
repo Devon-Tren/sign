@@ -1,0 +1,28 @@
+{
+  "profiles": [
+    {"id": "WH_QUESTION_CANDIDATE", "description": "Candidate wh-question facial/body cue requiring ASL review.", "review_status": "candidate", "controls": {"brow": -0.65, "mouth": 0.15, "head": [0.12, 0, 0], "torso": 0.08}},
+    {"id": "NEGATION_CANDIDATE", "description": "Candidate negation head movement requiring ASL review.", "review_status": "candidate", "controls": {"brow": -0.15, "mouth": 0.08, "head": [0, 0.28, 0], "torso": 0}}
+  ],
+  "phrases": [
+    {"id": "how-are-you", "english": "How are you?", "intent": "ask_wellbeing", "predicate": "feel", "gloss": ["HOW", "YOU"], "question_type": "wh", "profile": "WH_QUESTION_CANDIDATE"},
+    {"id": "feel-good", "english": "I feel good.", "intent": "state_wellbeing", "predicate": "feel_good", "gloss": ["ME", "FEEL", "GOOD"]},
+    {"id": "feel-bad", "english": "I feel bad.", "intent": "state_wellbeing", "predicate": "feel_bad", "gloss": ["ME", "FEEL", "BAD"]},
+    {"id": "what-name", "english": "What is your name?", "intent": "ask_name", "predicate": "name", "gloss": ["YOU", "NAME", "WHAT"], "question_type": "wh", "profile": "WH_QUESTION_CANDIDATE"},
+    {"id": "my-name-alex", "english": "My name is Alex.", "intent": "introduce", "predicate": "name", "gloss": ["ME", "NAME", "FS:ALEX"]},
+    {"id": "please-help", "english": "Please help me.", "intent": "request", "predicate": "help", "gloss": ["PLEASE", "HELP", "ME"]},
+    {"id": "need-help", "english": "I need help.", "intent": "request", "predicate": "need_help", "gloss": ["ME", "NEED", "HELP"]},
+    {"id": "want-water", "english": "I want water.", "intent": "request", "predicate": "want", "gloss": ["ME", "WANT", "WATER"]},
+    {"id": "where-bathroom", "english": "Where is the bathroom?", "intent": "ask_location", "predicate": "bathroom", "gloss": ["BATHROOM", "WHERE"], "question_type": "wh", "profile": "WH_QUESTION_CANDIDATE"},
+    {"id": "like-school", "english": "I like school.", "intent": "state_preference", "predicate": "like", "gloss": ["ME", "SCHOOL", "LIKE"]},
+    {"id": "student", "english": "I am a student.", "intent": "identify", "predicate": "student", "gloss": ["ME", "STUDENT"]},
+    {"id": "friend", "english": "You are my friend.", "intent": "state_relationship", "predicate": "friend", "gloss": ["YOU", "ME", "FRIEND"]},
+    {"id": "going-home", "english": "I am going home.", "intent": "state_action", "predicate": "go_home", "gloss": ["ME", "HOME", "GO"]},
+    {"id": "sorry", "english": "I am sorry.", "intent": "apologize", "predicate": "sorry", "gloss": ["SORRY"]},
+    {"id": "explain-again", "english": "Can you explain again?", "intent": "request", "predicate": "explain", "gloss": ["EXPLAIN", "AGAIN"]},
+    {"id": "understand-question", "english": "Do you understand?", "intent": "ask_whether", "predicate": "understand", "gloss": ["YOU", "UNDERSTAND"], "question_type": "yes_no", "profile": "YES_NO_QUESTION_CANDIDATE"},
+    {"id": "good-morning", "english": "Good morning.", "intent": "greet", "predicate": "good_morning", "gloss": ["GOOD_MORNING"]},
+    {"id": "like-computers", "english": "I like computers.", "intent": "state_preference", "predicate": "like", "gloss": ["ME", "COMPUTER", "LIKE"]},
+    {"id": "happy-question", "english": "Are you happy?", "intent": "ask_whether", "predicate": "happy", "gloss": ["YOU", "HAPPY"], "question_type": "yes_no", "profile": "YES_NO_QUESTION_CANDIDATE"},
+    {"id": "why-sad", "english": "Why are you sad?", "intent": "ask_reason", "predicate": "sad", "gloss": ["YOU", "SAD", "WHY"], "question_type": "wh", "profile": "WH_QUESTION_CANDIDATE"}
+  ]
+}

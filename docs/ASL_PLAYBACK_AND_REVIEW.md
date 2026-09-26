@@ -11,33 +11,34 @@ Tutor also remain illustrative.
 Exact catalog constructions can be reused only with matching context, or when
 explicitly marked context-independent. Other inputs use the two-stage LLM when
 configured. Model-generated constructions remain candidates even if all their
-sign IDs exist. No reviewed examples are bundled. Live signing will therefore
-stay idle and preserve captions until a real reviewer approves a playable
-catalog construction. This is intentional, not a network failure.
+sign IDs exist. Unknown concepts use `FS:WORD` fingerspelling tokens. No reviewed
+examples are bundled. For the hackathon, technically complete candidate plans
+play with a persistent experimental label. Set `SIGN_PLAYBACK_POLICY=reviewed-only`
+to require approval before live playback.
 
-Use the separate Classroom ASL plan panel with `Hello`, `Thank you`, `Yes`, or
-`No` to inspect an unapproved rehearsal. `Do you understand?` demonstrates a
-blocked sequence: its addressee sign is not implemented. `Could you explain that
-again?` also reports a missing reference and unavailable motions.
+Use the Classroom ASL plan panel with `How are you?` to inspect `HOW · YOU` plus
+its candidate wh-question profile. Common conversation phrases use the expanded
+candidate vocabulary. Arbitrary text is still animated through fingerspelling;
+that path preserves visible words but does not claim to produce ASL grammar.
 
-## Motion contract v1
+## Motion contract v2
 
-The current adapter is `asl-lex-procedural-v1`. Its vocabulary consists of the
-11 keys in `data/asl_lex_params.json`; these are phonological parameter-driven
-approximations, not captured signing. `data/asl/catalog.json` maps stable sign IDs
-to explicit `{format, clip_id}` assets. Unsupported concepts are registered with
-null assets; they cannot be compiled. The artificial-intelligence fallback is
-not a supported signing asset.
+The `sign-procedural-v2` adapter combines 11 ASL-LEX-derived parameter sets,
+application-authored candidate motions in `data/asl_custom_motions.json`, and
+manual-alphabet approximations for `FS:WORD`. All three are procedural
+rehearsals, not captured or reviewed signing. Catalog IDs map to explicit
+`{format, clip_id}` assets; fingerspelling tokens compile dynamically.
 
-`playback` is returned only for an approved, complete plan. `rehearsal` is a
-technically renderable candidate for explicit reviewer preview. Both use:
+`playback` is returned for a technically complete candidate under the default
+hackathon policy, or only for approved plans under `reviewed-only`. `rehearsal`
+contains the same technically renderable timeline for reviewer inspection.
 
 ```json
 {
-  "version": 1,
-  "renderer": "asl-lex-procedural-v1",
+  "version": 2,
+  "renderer": "sign-procedural-v2",
   "duration_ms": 1262,
-  "clips": [{"anchor":"s1","sign_id":"HELLO","clip_id":"hello","start_ms":0,"end_ms":1262}],
+  "clips": [{"anchor":"s1","sign_id":"HELLO","clip_id":"hello","start_ms":0,"end_ms":1262,"realization":"asl-lex-procedural-v1"}],
   "nonmanuals": []
 }
 ```
@@ -52,7 +53,7 @@ policy exists. Expressions override the underlying procedural facial/body cues.
 The avatar's own elapsed animation clock advances the timeline. Pause freezes
 progress; speed changes affect the remaining duration. Completion comes from
 that clock, not a separate wall-clock timeout. These controls do not supply
-coarticulation, classifiers, arbitrary fingerspelling, or a glTF loader. Those
+coarticulation, classifiers, reviewed fingerspelling, or a glTF loader. Those
 require a richer renderer and separate review.
 
 ## Reviewer workflow
@@ -68,7 +69,8 @@ require a richer renderer and separate review.
    that back-translation and necessary corrections.
 4. Record reviewer identity (with permission), qualification, date, evidence
    reference, and each assessment in the packet. Set decision to `approved`
-   only when all four checks pass. Rejected/pending rows never enable playback.
+   only when all four checks pass. Rejected/pending rows never acquire reviewed
+   status, even when experimental candidate playback is enabled.
 5. A maintainer copies reviewed records into `data/asl/reviews.json`, retaining
    their fingerprint, and commits them with the review evidence. Do not insert
    a test approval into production. The file is not writable through the API.
@@ -77,7 +79,7 @@ require a richer renderer and separate review.
 
 Approval is bound to the example, the vocabulary/profiles, procedural parameter
 data, and renderer source hash. Editing any of those makes approvals stale and
-returns playback to captions-only. A fingerprint binds content; it does not
+returns the sequence to experimental status. A fingerprint binds content; it does not
 verify someone's identity or professional qualifications. Maintainers must
 verify the review evidence. Approval covers that exact construction, not novel
 LLM-generated arrangements.

@@ -2,7 +2,7 @@ import type { Interpretation, Phrase } from './types'
 import { LOCAL_PHRASES, localInterpret } from './data'
 const base = (import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')
 
-export async function fetchHealth(): Promise<{status: string; live_configured: boolean; transcription_model:string}|null> {
+export async function fetchHealth(): Promise<{status: string; live_configured: boolean; transcription_model:string; catalog_backend:string}|null> {
   try { const r = await fetch(`${base}/api/health`, { signal:AbortSignal.timeout(2000) }); return r.ok ? await r.json() : null }
   catch { return null }
 }

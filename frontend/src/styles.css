@@ -30,3 +30,5 @@
 .plan-preview details { margin-top: 16px; }
 .plan-preview pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 420px; overflow: auto; font-size: 12px; }
 .plan-json { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 300px; overflow: auto; font-size: 12px; }
+.stage-guidance{right:64px;max-width:calc(100% - 90px)}
+.stage-guidance strong{max-width:100%;font-size:clamp(16px,2vw,23px);line-height:1.18;overflow-wrap:anywhere;word-break:break-word}

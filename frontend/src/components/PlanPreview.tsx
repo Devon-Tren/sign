@@ -4,7 +4,7 @@ import { planASL } from '../api'
 import type { PlanResult } from '../types'
 
 export default function PlanPreview() {
-  const [text, setText] = useState('Could you explain that again?')
+  const [text, setText] = useState('How are you?')
   const [context, setContext] = useState('')
   const [result, setResult] = useState<PlanResult | null>(null)
   const [preview, setPreview] = useState(0)
@@ -18,7 +18,7 @@ export default function PlanPreview() {
   }
   return <section className="plan-preview" aria-labelledby="plan-title">
     <h2 id="plan-title">Classroom ASL plan</h2>
-    <p>Inspect an experimental signing plan. Try “Hello” to rehearse an available motion. Candidate signs need ASL review before live playback.</p>
+    <p>Preview the same experimental gloss and motion sequence used by typed text and finalized speech. Candidate signing still needs ASL review.</p>
     <label htmlFor="plan-text">Classroom message</label>
     <input id="plan-text" value={text} maxLength={3000} disabled={busy} onChange={e => {setText(e.target.value);setResult(null)}} />
     <label htmlFor="plan-context">Recent context (optional)</label>
@@ -27,14 +27,14 @@ export default function PlanPreview() {
     <div aria-live="polite">
       {error && <p role="alert">{error}</p>}
       {result && <>
-        <p><strong>{result.review_status === 'reviewed' ? 'Reviewed' : 'Candidate'} · {result.mode === 'catalog-example' ? (result.review_status === 'reviewed' ? 'Approved catalog example' : 'Unreviewed catalog example') : result.mode === 'experimental-model' ? 'Experimental model output' : 'Unavailable'}</strong></p>
+        <p><strong>{result.review_status === 'reviewed' ? 'Reviewed' : 'Experimental'} · {result.mode === 'catalog-example' ? (result.review_status === 'reviewed' ? 'Approved catalog example' : 'Catalog candidate') : result.mode === 'experimental-model' ? 'Model-generated gloss' : result.mode === 'fingerspell-fallback' ? 'Fingerspelling fallback' : 'Unavailable'}</strong></p>
         {result.plan && <>
           <p>Intent: {result.plan.meaning.intent} · Action: {result.plan.meaning.predicate} · {result.plan.meaning.negated ? 'Negated' : 'Not negated'}</p>
           <div className="matched-chips">{result.plan.manual_sequence.map((s,i) => <span className="phrase-tag" key={i}>{s.sign_id}</span>)}</div>
         </>}
         {[...result.unresolved, ...(result.validation?.issues || []), ...(result.validation?.motion_issues || [])].map((issue,i) => <p key={i}>{issue}</p>)}
         {result.rehearsal && <>
-          <p>Unverified rehearsal for reviewer inspection. This does not approve the sequence.</p>
+          <p>{result.playback ? 'This is the sequence the live companion will play.' : 'Unverified rehearsal for reviewer inspection.'} It is not ASL-approved.</p>
           <button className="secondary-button" onClick={() => setPreview(p => p + 1)}>Replay rehearsal</button>
           <div style={{height: 350}}><Avatar key={preview} clipId="rehearsal" timeline={result.rehearsal} compact /></div>
         </>}

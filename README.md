@@ -34,14 +34,15 @@ Open http://localhost:5173 (if it doesn't load, use http://127.0.0.1:5173). Clic
 ## Preview a structured ASL plan
 
 With the backend running, open **Classroom ASL plan** below the live panels.
-Try “Could you explain that again?” or “Do you understand?” without an API key.
-The preview shows candidate sign IDs, intended meaning, unresolved references,
-and missing animations. Other messages use experimental two-stage model planning
-when `OPENAI_API_KEY` is configured on the backend.
+Try “How are you?”, “What is your name?”, or any other sentence. The preview
+shows the candidate gloss, intended meaning, expression spans, and animation.
+Unknown concepts are fingerspelled; with `OPENAI_API_KEY`, a two-stage model first
+extracts meaning and then constructs a gloss from playable signs.
 
-These are unreviewed fixtures, not verified translations. Typed text and finalized microphone transcripts share this planner. Only approved
-complete constructions enter live avatar playback; candidates can be rehearsed
-in the preview panel. No approved constructions are bundled. See [the planner contract and required assets](backend/README.md#experimental-asl-planning).
+These are unreviewed fixtures, not verified translations. Typed text and finalized
+microphone transcripts share this planner and playback queue. Candidate sequences
+play in the hackathon UI with an experimental label. No approved constructions
+are bundled. See [the planner contract and required assets](backend/README.md#experimental-asl-planning).
 
 ## Enable real microphone transcription
 
@@ -61,7 +62,7 @@ API usage incurs charges. MediaPipe webcam tracking runs on device, but the mode
 | Classroom | Simulated streaming six-line lecture | Works without API key |
 | Classroom | Server-side realtime microphone transcription | Integrated; requires API key, model access, network, browser mic permissions |
 | Classroom | Independent animation queue, replay, pause, speed, transcript history, export | Implemented |
-| Classroom | GPT-4.1 closed-catalog phrase selection / offline heuristic | Integrated / fallback |
+| Classroom | Structured gloss planning / known-sign and fingerspelling fallback | Integrated; experimental |
 | Library | SQLite phrase catalog, search, per-phrase preview and metadata | Implemented; 12 **unverified** starter clips |
 | Tutor | Webcam MediaPipe hand detection + finger-joint measurements | Integrated; browser permission and model download required |
 | Tutor | 4 handshape drills across 3 levels, per-finger corrective guidance, persistence | Implemented; **not** ASL recognition |

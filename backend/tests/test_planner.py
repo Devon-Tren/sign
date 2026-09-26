@@ -9,6 +9,7 @@ from planner import Construction, Meaning, PlanRequest, catalog, create_plan, va
 @pytest.fixture(autouse=True)
 def offline(monkeypatch):
     monkeypatch.setenv('OPENAI_API_KEY', '')
+    monkeypatch.setenv('SIGN_PLAYBACK_POLICY', 'candidate')
 
 
 def test_candidate_example_and_unknown_input():
@@ -17,12 +18,13 @@ def test_candidate_example_and_unknown_input():
         assert result['review_status'] == 'candidate'
         assert result['plan']['grammar']['question_type'] == 'yes_no'
         assert result['validation']['issues'] == []
-        assert not result['validation']['executable']
-        assert result['validation']['motion_issues']
-        assert result['playback'] is None
+        assert result['validation']['executable']
+        assert not result['validation']['motion_issues']
+        assert result['playback']['clips'][0]['sign_id'] == 'YOU'
         for text in ['Do you not understand?', 'Submit it', 'Do you understand before Friday?', 'Do you understand on Friday?']:
             result = client.post('/api/plan', json={'text': text}).json()
-            assert result['plan'] is None and result['unresolved']
+            assert result['mode'] == 'fingerspell-fallback'
+            assert result['playback']
         assert client.post('/api/plan', json={'text': '   '}).status_code == 422
         assert client.post('/api/plan', json={'text': 'Hello', 'context': ['x' * 3001]}).status_code == 422
 
@@ -31,9 +33,11 @@ def test_request_retains_ambiguity():
     result = asyncio.run(create_plan(PlanRequest(text='Could you explain that again?')))
     assert result['plan']['meaning']['intent'] == 'request'
     assert result['unresolved']
-    # Context changes meaning: don't silently reuse a context-free example.
+    # Context changes meaning: don't silently reuse a context-free example;
+    # the conservative fallback spells the unresolved source instead.
     result = asyncio.run(create_plan(PlanRequest(text='Could you explain that again?', context=['Recursion'])))
-    assert result['plan'] is None
+    assert result['mode'] == 'fingerspell-fallback'
+    assert any(step['sign_id'] == 'FS:THAT' for step in result['plan']['manual_sequence'])
 
 
 def test_rejects_bad_ids_spans_and_meaning_loss():
@@ -74,14 +78,16 @@ def test_model_pipeline_and_failure(monkeypatch):
         raise ValueError('invalid schema or refusal')
     monkeypatch.setattr('planner.model_output', fail)
     result = asyncio.run(create_plan(PlanRequest(text='Unknown')))
-    assert result['plan'] is None and result['mode'] == 'unavailable'
+    assert result['mode'] == 'fingerspell-fallback'
+    assert result['plan']['manual_sequence'][0]['sign_id'] == 'FS:UNKNOWN'
 
 
-def test_rehearsal_does_not_enable_live_playback():
+def test_candidate_policy_enables_labelled_live_playback():
     result = asyncio.run(create_plan(PlanRequest(text='Hello')))
     assert result['rehearsal']['clips'][0]['clip_id'] == 'hello'
-    assert result['playback'] is None
-    assert result['validation']['executable'] is False
+    assert result['playback']
+    assert result['review_status'] == 'candidate'
+    assert result['validation']['playback_policy'] == 'experimental-candidate'
 
 
 def test_exact_review_enables_playback_and_changes_invalidate_it(monkeypatch, tmp_path):
@@ -100,6 +106,7 @@ def test_exact_review_enables_playback_and_changes_invalidate_it(monkeypatch, tm
     assert result['validation']['executable']
     assert result['playback']['clips'][0]['sign_id'] == 'HELLO'
     monkeypatch.setattr(playback, 'renderer_digest', lambda: 'changed')
+    monkeypatch.setenv('SIGN_PLAYBACK_POLICY', 'reviewed-only')
     assert not asyncio.run(create_plan(PlanRequest(text='Hello')))['validation']['executable']
 
 
@@ -118,11 +125,45 @@ def test_timeline_expression_and_unknown_motion():
     assert compile_timeline(c, refs)[0] is None
 
 
-def test_evaluation_contrasts_stay_captions_only():
+def test_evaluation_contrasts_remain_distinct_and_playable():
     import json
     from playback import ROOT
     for case in json.loads((ROOT / 'data/asl/evaluation.json').read_text())['cases']:
         result = asyncio.run(create_plan(PlanRequest(text=case['text'])))
-        assert result['playback'] is None
-        if case['offline_expectation'] == 'unsupported':
-            assert result['plan'] is None
+        assert result['plan']['manual_sequence']
+        if result['unresolved']:
+            assert result['playback'] is None
+        else:
+            assert result['playback']
+
+
+def test_how_are_you_candidate_gloss_and_nonmanual_span():
+    result = asyncio.run(create_plan(PlanRequest(text='How are you?')))
+    assert result['review_status'] == 'candidate'
+    assert [step['sign_id'] for step in result['plan']['manual_sequence']] == ['HOW', 'YOU']
+    assert result['plan']['grammar']['question_type'] == 'wh'
+    assert result['playback']['nonmanuals'][0]['profile_id'] == 'WH_QUESTION_CANDIDATE'
+    assert result['playback']['nonmanuals'][0]['end_ms'] == result['playback']['duration_ms']
+
+
+def test_arbitrary_phrase_fingerspells_unknown_concepts():
+    result = asyncio.run(create_plan(PlanRequest(text='Quantum entanglement is fascinating.')))
+    assert result['mode'] == 'fingerspell-fallback'
+    assert result['playback']['renderer'] == 'sign-procedural-v2'
+    assert all(step['sign_id'].startswith('FS:') for step in result['plan']['manual_sequence'])
+
+
+def test_fallback_preserves_negation_time_and_quantity_fields():
+    result = asyncio.run(create_plan(PlanRequest(text="Don't submit two files before Friday.")))
+    meaning = result['plan']['meaning']
+    assert meaning['negated'] is True
+    assert meaning['quantities'] == ['two']
+    assert meaning['time'] == ['before', 'friday']
+    assert result['plan']['manual_sequence'][0]['sign_id'] == 'FS:NOT'
+
+
+def test_catalog_expansion_is_available_without_mongodb():
+    refs = catalog()
+    assert len(refs['signs']) >= 40
+    assert len(refs['examples']) >= 20
+    assert {'HOW', 'YOU', 'FEEL', 'WHAT', 'WHERE'} <= {sign['id'] for sign in refs['signs']}

@@ -12,6 +12,7 @@
  * qualified Deaf signer before it is called a translation.
  */
 import params from '../../data/asl_lex_params.json'
+import customParams from '../../data/asl_custom_motions.json'
 
 export type ClipId = string
 
@@ -82,7 +83,11 @@ export const HANDSHAPES: Record<string, HandPose> = {
   flat_h:       hand([f(FLAT, -0.03), f(FLAT, 0.03), f(STACKED), f(STACKED)], THUMB.tucked),
   h:            hand([f(EXTENDED, -0.03), f(EXTENDED, 0.03), f(STACKED), f(STACKED)], THUMB.tucked),
   v:            hand([f(EXTENDED, -0.2), f(EXTENDED, 0.2), f(STACKED), f(STACKED)], THUMB.tucked),
+  w:            hand([f(EXTENDED, -0.22), f(EXTENDED, 0), f(EXTENDED, 0.22), f(STACKED)], THUMB.tucked),
+  x:            hand([f(BENT), f(STACKED), f(STACKED), f(STACKED)], THUMB.tucked),
   y:            hand([f(STACKED), f(STACKED), f(STACKED), f(EXTENDED, 0.32)], THUMB.extended),
+  c:            hand([f(CURVED), f(CURVED), f(CURVED), f(CURVED)], THUMB.open),
+  t:            hand([f(CLOSED), f(CLOSED), f(CLOSED), f(CLOSED)], THUMB.opposed),
   // contact family - a fingertip meets the thumb
   baby_o:       hand([f(BENT), f(STACKED), f(STACKED), f(STACKED)], THUMB.opposed),
   open_8:       hand([f(EXTENDED, -0.12), f(BENT), f(EXTENDED, 0.12), f(EXTENDED, 0.24)], THUMB.opposed),
@@ -153,31 +158,44 @@ function movementOffset(kind: string | null | undefined, phase: number): Vec3 {
 
 // ---------------------------------------------------------------------------
 type SignParams = {
-  asl_lex_entry: string
-  fidelity: string
-  mapping_note: string | null
+  asl_lex_entry?: string
+  fidelity?: string
+  mapping_note?: string | null
   duration_ms: number | null
   Handshape: string | null
-  SelectedFingers: string | null
-  Flexion: string | null
-  FlexionChange: string | null
-  Spread: string | null
-  ThumbPosition: string | null
+  SelectedFingers?: string | null
+  Flexion?: string | null
+  FlexionChange?: string | null
+  Spread?: string | null
+  ThumbPosition?: string | null
   SignType: string | null
   Movement: string | null
   RepeatedMovement: string | null
   MajorLocation: string | null
   MinorLocation: string | null
   SecondMinorLocation: string | null
-  Contact: string | null
+  Contact?: string | null
   NonDominantHandshape: string | null
-  UlnarRotation: string | null
+  UlnarRotation?: string | null
 }
-const SIGNS = (params as { signs: Record<string, SignParams> }).signs
+const SIGNS: Record<string, SignParams> = {
+  ...(params as { signs: Record<string, SignParams> }).signs,
+  ...(customParams as { signs: Record<string, SignParams> }).signs,
+}
+
+// Approximate manual-alphabet shapes provide a visible fallback for names and
+// unsupported concepts. Several letters share a base shape until reviewed
+// letter-specific wrist/orientation data is available.
+const FINGERSPELL: Record<string, string> = {
+  A: 'a', B: 'b', C: 'c', D: '1', E: 'o', F: 'open_8', G: '1', H: 'h',
+  I: 'y', J: 'y', K: 'v', L: '1', M: 't', N: 't', O: 'o', P: 'v',
+  Q: '1', R: 'h', S: 's', T: 't', U: 'h', V: 'v', W: 'w', X: 'x',
+  Y: 'y', Z: '1',
+}
 
 /** True when the sign's parameters came from ASL-LEX rather than a fallback. */
 export function isParameterised(id: string): boolean {
-  return id in SIGNS
+  return id in SIGNS || id.startsWith('fs:')
 }
 export function signParams(id: string): SignParams | null {
   return SIGNS[id] ?? null
@@ -279,6 +297,7 @@ function orientationFor(id: string, sign: SignParams): Orientation {
 }
 
 export function motionFor(id: string, elapsedSeconds: number): Pose {
+  if (id.startsWith('fs:')) return fingerspellPose(id.slice(3), elapsedSeconds)
   const sign = SIGNS[id]
   if (!sign) return idlePose(elapsedSeconds)
 
@@ -348,6 +367,30 @@ export function motionFor(id: string, elapsedSeconds: number): Pose {
     torso: Math.sin(elapsedSeconds * 0.9) * 0.014,
     brow,
     mouth,
+  }
+}
+
+function fingerspellPose(word: string, elapsedSeconds: number): Pose {
+  const letters = word.toUpperCase().replace(/[^A-Z0-9]/g, '').split('')
+  if (!letters.length) return idlePose(elapsedSeconds)
+  const letterIndex = Math.min(letters.length - 1, Math.floor(elapsedSeconds / 0.65))
+  const letter = letters[letterIndex]
+  const phase = (elapsedSeconds / 0.65) % 1
+  const tracing: Vec3 = letter === 'J'
+    ? [Math.sin(phase * Math.PI) * 0.11, -phase * 0.15, 0]
+    : letter === 'Z'
+      ? [Math.sin(phase * Math.PI * 3) * 0.12, -phase * 0.08, 0]
+      : [0, Math.sin(phase * Math.PI) * 0.018, 0]
+  return {
+    ...REST_POSE,
+    rightArm: {
+      target: add(ANCHORS.Neutral, tracing),
+      palm: [0, 0, 1],
+      point: [0, 1, 0],
+    },
+    rightHand: handshapeFor(FINGERSPELL[letter] ?? '1'),
+    head: [0, -0.04, 0],
+    mouth: 0.04,
   }
 }
 
