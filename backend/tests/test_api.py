@@ -8,7 +8,7 @@ os.environ['SIGN_DB_PATH'] = '/tmp/sign_api_test.db'
 os.environ['OPENAI_API_KEY'] = ''  # override a local .env, keeping tests offline
 
 from fastapi.testclient import TestClient
-from main import app, pcm_rms
+from main import app, pcm_rms, transcription_keywords
 from db import SEED
 from interpreter import match_catalog, normalized
 
@@ -17,9 +17,15 @@ def test_health_and_catalog():
     with TestClient(app) as client:
         r = client.get('/api/health')
         assert r.status_code == 200 and r.json()['project'] == 'sign'
+        assert r.json()['catalog_consistent'] is True
+        assert r.json()['catalog_mismatch_count'] == 0
         phrases = client.get('/api/phrases').json()
-        assert len(phrases) >= 10
+        assert len(phrases) >= 100
         assert all(p['validation_status'] == 'illustrative' for p in phrases)
+        playable = {p['id']: p['animation_file'] for p in phrases if p['animation_file']}
+        assert len(playable) >= 100
+        assert playable['hello'] == 'hello'
+        assert playable['bathroom'] == 'bathroom'
 
 
 def test_interpret_without_key():
@@ -73,6 +79,15 @@ def test_pcm_rms():
     assert pcm_rms(struct.pack('<100h', *([0]*100))) == 0
     assert pcm_rms(struct.pack('<100h', *([8192]*100))) > .20
     assert pcm_rms(b'odd') == 0
+
+
+def test_transcription_keywords_are_catalog_backed_and_safe():
+    with TestClient(app):
+        keywords = transcription_keywords()
+        assert 'Artificial intelligence' in keywords
+        assert 'Good morning' in keywords
+        assert len(keywords) <= 100
+        assert all(len(value) <= 64 and '<' not in value and '\n' not in value for value in keywords)
 
 
 def test_live_without_secret_has_clear_error():

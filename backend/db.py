@@ -1,10 +1,16 @@
 """Small local phrase catalog. Animation records are illustrative until signer-validated."""
 from __future__ import annotations
+import json
 import os
 import sqlite3
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DB = Path(__file__).parent / 'data' / 'sign.db'
+MOTION_FILES = (
+    (ROOT / 'data/asl_lex_params.json', 'ASL-LEX descriptor candidate'),
+    (ROOT / 'data/asl_custom_motions.json', 'Application-authored motion candidate'),
+)
 SEED = [
     ('hello', 'Hello', 'hello', 'Greeting', 1, 'illustrative', 'A hand-wave animation placeholder; NOT verified ASL.'),
     ('thank_you', 'Thank you', 'thank you|thanks', 'Courtesy', 1, 'illustrative', 'Animation placeholder; NOT verified ASL.'),
@@ -44,6 +50,26 @@ SEMANTIC_METADATA = {
     'computer': ('An electronic computer or computers.', '', '', '', .90),
 }
 
+
+def motion_seed() -> list[tuple]:
+    """Expose every playable procedural clip through the searchable phrase DB.
+
+    These rows improve retrieval coverage; they do not upgrade an unreviewed
+    motion into validated ASL. Real skeletal assets can later replace a row's
+    ``animation_file`` without changing the matching contract.
+    """
+    rows: dict[str, tuple] = {}
+    for path, provenance in MOTION_FILES:
+        for clip_id, params in json.loads(path.read_text())['signs'].items():
+            label = clip_id.replace('_', ' ')
+            rows[clip_id] = (
+                clip_id, label.title(), label, 'Motion Catalog', 3,
+                'illustrative',
+                f'{provenance}; procedural and not signer-validated.',
+                clip_id, label, '', '', '', .90,
+            )
+    return list(rows.values())
+
 def get_connection(path: str | Path | None = None) -> sqlite3.Connection:
     if path is None:
         path = os.getenv('SIGN_DB_PATH') or DEFAULT_DB
@@ -76,6 +102,17 @@ def init_db(conn: sqlite3.Connection) -> None:
     conn.executemany('''INSERT OR IGNORE INTO phrases
       (id, english, aliases, category, level, validation_status, notes)
       VALUES (?, ?, ?, ?, ?, ?, ?)''', SEED)
+    conn.executemany('''INSERT OR IGNORE INTO phrases
+      (id, english, aliases, category, level, validation_status, notes,
+       animation_file, meaning, context_aliases, positive_contexts,
+       negative_contexts, match_threshold)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', motion_seed())
+    # Older databases already contain the original 12 phrase rows. Connect
+    # those rows to their same-named playable clip without replacing any real
+    # animation asset that a developer may have registered later.
+    conn.executemany('''UPDATE phrases SET animation_file = ?
+      WHERE id = ? AND (animation_file IS NULL OR animation_file = '')''',
+      [(row[7], row[0]) for row in motion_seed()])
     conn.executemany('''UPDATE phrases SET
       meaning = ?, context_aliases = ?, positive_contexts = ?,
       negative_contexts = ?, match_threshold = ? WHERE id = ?''',

@@ -47,11 +47,11 @@ export type Pose = {
 // Finger flexion presets, keyed to the ASL-LEX `Flexion` vocabulary.
 // ---------------------------------------------------------------------------
 const EXTENDED = [0, 0, 0] as const          // FullyOpen
-const FLAT = [1.32, 0.05, 0.02] as const     // Flat  - bent at the knuckle only
+const FLAT = [1.12, 0.05, 0.02] as const     // Flat  - bent at the knuckle only
 const BENT = [0.42, 0.78, 0.36] as const     // Bent  - curved through the joints
 const CURVED = [0.72, 0.95, 0.44] as const   // Curved
-const CLOSED = [1.55, 1.64, 0.62] as const   // FullyClosed
-const STACKED = [1.48, 1.55, 0.5] as const   // folded under the thumb
+const CLOSED = [1.30, 1.42, 0.62] as const   // FullyClosed, inside conservative joint limits
+const STACKED = [1.22, 1.38, 0.5] as const   // folded under the thumb
 
 const THUMB = {
   open:     { abduct: 0.62, rotate: 0.18, curl: [0.08, 0.06] as const },
@@ -308,7 +308,10 @@ export function motionFor(id: string, elapsedSeconds: number): Pose {
   // playback read as a slideshow.
   const durationS = (CLIP_LENGTH_MS[id] ?? 1600) / 1000
   const SIGN = 0.72, HOLD = 0.84, RELEASE = 1, ONSET = 0.1
-  const cycle = (elapsedSeconds / (durationS / SIGN)) % 1
+  // One complete clip includes onset, articulation, hold and release. The old
+  // duration/SIGN divisor stopped playback while the pose was still fully
+  // articulated, producing a hard jump back to idle at every clip boundary.
+  const cycle = (elapsedSeconds / durationS) % 1
   const raw = Math.min(1, cycle / SIGN)
   const release = cycle <= HOLD ? 0 : easeInOut((cycle - HOLD) / (RELEASE - HOLD))
   // Ramp into the sign as well as out of it. Releasing to neutral and then
@@ -331,8 +334,8 @@ export function motionFor(id: string, elapsedSeconds: number): Pose {
   const atBaseHand = sign.MajorLocation === 'Hand'
   // A sign located at the non-dominant hand rests on top of it; anchoring it
   // absolutely makes the two hands interpenetrate.
-  const contactStart: Vec3 = atBaseHand ? add(NON_DOMINANT_REST, [0.14, 0.15, 0.03]) : start
-  const contactEnd: Vec3 = atBaseHand ? add(contactStart, [0.06, 0.13, 0.04]) : end
+  const contactStart: Vec3 = atBaseHand ? add(NON_DOMINANT_REST, [0.02, 0.07, 0.025]) : start
+  const contactEnd: Vec3 = atBaseHand ? add(contactStart, [0.01, 0.14, 0.02]) : end
   const base = mix(contactStart, contactEnd, travel)
   const target = add(base, movementOffset(sign.Movement, phase))
 
@@ -453,8 +456,8 @@ const mirror = (v: Vec3): Vec3 => [-v[0], v[1], v[2]]
  * which is what read as a shop dummy. A person at rest carries a bend in the
  * elbow, keeps the hands clear of the body, and is never symmetrical.
  */
-const REST_RIGHT: Vec3 = [0.36, -0.77, 0.31]
-const REST_LEFT: Vec3 = [-0.345, -0.79, 0.29]
+const REST_RIGHT: Vec3 = [0.42, -0.62, 0.48]
+const REST_LEFT: Vec3 = [-0.40, -0.64, 0.46]
 const REST_PALM_RIGHT: Vec3 = [-0.70, 0.0, -0.71]
 const REST_PALM_LEFT: Vec3 = [0.70, 0.0, -0.71]
 const REST_POINT_RIGHT: Vec3 = [0.04, -0.98, 0.17]

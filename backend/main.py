@@ -21,7 +21,7 @@ from pydantic import BaseModel, Field
 from websockets.asyncio.client import connect as ws_connect
 
 from db import get_connection, get_phrases, init_db
-from catalog_store import catalog_backend, init_catalog_store
+from catalog_store import catalog_backend, get_catalog, init_catalog_store
 from interpreter import interpret
 from planner import PlanRequest, create_plan
 
@@ -55,9 +55,20 @@ class FeedbackRequest(BaseModel):
 
 @app.get('/api/health')
 async def health():
+    phrases = get_phrases(app.state.db)
+    refs = get_catalog()
+    phrase_motions = {phrase['animation_file'] for phrase in phrases if phrase['animation_file']}
+    planner_motions = {
+        sign['motion_asset']['clip_id'] for sign in refs['signs'] if sign.get('motion_asset')
+    }
+    missing_motions = sorted(phrase_motions.symmetric_difference(planner_motions))
     return {'status': 'ok', 'project': 'sign',
             'live_configured': bool(os.getenv('OPENAI_API_KEY', '').strip()),
             'catalog_backend': catalog_backend(),
+            'phrase_count': len(phrases),
+            'motion_count': sum(bool(sign.get('motion_asset')) for sign in refs['signs']),
+            'catalog_consistent': not missing_motions,
+            'catalog_mismatch_count': len(missing_motions),
             'transcription_model': os.getenv('OPENAI_TRANSCRIBE_MODEL', 'gpt-live-transcribe')}
 
 @app.get('/api/phrases')
@@ -138,6 +149,19 @@ def pcm_rms(chunk: bytes) -> float:
         samples.byteswap()
     return (sum(x*x for x in samples) / max(1, len(samples))) ** .5 / 32768
 
+
+def transcription_keywords(limit: int = 100) -> list[str]:
+    """Literal catalog hints for classroom transcription, ordered by specificity."""
+    values: list[str] = []
+    for phrase in get_phrases(app.state.db):
+        values.extend([phrase['english'], *(phrase.get('aliases') or '').split('|')])
+    values.extend(filter(None, os.getenv('SIGN_TRANSCRIPTION_KEYWORDS', '').split('|')))
+    safe = {
+        ' '.join(value.split()) for value in values
+        if value.strip() and len(value) <= 64 and not any(char in value for char in '<>\r\n')
+    }
+    return sorted(safe, key=lambda value: (-len(value.split()), -len(value), value.casefold()))[:limit]
+
 @app.websocket('/ws/live')
 async def live_audio(websocket: WebSocket):
     # CORS middleware doesn't protect WebSockets; enforce allowed browser origins.
@@ -153,6 +177,8 @@ async def live_audio(websocket: WebSocket):
         return
 
     model = os.getenv('OPENAI_TRANSCRIBE_MODEL', 'gpt-live-transcribe')
+    silence_seconds = min(2.0, max(.45, float(os.getenv('SIGN_SILENCE_SECONDS', '.75'))))
+    max_turn_seconds = min(12.0, max(3.0, float(os.getenv('SIGN_MAX_TURN_SECONDS', '6'))))
     upstream_url = f'wss://api.openai.com/v1/realtime?model={model}'
     current_deltas: dict[str, str] = {}
     speech_started = False
@@ -175,7 +201,14 @@ async def live_audio(websocket: WebSocket):
                 'type': 'session.update',
                 'session': {'type': 'transcription', 'audio': {'input': {
                     'format': {'type': 'audio/pcm', 'rate': 24000},
-                    'transcription': {'model': model, 'languages': ['en'], 'delay': 'low'},
+                    'transcription': {
+                        'model': model,
+                        'prompt': os.getenv('SIGN_TRANSCRIPTION_PROMPT',
+                            'A classroom lecture with accessibility captions and common school vocabulary.'),
+                        'keywords': transcription_keywords(),
+                        'languages': ['en'],
+                        'delay': os.getenv('SIGN_TRANSCRIPTION_DELAY', 'low'),
+                    },
                     'turn_detection': None,
                 }}},
             }))
@@ -227,8 +260,8 @@ async def live_audio(websocket: WebSocket):
                             await upstream.send(json.dumps({'type': 'input_audio_buffer.append', 'audio': base64.b64encode(raw).decode('ascii')}))
                             received_since_commit = True
                             # Pauses finalize phrases; very long uninterrupted speech is chunked.
-                            if ((now - last_loud > 1.05 and now - speech_start > .35)
-                                or (now - speech_start > 7.0)):
+                            if ((now - last_loud > silence_seconds and now - speech_start > .30)
+                                or (now - speech_start > max_turn_seconds)):
                                 await upstream.send(json.dumps({'type': 'input_audio_buffer.commit'}))
                                 received_since_commit = False
                                 speech_started = False

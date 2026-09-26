@@ -9,7 +9,7 @@ import { useLiveAudio } from '../hooks/useLiveAudio'
 
 export default function Live(){
   const [phrases,setPhrases]=useState<Phrase[]>(LOCAL_PHRASES)
-  const [backend,setBackend]=useState<{status:string,live_configured:boolean,transcription_model:string,catalog_backend:string}|null>(null)
+  const [backend,setBackend]=useState<{status:string,live_configured:boolean,transcription_model:string,catalog_backend:string,phrase_count:number,motion_count:number,catalog_consistent:boolean,catalog_mismatch_count:number}|null>(null)
   const [segments,setSegments]=useState<Segment[]>([])
   const [partial,setPartial]=useState('')
   const [draft,setDraft]=useState('')
@@ -20,7 +20,9 @@ export default function Live(){
   const nextId=useRef(1)
   const fileInputRef=useRef<HTMLInputElement|null>(null)
   const enqueue=useCallback((items:SelectedPhrase[])=>{
-    setQueue(old=>[...old,...items].slice(-32))
+    // A live signer must stay near the speaker. Bound the backlog so a burst
+    // of short transcript turns cannot leave the avatar minutes behind.
+    setQueue(old=>[...old,...items].slice(-8))
   },[])
   const translationChain=useRef<Promise<void>>(Promise.resolve())
   const recentContext=useRef<string[]>([])
@@ -49,7 +51,12 @@ export default function Live(){
     translationChain.current=translationChain.current.then(async()=>{
       if(epoch!==generation.current)return
       try {
-        const result=await interpret(text,phrases,context)
+        // Matching and motion planning are independent reads. Running them in
+        // parallel removes a full request round trip from live playback.
+        const [result,planned]=await Promise.all([
+          interpret(text,phrases,context),
+          planASL(text,context,true).catch(()=>undefined),
+        ])
         if(epoch!==generation.current)return
         const catalogMatches:SelectedPhrase[]=result.selected.map(clip=>({
           ...clip,
@@ -67,9 +74,8 @@ export default function Live(){
           reason:catalogMatches.length?'Stored catalog match.':'No stored meaning matched the transcript.',
         }
         let selected:SelectedPhrase[]=catalogMatches
-        let planResult:PlanResult|undefined
-        try {
-          planResult=await planASL(text,context,true)
+        const planResult:PlanResult|undefined=planned
+        if(planResult){
           const gloss=planResult.plan?.manual_sequence.map(step=>step.sign_id)||[]
           if(planResult.validation?.executable&&planResult.playback){
             const contextual=catalogMatches.some(clip=>clip.match_kind==='contextual')
@@ -86,7 +92,7 @@ export default function Live(){
               rendering_source:catalogMatches.length?'catalog-plan':'fingerspelling-fallback',
             }]
           }
-        } catch { /* Direct catalog clips remain available if planning is offline. */ }
+        }
         if(epoch!==generation.current)return
         setSegments(prev=>prev.map(segment=>segment.id===id
           ? {...segment,selected,catalogMatches,coverage:result.coverage,gate,planResult}
@@ -174,7 +180,7 @@ export default function Live(){
           <div className="live-control-text">
             {(live.error||fileError)&&<div className="inline-error"><CircleAlert size={15}/>{live.error||fileError}</div>}
             <div className="entry-row"><input value={draft} onChange={event=>setDraft(event.target.value)} onKeyDown={event=>{if(event.key==='Enter'){void handleFinal(draft,'text');setDraft('')}}} placeholder="Type a sentence for live interpretation..." aria-label="Type sample spoken text"/><button className="send-button" title="Add sentence to transcript" disabled={!draft.trim()} onClick={()=>{void handleFinal(draft,'text');setDraft('')}}><Send size={17}/></button></div>
-            <div className="connection-hint"><span className={`small-dot ${backend?.live_configured?'green':'amber'}`}/>{backend?.live_configured?'Smart catalog, microphone, and audio import ready':backend?'Smart catalog ready · browser microphone fallback available':'Local catalog fallback available'}{backend?.catalog_backend?` · catalog: ${backend.catalog_backend}`:''}{live.connectedModel?` · ${live.connectedModel}`:''}</div>
+            <div className="connection-hint"><span className={`small-dot ${backend?.live_configured?'green':'amber'}`}/>{backend?.live_configured?'Smart catalog, microphone, and audio import ready':backend?'Smart catalog ready · browser microphone fallback available':'Local catalog fallback available'}{backend?.motion_count?` · ${backend.motion_count} motions`:''}{backend?.catalog_consistent?' · SQL linked':backend?' · catalog mismatch':''}{backend?.catalog_backend?` · catalog: ${backend.catalog_backend}`:''}{live.connectedModel?` · ${live.connectedModel}`:''}</div>
           </div>
         </div>
         <div className="safety-inline"><CircleAlert size={15}/><span>Prototype gestures are not validated ASL and cannot replace a qualified interpreter.</span></div>

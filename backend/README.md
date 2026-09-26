@@ -9,13 +9,22 @@ cp .env.example .env  # optional: set OPENAI_API_KEY
 uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-- `GET /api/health` live API status
-- `GET /api/phrases` phrase catalog (all seed clips illustrative / unverified)
+- `GET /api/health` live API status, searchable counts, and SQL/planner motion-key integrity
+- `GET /api/phrases` expanded searchable catalog (all seed clips illustrative / unverified)
 - `POST /api/interpret` `{ "text": "...", "context": ["..."] }` context-aware selection from the closed phrase library
 - `POST /api/feedback` `{ "drill_name":..., "observed":..., "expected":..., "score":... }`
 - `WS /ws/live` PCM16 mono 24 kHz binary audio frames, message events (`connected`, `partial`, `final`, `error`)
 
-API key stays on the server. The upstream realtime transcription websocket uses client-independent simple RMS end-of-speech detection and commits turns after a pause or seven seconds. It is a prototype; tune RMS thresholds for actual lecture acoustics. `gpt-live-transcribe` doesn't use server VAD. In production add echo cancellation, diarization, queue backpressure, lifecycle/reconnect handling and persistence policies.
+API key stays on the server. The upstream realtime transcription websocket uses
+simple RMS end-of-speech detection and commits turns after 0.75 seconds of
+silence or six seconds of continuous speech by default. Catalog expressions are
+sent as bounded transcription keywords. Configure this behavior with
+`SIGN_TRANSCRIPTION_DELAY`, `SIGN_SILENCE_SECONDS`, `SIGN_MAX_TURN_SECONDS`,
+`SIGN_TRANSCRIPTION_PROMPT`, and pipe-separated `SIGN_TRANSCRIPTION_KEYWORDS`.
+It is a prototype; tune against actual lecture acoustics. `gpt-live-transcribe`
+uses manual client-side commits rather than server VAD. In production add
+diarization, stronger lifecycle/reconnect handling, item ordering, and explicit
+persistence policies.
 
 Run tests: `python -m pytest tests -q`.
 
@@ -78,6 +87,12 @@ Adding a phrase does not create missing avatar motion: every gloss ID still need
 a registered sign asset. Names and novel proper nouns should normally remain
 fingerspelled. A fluent ASL reviewer must approve the sequence, nonmanual scope,
 and aliases before changing its review status from `candidate`.
+
+SQLite additionally derives searchable illustrative rows from
+`data/asl_lex_params.json` and `data/asl_custom_motions.json`. This keeps live
+retrieval and the Phrase Library aligned with the 103 clips the procedural
+renderer can actually address. Adding a row improves retrieval coverage; it
+does not improve animation fidelity or constitute ASL validation.
 
 The 48 hackathon target inputs live in
 [`data/asl/demo_utterances.json`](../data/asl/demo_utterances.json). Startup seeds

@@ -24,7 +24,7 @@ that path preserves visible words but does not claim to produce ASL grammar.
 ## Motion contract v2
 
 The `sign-procedural-v2` adapter combines 11 ASL-LEX-derived parameter sets,
-application-authored candidate motions in `data/asl_custom_motions.json`, and
+92 application-authored candidate motions in `data/asl_custom_motions.json`, and
 manual-alphabet approximations for `FS:WORD`. All three are procedural
 rehearsals, not captured or reviewed signing. Catalog IDs map to explicit
 `{format, clip_id}` assets; fingerspelling tokens compile dynamically.
@@ -52,9 +52,11 @@ policy exists. Expressions override the underlying procedural facial/body cues.
 
 The avatar's own elapsed animation clock advances the timeline. Pause freezes
 progress; speed changes affect the remaining duration. Completion comes from
-that clock, not a separate wall-clock timeout. These controls do not supply
-coarticulation, classifiers, reviewed fingerspelling, or a glTF loader. Those
-require a richer renderer and separate review.
+that clock, not a separate wall-clock timeout. Adjacent procedural clips use a
+short pose blend to remove hard resets, but this is only a coarticulation
+approximation. Classifiers, captured human transitions, reviewed fingerspelling,
+contact constraints, and a glTF clip loader still require a richer renderer and
+separate review.
 
 ## Reviewer workflow
 

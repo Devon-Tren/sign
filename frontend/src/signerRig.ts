@@ -374,9 +374,9 @@ const damp = (t: number, lambda: number) => 1 - Math.exp(-lambda * t)
  * signing the handshape forms *during* transport rather than snapping into place
  * on arrival. That difference is most of what reads as fluency.
  */
-const ARM_LAMBDA = 9
-const WRIST_LAMBDA = 12
-const FINGER_LAMBDA = 19
+const ARM_LAMBDA = 7.5
+const WRIST_LAMBDA = 9
+const FINGER_LAMBDA = 12
 
 /**
  * Local quaternion that points `b`'s local `axis` along world direction `dir`.
@@ -412,7 +412,7 @@ const _springStep = new THREE.Vector3()
  * through a second-order follower bounds acceleration, which is what makes the
  * arm read as carrying weight rather than being teleported.
  */
-export function smoothTarget(arm: ArmChain, raw: THREE.Vector3, dt: number, omega = 19) {
+export function smoothTarget(arm: ArmChain, raw: THREE.Vector3, dt: number, omega = 13) {
   const s = arm.smooth
   if (!s.started) {
     s.pos.copy(raw)
@@ -483,9 +483,10 @@ const _canon = new THREE.Quaternion()
 /**
  * The wrist can bend and deviate but cannot twist: rotation about the forearm's
  * long axis is pronation/supination, which happens along the FOREARM as the
- * radius crosses the ulna. Roughly 70 degrees of bend is the human limit.
+ * radius crosses the ulna. The procedural fallback uses a conservative
+ * roughly 55-degree swing limit to avoid visibly broken poses.
  */
-const MAX_WRIST_SWING = 1.15
+const MAX_WRIST_SWING = 0.96
 
 /**
  * Split `q` into a twist about `axis` and the swing that remains.
@@ -563,15 +564,17 @@ export type FingerTarget = { curl: readonly [number, number, number]; spread: nu
 /** Sign of the flexion rotation; calibrated once, see calibrateCurl. */
 let CURL_SIGN = 1
 export function setCurlSign(s: number) { CURL_SIGN = s }
+const FINGER_JOINT_MAX = [1.34, 1.48, 1.02]
 
 function applyFinger(chain: FingerChain, t: FingerTarget, dt: number, lambda = FINGER_LAMBDA) {
   for (let i = 0; i < chain.bones.length; i++) {
     const b = chain.bones[i]
-    const angle = (t.curl[i] ?? t.curl[t.curl.length - 1] * 0.7) * CURL_SIGN
+    const requested = t.curl[i] ?? t.curl[t.curl.length - 1] * 0.7
+    const angle = THREE.MathUtils.clamp(requested, 0, FINGER_JOINT_MAX[i] ?? 1.02) * CURL_SIGN
     _dq.setFromAxisAngle(chain.curlAxis[i], angle)
     _want.copy(chain.restQ[i]).multiply(_dq)
     if (i === 0 && t.spread) {
-      _dq.setFromAxisAngle(chain.spreadAxis, t.spread * CURL_SIGN)
+      _dq.setFromAxisAngle(chain.spreadAxis, THREE.MathUtils.clamp(t.spread, -.34, .34) * CURL_SIGN)
       _want.multiply(_dq)
     }
     b.quaternion.slerp(_want, damp(dt, lambda))
@@ -593,16 +596,17 @@ export type ThumbTarget = {
 function applyThumb(chain: FingerChain, t: ThumbTarget, dt: number, lambda = FINGER_LAMBDA) {
   const base = chain.bones[0]
   _want.copy(chain.restQ[0])
-  _dq.setFromAxisAngle(chain.spreadAxis, t.abduct * CURL_SIGN)
+  _dq.setFromAxisAngle(chain.spreadAxis, THREE.MathUtils.clamp(t.abduct, -.08, .86) * CURL_SIGN)
   _want.multiply(_dq)
-  _dq.setFromAxisAngle(chain.longAxis, t.rotate * CURL_SIGN)
+  _dq.setFromAxisAngle(chain.longAxis, THREE.MathUtils.clamp(t.rotate, -.15, .88) * CURL_SIGN)
   _want.multiply(_dq)
-  _dq.setFromAxisAngle(chain.curlAxis[0], t.curl[0] * CURL_SIGN)
+  _dq.setFromAxisAngle(chain.curlAxis[0], THREE.MathUtils.clamp(t.curl[0], 0, 1.02) * CURL_SIGN)
   _want.multiply(_dq)
   base.quaternion.slerp(_want, damp(dt, lambda))
 
   for (let i = 1; i < chain.bones.length; i++) {
-    const angle = (i === 1 ? t.curl[1] : t.curl[1] * 0.7) * CURL_SIGN
+    const requested = i === 1 ? t.curl[1] : t.curl[1] * 0.7
+    const angle = THREE.MathUtils.clamp(requested, 0, i === 1 ? 1.12 : .82) * CURL_SIGN
     _dq.setFromAxisAngle(chain.curlAxis[i], angle)
     _want.copy(chain.restQ[i]).multiply(_dq)
     chain.bones[i].quaternion.slerp(_want, damp(dt, lambda))

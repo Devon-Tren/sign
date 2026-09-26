@@ -64,7 +64,9 @@ function toWorld(rig: SignerRig, n: Vec3, out: THREE.Vector3) {
   return out.set(
     _mid.x + n[0] * DOMINANT_X * reach,
     _mid.y + n[1] * reach,
-    _mid.z + n[2] * reach,
+    // Procedural anchors are approximate, so keep them in front of the torso
+    // plane rather than allowing a hand to phase through clothing.
+    _mid.z + Math.max(n[2], 0.22) * reach,
   )
 }
 
@@ -255,7 +257,7 @@ export default function Avatar({ clipId, paused = false, speed = 1, compact = fa
     >
       <Canvas
         shadows
-        camera={{ position: [0, 0.52, compact ? 3.35 : 3.25], fov: 38 }}
+        camera={{ position: [0, compact ? 0.58 : 0.38, compact ? 3.15 : 3.65], fov: 38 }}
         gl={{ alpha: true, antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
         dpr={[1, 1.75]}
         onCreated={({ gl }) => { gl.shadowMap.type = THREE.PCFSoftShadowMap }}
@@ -293,7 +295,7 @@ export default function Avatar({ clipId, paused = false, speed = 1, compact = fa
 
           <Signer clipId={clipId} paused={paused} speed={speed} timeline={timeline} onComplete={onComplete} />
           <OrbitControls
-            target={[0, 0.5, 0]}
+            target={[0, compact ? 0.58 : 0.38, 0]}
             enablePan={false}
             minDistance={1.4}
             maxDistance={6}
