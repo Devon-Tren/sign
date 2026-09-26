@@ -125,6 +125,14 @@ python scripts/extract_asl_lex.py
 
 **This is still not validated ASL.** ASL-LEX *describes* signs; it is not an animation specification. Rendering "Curved movement at Head/Mouth" as a trajectory is interpretation, and palm orientation is an authored layer that ASL-LEX does not supply at all. Every entry stays `illustrative` until a qualified Deaf signer reviews it.
 
+## Contributing
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+**If you are a Deaf signer, ASL linguist or interpreter:** the most valuable thing you can file is a [sign correction](https://github.com/Devon-Tren/sign/issues/new?template=sign_correction.yml). It needs no code and no setup. Every sign here is an unverified placeholder, and corrections are the only route to changing that.
+
+Anything that adds linguistic data must state its source and license, and must go in `data/` — see the licensing rules in CONTRIBUTING.md before doing the work.
+
 ## License
 
 This repository is **dual-licensed**. The two licenses are not interchangeable:

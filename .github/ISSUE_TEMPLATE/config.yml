@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Accessibility concern
+    url: https://github.com/Devon-Tren/sign/blob/main/CONTRIBUTING.md#the-most-important-thing
+    about: If this prototype is being presented as a replacement for a human interpreter, please tell us — open an issue and say so plainly.

@@ -1,0 +1,54 @@
+name: Sign correction
+description: Tell us a sign is wrong. No code knowledge needed — this is the most valuable report we can get.
+title: "[Sign] "
+labels: ["sign-correction", "needs-signer-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. Every sign in this project is an unverified placeholder, and
+        corrections from Deaf signers, ASL linguists and interpreters are the
+        only way that changes.
+
+        You do not need to run the project or read any code to file this.
+  - type: input
+    id: phrase
+    attributes:
+      label: Which sign?
+      placeholder: e.g. Thank you, Help, Understand
+    validations:
+      required: true
+  - type: textarea
+    id: whats-wrong
+    attributes:
+      label: What is wrong with it?
+      description: Plain language is perfect. Handshape, location, movement, palm orientation, facial expression, or "it isn't this sign at all" — whatever you noticed.
+    validations:
+      required: true
+  - type: textarea
+    id: correct
+    attributes:
+      label: What should it be instead?
+      description: Optional. A description, a link to a reference you have the right to share, or a note that it needs a fluent signer to demonstrate.
+  - type: dropdown
+    id: background
+    attributes:
+      label: Would you like your background noted?
+      description: Entirely optional, and you can skip it. It helps us weight and credit reviews.
+      options:
+        - Prefer not to say
+        - Deaf signer
+        - Hard of hearing signer
+        - Hearing signer / CODA
+        - ASL interpreter
+        - ASL linguist or researcher
+        - ASL student
+    validations:
+      required: false
+  - type: checkboxes
+    id: credit
+    attributes:
+      label: Credit
+      options:
+        - label: I am happy to be credited in the changelog if this is acted on.
+          required: false
