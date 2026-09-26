@@ -78,4 +78,12 @@ a registered sign asset. Names and novel proper nouns should normally remain
 fingerspelled. A fluent ASL reviewer must approve the sequence, nonmanual scope,
 and aliases before changing its review status from `candidate`.
 
+The 48 hackathon target inputs live in
+[`data/asl/demo_utterances.json`](../data/asl/demo_utterances.json). Startup seeds
+them into the same JSON/MongoDB catalog. Every non-name gloss ID has a candidate
+motion; personal names remain fingerspelled unless the person supplies an
+approved name sign. The test suite compiles every target into avatar playback
+and checks the requested negation, question, reference, location, number, and
+date contrasts.
+
 Run `python -m pytest tests -q` for the offline integration and validation suite.

@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CATALOG_FILE = ROOT / 'data/asl/catalog.json'
 CUSTOM_MOTIONS_FILE = ROOT / 'data/asl_custom_motions.json'
 PHRASE_SEED_FILE = ROOT / 'data/asl/phrase_seed.json'
+DEMO_UTTERANCES_FILE = ROOT / 'data/asl/demo_utterances.json'
 log = logging.getLogger('sign.catalog')
 
 _database = None
@@ -21,6 +22,7 @@ def _seed_catalog() -> dict:
     catalog = json.loads(CATALOG_FILE.read_text())
     custom = json.loads(CUSTOM_MOTIONS_FILE.read_text())['signs']
     phrases = json.loads(PHRASE_SEED_FILE.read_text())
+    demo = json.loads(DEMO_UTTERANCES_FILE.read_text())
     signs = {entry['id']: entry for entry in catalog['signs']}
     for clip_id in custom:
         sign_id = clip_id.upper()
@@ -43,11 +45,17 @@ def _seed_catalog() -> dict:
     profiles.update({entry['id']: entry for entry in phrases['profiles']})
     catalog['profiles'] = list(profiles.values())
     examples = {entry['id']: entry for entry in catalog['examples']}
-    for phrase in phrases['phrases']:
+    for phrase in [*phrases['phrases'], *demo['phrases']]:
         meaning = {
             'intent': phrase['intent'], 'predicate': phrase['predicate'],
-            'participants': [], 'negated': False, 'time': [], 'quantities': [],
-            'entities': [], 'conditions': [], 'references': [], 'unresolved': [],
+            'participants': phrase.get('participants', []),
+            'negated': phrase.get('negated', False),
+            'time': phrase.get('time', []),
+            'quantities': phrase.get('quantities', []),
+            'entities': phrase.get('entities', []),
+            'conditions': phrase.get('conditions', []),
+            'references': phrase.get('references', []),
+            'unresolved': phrase.get('unresolved', []),
         }
         steps = [{'id': f's{index + 1}', 'sign_id': sign_id}
                  for index, sign_id in enumerate(phrase['gloss'])]

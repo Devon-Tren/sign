@@ -34,10 +34,10 @@ def test_request_retains_ambiguity():
     assert result['plan']['meaning']['intent'] == 'request'
     assert result['unresolved']
     # Context changes meaning: don't silently reuse a context-free example;
-    # the conservative fallback spells the unresolved source instead.
+    # the conservative fallback preserves the unresolved reference explicitly.
     result = asyncio.run(create_plan(PlanRequest(text='Could you explain that again?', context=['Recursion'])))
     assert result['mode'] == 'fingerspell-fallback'
-    assert any(step['sign_id'] == 'FS:THAT' for step in result['plan']['manual_sequence'])
+    assert any(step['sign_id'] == 'THAT' for step in result['plan']['manual_sequence'])
 
 
 def test_rejects_bad_ids_spans_and_meaning_loss():
@@ -159,7 +159,7 @@ def test_fallback_preserves_negation_time_and_quantity_fields():
     assert meaning['negated'] is True
     assert meaning['quantities'] == ['two']
     assert meaning['time'] == ['before', 'friday']
-    assert result['plan']['manual_sequence'][0]['sign_id'] == 'FS:NOT'
+    assert result['plan']['manual_sequence'][0]['sign_id'] == 'NOT'
 
 
 def test_catalog_expansion_is_available_without_mongodb():

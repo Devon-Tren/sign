@@ -44,6 +44,13 @@ microphone transcripts share this planner and playback queue. Candidate sequence
 play in the hackathon UI with an experimental label. No approved constructions
 are bundled. See [the planner contract and required assets](backend/README.md#experimental-asl-planning).
 
+The hackathon demo includes a [48-input classroom dataset](data/asl/demo_utterances.json)
+covering help, clarification, introductions, directions, basic needs,
+understanding, classroom questions, and wellbeing. Each exact input compiles to
+playable candidate motion without spelling unknown English terms; Hector and
+Maya remain fingerspelled as proper names. These candidates still require fluent
+ASL review before they can be described as accurate translations.
+
 ## Enable microphone transcription
 
 Click **Start microphone** and grant microphone permission on localhost. In Chrome or Edge, the app can use the browser's Speech Recognition service for partial and final captions without an OpenAI key.
