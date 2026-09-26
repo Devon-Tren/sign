@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { CircleAlert, Download, FileAudio, Mic2, Send, Square, Waves } from 'lucide-react'
+import { CircleAlert, FileAudio, Mic2, Send, Square, Waves } from 'lucide-react'
 import Avatar from './Avatar'
 import { CLIP_LENGTH_MS } from '../clips'
 import { LOCAL_PHRASES, localInterpret } from '../data'
@@ -118,15 +118,6 @@ export default function Live(){
     return ()=>clearTimeout(timer)
   },[playing])
 
-  const downloadTranscript=()=>{
-    const content=['SIGN — lecture transcript','Prototype: animations are NOT verified ASL','',
-      ...segments.map(segment=>`[${segment.timestamp.toLocaleTimeString()}] ${segment.text}`)].join('\n')
-    const anchor=document.createElement('a')
-    anchor.href=URL.createObjectURL(new Blob([content],{type:'text/plain'}))
-    anchor.download=`sign-transcript-${new Date().toISOString().slice(0,10)}.txt`
-    anchor.click()
-    URL.revokeObjectURL(anchor.href)
-  }
   const startMic=async()=>{
     generation.current++
     recentContext.current=[]
@@ -165,18 +156,17 @@ export default function Live(){
     :live.status==='listening'?'LISTENING':'READY'
   return <div className="page-content live-page">
     <div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/> THE CLASSROOM</div><h1>Every word, within reach<span className="heading-period">.</span></h1><p>Live captions with context-checked signing and visible fallback playback.</p></div>
-      <div className="heading-actions"><span className="privacy-pill"><span className="privacy-dot"/> No audio storage in Sign</span><button className="icon-button" title="Export transcript" onClick={downloadTranscript} disabled={!segments.length}><Download size={18}/></button></div>
     </div>
     <div className="live-layout">
       <section className="avatar-panel">
-        <div className="panel-top"><span className="mini-heading"><Waves size={17}/> YOUR LIVE COMPANION</span><span className={live.status==='listening'?'mode-chip chip-live':'mode-chip'}>{live.status==='listening'&&!playing&&<span className="pulse-dot"/>}{modeLabel}</span></div>
+        <div className="panel-top"><span className="mini-heading"><Waves size={17}/> Maya </span><span className={live.status==='listening'?'mode-chip chip-live':'mode-chip'}>{live.status==='listening'&&!playing&&<span className="pulse-dot"/>}{modeLabel}</span></div>
         <div className="avatar-stage"><div className="orb orb-one"/><div className="orb orb-two"/>
           <Avatar clipId={playing?.phrase_id||'idle'} speed={1} timeline={playing?.playback} onComplete={()=>setPlaying(null)}/>
           <div className="stage-guidance"><span className="stage-index">{stageMode}</span><strong>{currentLabel}</strong><span>{stageHint}</span></div>
           <div className="stage-vertical">SIGN / 001</div>
         </div>
         <div className="playback-panel live-control-panel">
-          <div className="live-control-mic">
+          <div className="live-control-actions">
             <button className={`mic-button ${live.status==='listening'?'mic-active':''}`} disabled={live.status==='connecting'||live.status==='stopping'} onClick={live.status==='listening'?live.stop:startMic}>{live.status==='listening'?<><Square size={15}/> Stop</>:<><Mic2 size={17}/> {live.status==='connecting'?'Connecting...':'Mic'}</>}</button>
             <input ref={fileInputRef} className="sr-only" type="file" accept="audio/*" onChange={e=>void handleAudioImport(e.target.files?.[0]||null)}/>
             <button className="secondary-button audio-import-button" disabled={importing} onClick={()=>fileInputRef.current?.click()}><FileAudio size={16}/> {importing?'Importing...':'Audio file'}</button>

@@ -1,6 +1,7 @@
-import {ArrowRight,AudioLines,BookOpen,GraduationCap,Radio} from 'lucide-react'
+import {ArrowRight,BookOpen,GraduationCap,Radio} from 'lucide-react'
 import type {Tab} from '../types'
 import Avatar from './Avatar'
+import BrandLogo from './BrandLogo'
 
 type HomeProps = {
   onNavigate: (tab: Tab) => void
@@ -9,7 +10,7 @@ type HomeProps = {
 export default function Home({onNavigate}:HomeProps){
   return <div className="home-entry"><main className="home-minimal">
     <header className="home-editorial-header">
-      <div className="home-brand"><div className="brand-mark"><AudioLines size={25} strokeWidth={2.4}/></div><div className="brand-type"><strong>sign<span>.</span></strong><small>BRIDGING CONVERSATIONS</small></div></div>
+      <div className="home-brand"><BrandLogo/></div>
       <div className="home-availability"><span className="small-dot"/> ACCESSIBILITY WORKSPACE <b>/ READY</b></div>
     </header>
     <section className="home-minimal-hero">
@@ -19,7 +20,6 @@ export default function Home({onNavigate}:HomeProps){
         <p className="home-problem">Classrooms move quickly, and students who rely on captions, signs, or visual support need a calmer way to follow along, practice, and review what was said.</p>
       </div>
       <div className="home-character-card" aria-label="SIGN character preview">
-        <div className="home-avatar-label"><span>AVATAR OUTPUT</span><strong>READY · 48 DEMO INPUTS</strong></div>
         <Avatar clipId="idle" compact paused/>
         <div className="home-avatar-caption">FIG. 001 — SIGNING WORKSPACE / CANDIDATE MOTION</div>
       </div>
