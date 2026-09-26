@@ -4,6 +4,30 @@ import { liveWsUrl } from '../api'
 type State='idle'|'connecting'|'listening'|'stopping'|'error'
 type Callbacks={onPartial:(value:string)=>void;onFinal:(value:string)=>void}
 
+type SpeechResult={isFinal:boolean;0:{transcript:string}}
+type SpeechResultEvent={resultIndex:number;results:ArrayLike<SpeechResult>}
+type SpeechErrorEvent={error:string;message?:string}
+type BrowserSpeechRecognition={
+  continuous:boolean
+  interimResults:boolean
+  lang:string
+  onresult:((event:SpeechResultEvent)=>void)|null
+  onerror:((event:SpeechErrorEvent)=>void)|null
+  onend:(()=>void)|null
+  start:()=>void
+  stop:()=>void
+  abort:()=>void
+}
+type SpeechRecognitionConstructor=new()=>BrowserSpeechRecognition
+
+function browserSpeechRecognition():SpeechRecognitionConstructor|undefined{
+  const speechWindow=window as typeof window&{
+    SpeechRecognition?:SpeechRecognitionConstructor
+    webkitSpeechRecognition?:SpeechRecognitionConstructor
+  }
+  return speechWindow.SpeechRecognition||speechWindow.webkitSpeechRecognition
+}
+
 // AudioWorklet resamples the actual AudioContext clock to the API's 24 kHz PCM16 format.
 // Silence is preserved so the backend's simple energy VAD can segment speech.
 const WORKLET=`class PCMStream extends AudioWorkletProcessor {
@@ -34,9 +58,17 @@ export function useLiveAudio({onPartial,onFinal}:Callbacks){
   const [connectedModel,setConnectedModel]=useState('')
   const wsRef=useRef<WebSocket|null>(null),ctxRef=useRef<AudioContext|null>(null)
   const streamRef=useRef<MediaStream|null>(null),urlRef=useRef<string|null>(null)
+  const recognitionRef=useRef<BrowserSpeechRecognition|null>(null)
+  const recognitionActive=useRef(false)
   const callbacks=useRef({onPartial,onFinal})
   callbacks.current={onPartial,onFinal}
   const cleanup=useCallback(()=>{
+    recognitionActive.current=false
+    if(recognitionRef.current){
+      recognitionRef.current.onend=null
+      recognitionRef.current.abort()
+      recognitionRef.current=null
+    }
     const ws=wsRef.current;wsRef.current=null
     if(ws && (ws.readyState===WebSocket.OPEN||ws.readyState===WebSocket.CONNECTING)) ws.close()
     streamRef.current?.getTracks().forEach(x=>x.stop());streamRef.current=null
@@ -46,6 +78,51 @@ export function useLiveAudio({onPartial,onFinal}:Callbacks){
   },[])
   useEffect(()=>()=>cleanup(),[cleanup])
 
+  const startBrowserFallback=useCallback(()=>{
+    const SpeechRecognition=browserSpeechRecognition()
+    if(!SpeechRecognition)throw new Error('Live speech recognition needs an OpenAI API key or a browser with Speech Recognition support (such as Chrome or Edge).')
+    const recognition=new SpeechRecognition()
+    recognition.continuous=true
+    recognition.interimResults=true
+    recognition.lang='en-US'
+    recognitionRef.current=recognition
+    recognitionActive.current=true
+    recognition.onresult=(event)=>{
+      let interim=''
+      for(let i=event.resultIndex;i<event.results.length;i++){
+        const result=event.results[i]
+        const text=result[0]?.transcript?.trim()||''
+        if(!text)continue
+        if(result.isFinal)callbacks.current.onFinal(text)
+        else interim=`${interim} ${text}`.trim()
+      }
+      callbacks.current.onPartial(interim)
+    }
+    recognition.onerror=(event)=>{
+      if(event.error==='no-speech')return
+      const messages:Record<string,string>={
+        'audio-capture':'No microphone was found.',
+        'not-allowed':'Microphone permission was denied.',
+        'network':'Browser speech recognition could not reach its transcription service.',
+      }
+      setError(messages[event.error]||event.message||`Speech recognition error: ${event.error}`)
+      setStatus('error')
+      recognitionActive.current=false
+    }
+    recognition.onend=()=>{
+      if(!recognitionActive.current)return
+      // Browser recognition may end after a quiet period. Restart while the user
+      // still has the microphone enabled so lectures continue transcribing.
+      try{recognition.start()}catch{
+        recognitionActive.current=false
+        setStatus('idle')
+      }
+    }
+    recognition.start()
+    setConnectedModel('Browser speech recognition')
+    setStatus('listening')
+  },[])
+
   const start=useCallback(async()=>{
     cleanup();setError('');setConnectedModel('');setStatus('connecting')
     try{
@@ -53,7 +130,7 @@ export function useLiveAudio({onPartial,onFinal}:Callbacks){
       const ws=new WebSocket(liveWsUrl())
       wsRef.current=ws
       // Wait for backend + authenticated upstream handshake BEFORE asking for mic permission.
-      await new Promise<void>((resolve,reject)=>{
+      try{await new Promise<void>((resolve,reject)=>{
         let ready=false
         const timer=setTimeout(()=>reject(new Error('Transcription handshake timed out. Check backend/.env and server logs.')),12000)
         ws.onerror=()=>{clearTimeout(timer);reject(new Error('Unable to reach the live transcription server.'))}
@@ -74,7 +151,12 @@ export function useLiveAudio({onPartial,onFinal}:Callbacks){
           if(!ready){clearTimeout(timer);reject(new Error('Transcription server closed before connecting.'))}
           else if(evt.code!==1000){setStatus(prev=>prev==='stopping'||prev==='idle'?prev:'error');setError(prev=>prev||'Transcription stream closed.')}
         }
-      })
+      })}catch{
+        cleanup()
+        setError('')
+        startBrowserFallback()
+        return
+      }
       const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false})
       streamRef.current=stream
       const ctx=new AudioContext();ctxRef.current=ctx
@@ -90,9 +172,17 @@ export function useLiveAudio({onPartial,onFinal}:Callbacks){
       if(ctx.state==='suspended')await ctx.resume()
       setStatus('listening')
     }catch(err){cleanup();setError(err instanceof Error?err.message:String(err));setStatus('error')}
-  },[cleanup])
+  },[cleanup,startBrowserFallback])
   const stop=useCallback(()=>{
     setStatus('stopping')
+    if(recognitionRef.current){
+      recognitionActive.current=false
+      callbacks.current.onPartial('')
+      recognitionRef.current.stop()
+      recognitionRef.current=null
+      setStatus('idle')
+      return
+    }
     const ws=wsRef.current
     if(ws?.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'flush'}))
     streamRef.current?.getTracks().forEach(track=>track.stop())

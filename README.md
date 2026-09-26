@@ -44,13 +44,18 @@ microphone transcripts share this planner and playback queue. Candidate sequence
 play in the hackathon UI with an experimental label. No approved constructions
 are bundled. See [the planner contract and required assets](backend/README.md#experimental-asl-planning).
 
-## Enable real microphone transcription
+## Enable microphone transcription
+
+Click **Start microphone** and grant microphone permission on localhost. In Chrome or Edge, the app can use the browser's Speech Recognition service for partial and final captions without an OpenAI key.
+
+For server-side OpenAI transcription:
 
 1. Copy `sign/backend/.env.example` to `sign/backend/.env`.
 2. Set `OPENAI_API_KEY=...` in **backend/.env only**. Never use `VITE_` to expose a secret in the frontend.
 3. Restart the backend. The frontend connection indicator should say **Live API configured**.
-4. Click **Start microphone** and grant microphone permission on localhost. Speak clearly, pause between clauses, and watch the English captions update.
-5. The backend sends mono 24 kHz PCM to OpenAI using a server-only WebSocket, segments speech with simple energy VAD and uses `gpt-live-transcribe` for partial/final transcripts. GPT-4.1, if available, selects *only* phrase IDs from the catalog. Without a key the matcher operates locally. Unsupported content stays visible in the transcript.
+4. Click **Start microphone**, speak clearly, and pause between clauses.
+
+The backend sends mono 24 kHz PCM through a server-only WebSocket, segments speech with simple energy VAD, and uses `gpt-live-transcribe`. If that connection is unavailable, the app automatically tries browser speech recognition. GPT-4.1, if configured, plans supported avatar motions from the finalized transcript. Unsupported content stays visible as English captions.
 
 API usage incurs charges. MediaPipe webcam tracking runs on device, but the model and WASM runtime are downloaded from Google's model host and jsDelivr at first launch. Never record or transmit someone else's lecture without permission.
 
@@ -60,6 +65,7 @@ API usage incurs charges. MediaPipe webcam tracking runs on device, but the mode
 |---|---|---|
 | Classroom | React UI, animated 3D person with face, finger bones, orbit controls | Implemented; gestures **illustrative only** |
 | Classroom | Simulated streaming six-line lecture | Works without API key |
+| Classroom | Browser microphone transcription | Integrated; requires browser support, network, and microphone permission |
 | Classroom | Server-side realtime microphone transcription | Integrated; requires API key, model access, network, browser mic permissions |
 | Classroom | Independent animation queue, replay, pause, speed, transcript history, export | Implemented |
 | Classroom | Structured gloss planning / known-sign and fingerspelling fallback | Integrated; experimental |
