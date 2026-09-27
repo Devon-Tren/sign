@@ -481,7 +481,11 @@
     "where": {
       "nonmanual": {
         "browFurrow": 0.85
-      }
+      },
+      "non_dominant_rest": "side"
+    },
+    "like": {
+      "torso_clearance": 0.045
     },
     "why": {
       "nonmanual": {

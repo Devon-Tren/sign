@@ -67,6 +67,8 @@ export type ArmPose = {
   /** Surface targets ride on the body part they touch (weights), so they stay
    *  on the skin as the torso turns and the head inclines (./body). */
   attach?: { head?: number; torso?: number }
+  /** Extra rendered clearance for a hand whose volume contacts the torso. */
+  torsoClearance?: number
 }
 /** `tipFinger` weights index..pinky for the fingertip point; absent = the
  *  fingertips that reach farthest (the extended ones). Open-8 touches with its
@@ -150,6 +152,8 @@ export type Augment = {
   movement_axis?: 'vertical' | 'lateral' | 'forward'
   hand_relation?: string
   carried?: boolean
+  torso_clearance?: number
+  non_dominant_rest?: 'side'
   /** Palm and finger direction at the START of the sign. ASL-LEX does not code
    *  palm orientation at all, so this is authored, and it overrides the
    *  derivation in ./anchors for signs whose presentation is distinctive. */
@@ -596,6 +600,7 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   const offsetAt = (at: number): Vec3 => movementPrior && m.Movement === 'BackAndForth'
     ? scale(movementPrior, Math.sin(at * TAU) * MOVEMENT_SCALE.BackAndForth * size)
     : movementOffset(m.Movement, at, size, augment.movement_axis)
+  const minorKey = m.MinorLocation && m.MinorLocation !== 'NA' ? m.MinorLocation : m.MajorLocation ?? ''
   const target = add(base, offsetAt(phase))
 
   // --- orientation --------------------------------------------------------
@@ -651,7 +656,6 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   // point the hand touches - with the thumb tip (MOTHER/FATHER family), the
   // palm (torso) or the fingertips (face); a location in space holds the palm
   // centre there. Signs on the other hand keep wrist-relative relations.
-  const minorKey = m.MinorLocation && m.MinorLocation !== 'NA' ? m.MinorLocation : m.MajorLocation ?? ''
   const onSurface = SURFACE_LOCATIONS.has(minorKey)
   const reach: Reach | undefined = onHand ? (relation!.at ? relation!.reach : undefined)
     : m.MajorLocation === 'Hand' || m.MajorLocation === 'Arm' ? undefined
@@ -666,7 +670,7 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   let nonDominant: HandPose = rest.leftHand
   // Never null: a null arm made blendPoses switch hard at the midpoint rather
   // than interpolate, which put a snap in every one-handed sign.
-  let leftArm: ArmPose = SIGNING_REST_LEFT
+  let leftArm: ArmPose = augment.non_dominant_rest === 'side' ? SIDE_REST_LEFT : SIGNING_REST_LEFT
 
   if (symmetric) {
     nonDominant = handshapeFor(m.NonDominantHandshape ?? m.Handshape, descriptors)
@@ -721,6 +725,7 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
       pointTolerance: inferredPoint ? POINT_TOLERANCE : undefined,
       reach,
       attach,
+      torsoClearance: augment.torso_clearance,
     },
     leftArm,
     rightHand: dominant,
@@ -984,6 +989,14 @@ export const SIGNING_REST_LEFT: ArmPose = {
   elbow: normalise([-0.42, -0.9, 0.05]),
 }
 
+/** Relaxed left-hand rest used by one-handed signs that keep the arm at the hip. */
+export const SIDE_REST_LEFT: ArmPose = {
+  target: [-0.43, -0.92, 0.02],
+  palm: normalise([-0.35, 0.72, -0.6]),
+  point: pointForPalm(normalise([-0.35, 0.72, -0.6]), [0.5, -0.2, 0.84]),
+  elbow: normalise([-0.38, -0.9, -0.08]),
+}
+
 /** Linear blend between two poses, used for the release and for sign changes. */
 export function blendPoses(a: Pose, b: Pose, t: number): Pose {
   if (t <= 0) return a
@@ -1007,6 +1020,7 @@ export function blendPoses(a: Pose, b: Pose, t: number): Pose {
         head: (x.attach?.head ?? 0) + ((y.attach?.head ?? 0) - (x.attach?.head ?? 0)) * t,
         torso: (x.attach?.torso ?? 0) + ((y.attach?.torso ?? 0) - (x.attach?.torso ?? 0)) * t,
       } : undefined,
+      torsoClearance: (x.torsoClearance ?? 0) + ((y.torsoClearance ?? 0) - (x.torsoClearance ?? 0)) * t,
       pointTolerance: x.pointTolerance === undefined && y.pointTolerance === undefined
         ? undefined : (x.pointTolerance ?? 0) + ((y.pointTolerance ?? 0) - (x.pointTolerance ?? 0)) * t,
       // Contact is asserted while either side asserts it, so the renderer does

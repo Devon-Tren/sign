@@ -108,6 +108,10 @@ export const SURFACE_LOCATIONS = new Set(['Head', 'HeadTop', 'Forehead', 'Eye', 
   'Mouth', 'Chin', 'UnderChin', 'Neck', 'Clavicle', 'Shoulder', 'Body', 'TorsoTop', 'TorsoMid',
   'TorsoBottom', 'Waist', 'Hips', 'Chest', 'Cheek', 'Nose'])
 
+export const TORSO_SURFACE_LOCATIONS = new Set(['Body', 'TorsoTop', 'TorsoMid', 'TorsoBottom', 'Waist', 'Hips', 'Chest'])
+
+/** Body locations where a contact point needs a small outward clearance. */
+
 /**
  * Front of the torso (arm-reach units) at height y, from the mesh: collarbone
  * 0.21, upper chest 0.28, chest 0.33, jacket front at the waist 0.36. Used to

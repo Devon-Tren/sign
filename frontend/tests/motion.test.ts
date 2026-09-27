@@ -126,6 +126,30 @@ test('HIGH moves upward in signer space and symmetric local paths move both wris
   }
 })
 
+test('WHERE keeps the non-dominant hand at the left hip', () => {
+  const where = motionFor('where', clipLengthMs('where', 'continuous') * 0.5 / 1000, { mode: 'continuous' })
+  const left = where.leftArm!
+  assert.ok(left.target[1] < -0.8)
+  assert.ok(left.target[0] < -0.3)
+  assert.ok(where.rightArm!.target[1] > left.target[1])
+  for (const phase of [0.1, 0.3, 0.7, 0.9]) {
+    const pose = motionFor('where', clipLengthMs('where', 'continuous') * phase / 1000, { mode: 'continuous' })
+    assert.ok(pose.leftArm!.target[1] < -0.8)
+    assert.ok(pose.leftArm!.target[0] < -0.3)
+  }
+})
+
+test('LIKE keeps torso contact in front of the chest surface', () => {
+  for (const phase of [0.1, 0.3, 0.5, 0.7, 0.9]) {
+    const pose = motionFor('like', clipLengthMs('like', 'continuous') * phase / 1000, { mode: 'continuous' })
+    const hand = pose.rightArm!
+    // The target remains finite and the torso keep-out is applied downstream
+    // when the wrist is derived from this contact point.
+    assert.ok(hand.target[2] >= 0.28, `LIKE target moved behind torso at phase ${phase}`)
+    assert.ok(Number.isFinite(hand.target[0]) && Number.isFinite(hand.target[1]))
+  }
+})
+
 test('catalog audit separates internal motion and catches invalid poses', () => {
   const report = auditReport()
   assert.equal(report.handshapeCollisions.length, 0)
