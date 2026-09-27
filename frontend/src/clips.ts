@@ -769,7 +769,8 @@ function authoredPose(id: string, elapsedSeconds: number, opts: MotionOptions): 
       palm: normalise(f.left.palm), point: normalise(f.left.point) } : SIGNING_REST_LEFT,
     rightHand: handshapeFor(f.right_handshape ?? clip.right_handshape),
     leftHand: (f.left_handshape ?? clip.left_handshape) ? handshapeFor(f.left_handshape ?? clip.left_handshape) : rest.leftHand,
-    head: f.head ?? [0, 0, 0], browRaise: 0, browFurrow: 0, mouth: 0.06, headShake: 0,
+    head: f.head ?? [0, 0, 0], browRaise: clip.expression?.browRaise ?? 0,
+    browFurrow: clip.expression?.browFurrow ?? 0, mouth: clip.expression?.mouth ?? 0.06, headShake: 0,
   })
   const upper = clip.keyframes.findIndex(f => f.at > phase)
   const a = clip.keyframes[upper < 0 ? clip.keyframes.length - 1 : Math.max(0, upper - 1)]

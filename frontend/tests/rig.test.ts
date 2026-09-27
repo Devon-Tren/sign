@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import * as THREE from 'three'
 import { loadTestSigner } from './rigFixture'
+import { setMorphDirect } from '../src/signerRig'
 import { torsoFrontZ } from '../src/anchors'
 import { applyManualPose, directionToWorld, rigSnapshot } from '../src/rigPose'
 import { allSignIds, clipLengthMs, motionFor, signParams } from '../src/clips'
@@ -233,5 +234,34 @@ test('self-point and repeated palm taps reach their targets on the character', a
     const { snap } = settle('understand', phase)
     assert.ok(snap.right.wrist[0] > .4 && snap.right.wrist[1] > .25, 'fist beside right side of head')
     assert.ok(snap.right.palm[2] < -.98, 'fingers face the signer')
+  }
+})
+
+
+test('coordination raises both open hands and question has working facial controls', async () => {
+  const rig = await loadTestSigner()
+  const settle = (id: string, t: number) => {
+    const pose = motionFor(id, t, { mode: 'continuous', skipOnset: true, skipRelease: true })
+    for (let k = 0; k < 45; k++) applyManualPose(rig, pose, t, 1 / 30)
+    return { pose, snap: rigSnapshot(rig) }
+  }
+  const start = settle('two_open', .1).snap
+  const end = settle('two_open', 1.5).snap
+  for (const side of ['right', 'left'] as const) {
+    assert.ok(end[side].wrist[1] - start[side].wrist[1] > .4, `${side} rises`)
+    assert.ok(Math.abs(end[side].wrist[0]) - Math.abs(start[side].wrist[0]) > .3, `${side} moves outward`)
+    assert.ok(end[side].palm[2] > .97, `${side} open palm faces forward`)
+  }
+  const question = settle('question', .5)
+  assert.ok(question.snap.right.wrist[1] > .25, 'raised right arm')
+  assert.ok(question.snap.right.point[1] > .97, 'index points up')
+  for (const [name, value] of [
+    ['AU_04_BrowLowerer', question.pose.browFurrow],
+    ['AU_01_InnerBrowRaiser', question.pose.browRaise],
+    ['AU_02_OuterBrowRaiser', question.pose.browRaise],
+  ] as const) {
+    assert.ok(name in rig.morphTargets, `${name} exists on production character`)
+    setMorphDirect(rig, name, value)
+    assert.equal(rig.mesh.morphTargetInfluences![rig.morphTargets[name]], value)
   }
 })

@@ -9,6 +9,7 @@ import { playbackPlan, poseAt } from '../src/playback'
 import { ORIENTATION_BY_LOCATION } from '../src/anchors'
 import { FINGERSPELL } from '../src/handshapes'
 import './rig.test'
+import { learningItem } from '../src/learning'
 import { orientationFor } from '../src/anchors'
 
 const evidence = (votes: number, observations: number): DirectionEvidence => ({
@@ -330,4 +331,30 @@ test('help and again each make exactly two downward taps', () => {
     }
     assert.equal(contacts, 2, id)
   }
+})
+
+
+test('two-hand coordination uses its own open-palm warm-up', () => {
+  assert.equal(learningItem('two-open').animationId, 'two_open')
+  assert.equal(authoredClipFor('learn'), null, 'warm-up must not replace LEARN')
+  for (const phase of [.1, .5, .85]) {
+    const pose = motionFor('two_open', phase * 1.75, { mode: 'continuous', skipOnset: true, skipRelease: true })
+    for (const hand of [pose.rightHand, pose.leftHand]) {
+      assert.ok(hand.fingers.every(f => f.curl.every(c => c === 0)), 'both hands remain open')
+    }
+  }
+})
+
+test('question raises the index and curls it twice with a puzzled expression', () => {
+  let curls = 0, previousCurled = false
+  for (let i = 0; i < 200; i++) {
+    const pose = motionFor('question', i / 100, { mode: 'continuous', skipOnset: true, skipRelease: true })
+    const curled = pose.rightHand.fingers[0].curl[1] > .7
+    if (curled && !previousCurled) curls++
+    previousCurled = curled
+    assert.ok(pose.rightHand.fingers.slice(1).every(f => f.curl[0] > 1))
+    assert.ok(pose.browFurrow >= .6 && pose.browRaise > 0, 'confused brow expression')
+    assert.ok(pose.head[2] > 0 && pose.head[2] < .1, 'small questioning head tilt')
+  }
+  assert.equal(curls, 2)
 })

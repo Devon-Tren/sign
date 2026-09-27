@@ -4092,6 +4092,546 @@
           ]
         }
       ]
+    },
+    "two_open": {
+      "variant": "Two-hand coordination warm-up: extend both open palms up and outward",
+      "references": [],
+      "duration_ms": {
+        "isolated": 2100,
+        "continuous": 1750
+      },
+      "right_handshape": "5",
+      "left_handshape": "5",
+      "keyframes": [
+        {
+          "at": 0,
+          "phase": "open palms ready",
+          "right": {
+            "target": [
+              0.23,
+              -0.14,
+              0.46
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0.25,
+              0.968,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "left": {
+            "target": [
+              -0.23,
+              -0.14,
+              0.46
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              -0.25,
+              0.968,
+              0
+            ],
+            "elbow": [
+              -0.5,
+              -0.866,
+              0
+            ]
+          }
+        },
+        {
+          "at": 0.15,
+          "phase": "open palms ready",
+          "right": {
+            "target": [
+              0.23,
+              -0.14,
+              0.46
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0.25,
+              0.968,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "left": {
+            "target": [
+              -0.23,
+              -0.14,
+              0.46
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              -0.25,
+              0.968,
+              0
+            ],
+            "elbow": [
+              -0.5,
+              -0.866,
+              0
+            ]
+          }
+        },
+        {
+          "at": 0.7,
+          "phase": "extend up and outward",
+          "right": {
+            "target": [
+              0.6,
+              0.3,
+              0.46
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0.25,
+              0.968,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "left": {
+            "target": [
+              -0.6,
+              0.3,
+              0.46
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              -0.25,
+              0.968,
+              0
+            ],
+            "elbow": [
+              -0.5,
+              -0.866,
+              0
+            ]
+          }
+        },
+        {
+          "at": 1,
+          "phase": "extend up and outward",
+          "right": {
+            "target": [
+              0.6,
+              0.3,
+              0.46
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0.25,
+              0.968,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "left": {
+            "target": [
+              -0.6,
+              0.3,
+              0.46
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              -0.25,
+              0.968,
+              0
+            ],
+            "elbow": [
+              -0.5,
+              -0.866,
+              0
+            ]
+          }
+        }
+      ]
+    },
+    "question": {
+      "variant": "User-requested raised index curls twice with a puzzled expression",
+      "references": [],
+      "duration_ms": {
+        "isolated": 2350,
+        "continuous": 2000
+      },
+      "right_handshape": "1",
+      "expression": {
+        "browFurrow": 0.72,
+        "browRaise": 0.16,
+        "mouth": 0.1
+      },
+      "keyframes": [
+        {
+          "at": 0,
+          "phase": "raise arm",
+          "right": {
+            "target": [
+              0.46,
+              -0.08,
+              0.44
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "right_handshape": "1",
+          "head": [
+            -0.02,
+            0,
+            0.07
+          ]
+        },
+        {
+          "at": 0.16,
+          "phase": "raise arm",
+          "right": {
+            "target": [
+              0.46,
+              0.3,
+              0.44
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "right_handshape": "1",
+          "head": [
+            -0.02,
+            0,
+            0.07
+          ]
+        },
+        {
+          "at": 0.26,
+          "phase": "index points up",
+          "right": {
+            "target": [
+              0.46,
+              0.3,
+              0.44
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "right_handshape": "1",
+          "head": [
+            -0.02,
+            0,
+            0.07
+          ]
+        },
+        {
+          "at": 0.38,
+          "phase": "curl index",
+          "right": {
+            "target": [
+              0.46,
+              0.3,
+              0.44
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "right_handshape": "bent_1",
+          "head": [
+            -0.02,
+            0,
+            0.07
+          ]
+        },
+        {
+          "at": 0.46,
+          "phase": "curl index",
+          "right": {
+            "target": [
+              0.46,
+              0.3,
+              0.44
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "right_handshape": "bent_1",
+          "head": [
+            -0.02,
+            0,
+            0.07
+          ]
+        },
+        {
+          "at": 0.59,
+          "phase": "index points up",
+          "right": {
+            "target": [
+              0.46,
+              0.3,
+              0.44
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "right_handshape": "1",
+          "head": [
+            -0.02,
+            0,
+            0.07
+          ]
+        },
+        {
+          "at": 0.67,
+          "phase": "index points up",
+          "right": {
+            "target": [
+              0.46,
+              0.3,
+              0.44
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "right_handshape": "1",
+          "head": [
+            -0.02,
+            0,
+            0.07
+          ]
+        },
+        {
+          "at": 0.79,
+          "phase": "curl index",
+          "right": {
+            "target": [
+              0.46,
+              0.3,
+              0.44
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "right_handshape": "bent_1",
+          "head": [
+            -0.02,
+            0,
+            0.07
+          ]
+        },
+        {
+          "at": 0.87,
+          "phase": "curl index",
+          "right": {
+            "target": [
+              0.46,
+              0.3,
+              0.44
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "right_handshape": "bent_1",
+          "head": [
+            -0.02,
+            0,
+            0.07
+          ]
+        },
+        {
+          "at": 1,
+          "phase": "index points up",
+          "right": {
+            "target": [
+              0.46,
+              0.3,
+              0.44
+            ],
+            "palm": [
+              0,
+              0,
+              1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "right_handshape": "1",
+          "head": [
+            -0.02,
+            0,
+            0.07
+          ]
+        }
+      ]
     }
   },
   "sequences": {

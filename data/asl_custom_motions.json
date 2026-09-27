@@ -136,6 +136,18 @@
       "SecondMinorLocation": "Neutral",
       "NonDominantHandshape": "NA",
       "app_authored": true
+    },
+    "two_open": {
+      "duration_ms": 1750,
+      "Handshape": "5",
+      "SignType": "SymmetricalOrAlternating",
+      "Movement": "Straight",
+      "RepeatedMovement": "0",
+      "MajorLocation": "Neutral",
+      "MinorLocation": "Neutral",
+      "SecondMinorLocation": "Neutral",
+      "NonDominantHandshape": "5",
+      "app_authored": true
     }
   },
   "augment": {

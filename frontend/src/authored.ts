@@ -8,6 +8,7 @@ export type AuthoredClip = {
   duration_ms: { isolated: number; continuous: number }
   right_handshape: string
   left_handshape?: string
+  expression?: { browFurrow?: number; browRaise?: number; mouth?: number }
   keyframes: AuthoredFrame[]
 }
 export type AuthoredSequence = { clips: string[]; variant: string; references: string[] }
