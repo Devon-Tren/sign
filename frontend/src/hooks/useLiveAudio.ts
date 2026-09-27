@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { liveWsUrl } from '../api'
+import {createVoiceFilter,PCM_WORKLET} from '../audioProcessing'
 
 type State='idle'|'connecting'|'listening'|'stopping'|'error'
 type Callbacks={onPartial:(value:string)=>void;onFinal:(value:string)=>void}
@@ -28,34 +29,11 @@ function browserSpeechRecognition():SpeechRecognitionConstructor|undefined{
   return speechWindow.SpeechRecognition||speechWindow.webkitSpeechRecognition
 }
 
-// AudioWorklet resamples the actual AudioContext clock to the API's 24 kHz PCM16 format.
-// Silence is preserved so the backend's simple energy VAD can segment speech.
-const WORKLET=`class PCMStream extends AudioWorkletProcessor {
- constructor(){super();this.buffer=[];this.position=0;this.out=[];this.step=sampleRate/24000;}
- process(inputs){
-   const input=inputs[0]&&inputs[0][0]; if(!input)return true;
-   for(let i=0;i<input.length;i++)this.buffer.push(input[i]);
-   while(this.position+1<this.buffer.length){
-     const i=Math.floor(this.position),f=this.position-i;
-     this.out.push(this.buffer[i]*(1-f)+this.buffer[i+1]*f);
-     this.position+=this.step;
-     if(this.out.length>=2400){
-       const data=new Int16Array(this.out.length);
-       for(let j=0;j<this.out.length;j++){const v=Math.max(-1,Math.min(1,this.out[j]));data[j]=v<0?v*32768:v*32767;}
-       this.port.postMessage(data.buffer,[data.buffer]);this.out=[];
-     }
-   }
-   const consumed=Math.floor(this.position);
-   if(consumed){this.buffer.splice(0,consumed);this.position-=consumed;}
-   return true;
- }
-}
-registerProcessor('sign-pcm-stream',PCMStream);`
-
 export function useLiveAudio({onPartial,onFinal}:Callbacks){
   const [status,setStatus]=useState<State>('idle')
   const [error,setError]=useState('')
   const [connectedModel,setConnectedModel]=useState('')
+  const [noiseFiltering,setNoiseFiltering]=useState('')
   const wsRef=useRef<WebSocket|null>(null),ctxRef=useRef<AudioContext|null>(null)
   const streamRef=useRef<MediaStream|null>(null),urlRef=useRef<string|null>(null)
   const recognitionRef=useRef<BrowserSpeechRecognition|null>(null)
@@ -63,6 +41,7 @@ export function useLiveAudio({onPartial,onFinal}:Callbacks){
   const callbacks=useRef({onPartial,onFinal})
   callbacks.current={onPartial,onFinal}
   const cleanup=useCallback(()=>{
+    setNoiseFiltering('')
     recognitionActive.current=false
     if(recognitionRef.current){
       recognitionRef.current.onend=null
@@ -120,6 +99,7 @@ export function useLiveAudio({onPartial,onFinal}:Callbacks){
     }
     recognition.start()
     setConnectedModel('Browser speech recognition')
+    setNoiseFiltering('Browser-managed mic filtering')
     setStatus('listening')
   },[])
 
@@ -157,10 +137,10 @@ export function useLiveAudio({onPartial,onFinal}:Callbacks){
         startBrowserFallback()
         return
       }
-      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false})
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:{ideal:1}},video:false})
       streamRef.current=stream
       const ctx=new AudioContext();ctxRef.current=ctx
-      const blobUrl=URL.createObjectURL(new Blob([WORKLET],{type:'text/javascript'}));urlRef.current=blobUrl
+      const blobUrl=URL.createObjectURL(new Blob([PCM_WORKLET],{type:'text/javascript'}));urlRef.current=blobUrl
       await ctx.audioWorklet.addModule(blobUrl)
       const source=ctx.createMediaStreamSource(stream)
       const node=new AudioWorkletNode(ctx,'sign-pcm-stream')
@@ -168,8 +148,10 @@ export function useLiveAudio({onPartial,onFinal}:Callbacks){
         if(ws.readyState===WebSocket.OPEN&&ws.bufferedAmount<500_000)ws.send(event.data)
       }
       const mute=ctx.createGain();mute.gain.value=0
-      source.connect(node).connect(mute).connect(ctx.destination)
+      const filter=createVoiceFilter(ctx)
+      source.connect(filter.input);filter.output.connect(node).connect(mute).connect(ctx.destination)
       if(ctx.state==='suspended')await ctx.resume()
+      setNoiseFiltering('Mic noise filter on')
       setStatus('listening')
     }catch(err){cleanup();setError(err instanceof Error?err.message:String(err));setStatus('error')}
   },[cleanup,startBrowserFallback])
@@ -180,6 +162,7 @@ export function useLiveAudio({onPartial,onFinal}:Callbacks){
       callbacks.current.onPartial('')
       recognitionRef.current.stop()
       recognitionRef.current=null
+      setNoiseFiltering('')
       setStatus('idle')
       return
     }
@@ -190,5 +173,5 @@ export function useLiveAudio({onPartial,onFinal}:Callbacks){
     // Leave socket open briefly so the last committed transcript can arrive.
     setTimeout(()=>{cleanup();setStatus('idle')},1500)
   },[cleanup])
-  return {status,error,connectedModel,start,stop}
+  return {status,error,connectedModel,noiseFiltering,start,stop}
 }

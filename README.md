@@ -56,6 +56,8 @@ ASL review before they can be described as accurate translations.
 
 Click **Start microphone** and grant microphone permission on localhost. In Chrome or Edge, the app can use the browser's Speech Recognition service for partial and final captions without an OpenAI key.
 
+Server-side microphone transcription requests the browser's echo cancellation, noise suppression, and automatic gain control, then filters low rumble and high hiss and gently reduces very quiet background audio before sending it. Quiet gaps remain in the stream for speech detection. The connection status shows when this local filter is on. Browser Speech Recognition captures audio separately and uses browser-managed processing instead.
+
 For server-side OpenAI transcription:
 
 1. Copy `sign/backend/.env.example` to `sign/backend/.env`.
