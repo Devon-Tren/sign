@@ -136,6 +136,32 @@ cd ../frontend && npm run build
 
 The backend tests work without OpenAI credentials. `npm install` requires npm registry access; this ZIP does not contain `node_modules`. Build and API integration should be validated with your team on a network-connected machine.
 
+## Deploy on Vercel
+
+This repository is configured as one Vercel Services project: Vite serves the
+frontend, FastAPI serves `/api/*` and `/ws/*`, and both use the same deployment
+domain. When importing the repository in Vercel, set **Framework Preset** to
+**Services**. Do not set the project root to `frontend` or `backend`.
+
+Add only the server-side environment variables you need in Vercel:
+
+- `OPENAI_API_KEY` enables audio transcription and optional coaching/planning.
+- `GEMINI_API_KEY` enables Gemini planning when configured.
+- `MONGODB_URI` enables accounts and saved progress. Without it, the catalog
+  still works from bundled data, while account endpoints return `503`.
+- `MONGODB_DB` optionally changes the database name (default: `sign`).
+
+No `VITE_BACKEND_URL` is needed for this setup; API and WebSocket traffic stays
+same-origin. Vercel automatically uses secure session cookies and a writable
+temporary SQLite catalog cache. The persistent account data remains in MongoDB.
+After deployment, confirm `/api/health` returns `"status":"ok"`, then test an
+API phrase lookup and microphone connection in the browser. Preview deployments
+are supported without adding each preview hostname to `SIGN_ALLOWED_ORIGINS`.
+
+The bundled signing remains unverified illustrative motion, not production ASL
+interpretation. Review the licensing and responsible-demo sections below before
+making the deployment public or commercial.
+
 ## References
 
 - OpenAI realtime transcription: https://developers.openai.com/api/docs/guides/realtime-transcription

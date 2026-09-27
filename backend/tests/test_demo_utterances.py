@@ -8,6 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'backend'))
 os.environ['OPENAI_API_KEY'] = ''
+os.environ['GEMINI_API_KEY'] = ''
 
 from planner import PlanRequest, create_plan
 

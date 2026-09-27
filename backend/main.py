@@ -193,7 +193,10 @@ def transcription_keywords(limit: int = 100) -> list[str]:
 async def live_audio(websocket: WebSocket):
     # CORS middleware doesn't protect WebSockets; enforce allowed browser origins.
     origin = websocket.headers.get('origin')
-    if origin and origin not in origins:
+    forwarded_proto = websocket.headers.get('x-forwarded-proto', '').split(',')[0].strip()
+    scheme = forwarded_proto or ('https' if websocket.url.scheme == 'wss' else 'http')
+    same_origin = f'{scheme}://{websocket.headers.get("host", "")}'
+    if origin and origin not in origins and origin != same_origin:
         await websocket.close(code=1008)
         return
     await websocket.accept()

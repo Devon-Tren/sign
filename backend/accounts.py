@@ -119,8 +119,9 @@ def start_session(user, response, request):
         db.sessions.delete_one({'_id': digest(old)})
     db.sessions.insert_one({'_id': digest(token), 'user_id': user['_id'],
                             'expires_at': datetime.now(timezone.utc) + timedelta(days=7)})
+    secure_default = 'true' if os.getenv('VERCEL') else 'false'
     response.set_cookie(COOKIE, token, max_age=604800, httponly=True, samesite='lax',
-                        secure=os.getenv('SIGN_COOKIE_SECURE', 'false').lower() == 'true', path='/api')
+                        secure=os.getenv('SIGN_COOKIE_SECURE', secure_default).lower() == 'true', path='/api')
     response.headers['Cache-Control'] = 'no-store'
     return public_user(user)
 

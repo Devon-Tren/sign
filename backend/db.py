@@ -72,7 +72,12 @@ def motion_seed() -> list[tuple]:
 
 def get_connection(path: str | Path | None = None) -> sqlite3.Connection:
     if path is None:
-        path = os.getenv('SIGN_DB_PATH') or DEFAULT_DB
+        # Vercel's deployed source tree is read-only. The phrase database is a
+        # derived cache that is rebuilt from the bundled catalog at startup, so
+        # use the function's writable scratch directory there. User data lives
+        # in MongoDB and is never stored in this ephemeral file.
+        default = Path('/tmp/sign.db') if os.getenv('VERCEL') else DEFAULT_DB
+        path = os.getenv('SIGN_DB_PATH') or default
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(path, check_same_thread=False)

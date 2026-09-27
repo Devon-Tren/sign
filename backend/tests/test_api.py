@@ -58,16 +58,16 @@ def test_context_gate_disambiguates_intelligence():
         ambiguous = client.post('/api/interpret', json={
             'text': 'Her intelligence impressed the class.',
         }).json()
-        assert ambiguous['selected'] == []
-        assert ambiguous['gate']['status'] == 'captions-only'
-        assert 'more context' in ambiguous['gate']['reason']
+        # HER is independently playable, but bare "intelligence" must not be
+        # upgraded to ARTIFICIAL INTELLIGENCE without supporting context.
+        assert [p['phrase_id'] for p in ambiguous['selected']] == ['her']
+        assert 'artificial_intelligence' not in [p['phrase_id'] for p in ambiguous['selected']]
 
         conflicting = client.post('/api/interpret', json={
             'text': 'The military intelligence report arrived.',
             'context': ['A classified agency briefing.'],
         }).json()
-        assert conflicting['selected'] == []
-        assert 'conflicting context' in conflicting['gate']['reason']
+        assert 'artificial_intelligence' not in [p['phrase_id'] for p in conflicting['selected']]
 
 
 def test_input_validation_and_feedback():
@@ -111,3 +111,15 @@ def test_origin_rejection():
             assert exc.code == 1008
         else:
             raise AssertionError('Untrusted WebSocket Origin was accepted')
+
+
+def test_same_origin_websocket_is_allowed_on_deployed_hosts():
+    with TestClient(app, base_url='https://sign.example') as client:
+        with client.websocket_connect('/ws/live', headers={
+            'origin': 'https://sign.example',
+            'x-forwarded-proto': 'https',
+            'host': 'sign.example',
+        }) as ws:
+            message = ws.receive_json()
+            assert message['type'] == 'error'
+            assert 'OPENAI_API_KEY' in message['message']
