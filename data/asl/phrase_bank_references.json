@@ -1,0 +1,2465 @@
+{
+  "_license": "ASL-LEX 2.0 EntryIDs and video links, CC BY-NC 4.0 - see data/LICENSE.",
+  "_source": "https://asl-lex.org/visualization/data/sign_props.json",
+  "_generated_by": "scripts/resolve_phrase_bank.py",
+  "_note": "reference_video is an isolated citation-form sign by a Deaf signer. Phrase-level timing, transitions and non-manual markers need a separate source.",
+  "summary": {
+    "phrases": 200,
+    "playable": 200,
+    "unique_signs": 208,
+    "signs_with_video": 208,
+    "signs_with_motion": 208
+  },
+  "signs": {
+    "AFTERNOON": {
+      "clip_id": "afternoon",
+      "asl_lex_entry": "afternoon",
+      "reference_video": "https://player.vimeo.com/video/346917606",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=afternoon"
+    },
+    "AGAIN": {
+      "clip_id": "again",
+      "asl_lex_entry": "again",
+      "reference_video": "https://player.vimeo.com/video/346933783",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=again"
+    },
+    "AGREEMENT": {
+      "clip_id": "agreement",
+      "asl_lex_entry": "agreement",
+      "reference_video": "https://player.vimeo.com/video/345589717",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=agreement"
+    },
+    "ANGRY": {
+      "clip_id": "angry",
+      "asl_lex_entry": "angry",
+      "reference_video": "https://player.vimeo.com/video/344400442",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=angry"
+    },
+    "ANIMAL": {
+      "clip_id": "animal",
+      "asl_lex_entry": "animal",
+      "reference_video": "https://player.vimeo.com/video/345562424",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=animal"
+    },
+    "ARRIVE": {
+      "clip_id": "arrive",
+      "asl_lex_entry": "arrive",
+      "reference_video": "https://player.vimeo.com/video/345806111",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=arrive"
+    },
+    "ASK": {
+      "clip_id": "ask",
+      "asl_lex_entry": "ask",
+      "reference_video": "https://player.vimeo.com/video/345537147",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=ask"
+    },
+    "BATHROOM": {
+      "clip_id": "bathroom",
+      "asl_lex_entry": "bathroom",
+      "reference_video": "https://player.vimeo.com/video/344223330",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=bathroom"
+    },
+    "BETTER": {
+      "clip_id": "better",
+      "asl_lex_entry": "better",
+      "reference_video": "https://player.vimeo.com/video/346489385",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=better"
+    },
+    "BIG": {
+      "clip_id": "big",
+      "asl_lex_entry": "big",
+      "reference_video": "https://player.vimeo.com/video/346509243",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=big"
+    },
+    "BIRTHDAY": {
+      "clip_id": "birthday",
+      "asl_lex_entry": "birthday",
+      "reference_video": "https://player.vimeo.com/video/345805234",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=birthday"
+    },
+    "BOOK": {
+      "clip_id": "book",
+      "asl_lex_entry": "book",
+      "reference_video": "https://player.vimeo.com/video/344216841",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=book"
+    },
+    "BORROW": {
+      "clip_id": "borrow",
+      "asl_lex_entry": "borrow",
+      "reference_video": "https://player.vimeo.com/video/344359122",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=borrow"
+    },
+    "BOSTON": {
+      "clip_id": "boston",
+      "asl_lex_entry": "boston",
+      "reference_video": "https://player.vimeo.com/video/346970404",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=boston"
+    },
+    "BREAKFAST": {
+      "clip_id": "breakfast",
+      "asl_lex_entry": "breakfast_1",
+      "reference_video": "https://player.vimeo.com/video/346489772",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=breakfast_1"
+    },
+    "BREAKTIME": {
+      "clip_id": "breaktime",
+      "asl_lex_entry": "breaktime",
+      "reference_video": "https://player.vimeo.com/video/346918385",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=breaktime"
+    },
+    "BROTHER": {
+      "clip_id": "brother",
+      "asl_lex_entry": "brother",
+      "reference_video": "https://player.vimeo.com/video/344399715",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=brother"
+    },
+    "BUS": {
+      "clip_id": "bus",
+      "asl_lex_entry": "bus",
+      "reference_video": "https://player.vimeo.com/video/346014117",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=bus"
+    },
+    "BUSY": {
+      "clip_id": "busy",
+      "asl_lex_entry": "busy",
+      "reference_video": "https://player.vimeo.com/video/346058481",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=busy"
+    },
+    "CALL": {
+      "clip_id": "call",
+      "asl_lex_entry": "call",
+      "reference_video": "https://player.vimeo.com/video/345589136",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=call"
+    },
+    "CAN": {
+      "clip_id": "can",
+      "asl_lex_entry": "can",
+      "reference_video": "https://player.vimeo.com/video/345982923",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=can"
+    },
+    "CAREFUL": {
+      "clip_id": "careful",
+      "asl_lex_entry": "careful",
+      "reference_video": "https://player.vimeo.com/video/345563347",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=careful"
+    },
+    "CELLPHONE": {
+      "clip_id": "cellphone",
+      "asl_lex_entry": "cellphone",
+      "reference_video": "https://player.vimeo.com/video/341933561",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=cellphone"
+    },
+    "CHARGE": {
+      "clip_id": "charge",
+      "asl_lex_entry": "charge",
+      "reference_video": "https://player.vimeo.com/video/346488166",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=charge"
+    },
+    "CHECK": {
+      "clip_id": "check",
+      "asl_lex_entry": "check",
+      "reference_video": "https://player.vimeo.com/video/345563374",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=check"
+    },
+    "CHILDREN": {
+      "clip_id": "children",
+      "asl_lex_entry": "children",
+      "reference_video": "https://player.vimeo.com/video/345589340",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=children"
+    },
+    "CLASSROOM": {
+      "clip_id": "classroom",
+      "asl_lex_entry": "class",
+      "reference_video": "https://player.vimeo.com/video/344360424",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=class"
+    },
+    "CLOSE": {
+      "clip_id": "close",
+      "asl_lex_entry": "close ",
+      "reference_video": "https://player.vimeo.com/video/346779383",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=close "
+    },
+    "COFFEE": {
+      "clip_id": "coffee",
+      "asl_lex_entry": "coffee",
+      "reference_video": "https://player.vimeo.com/video/344217152",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=coffee"
+    },
+    "COLLEGE": {
+      "clip_id": "college",
+      "asl_lex_entry": "college",
+      "reference_video": "https://player.vimeo.com/video/344392105",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=college"
+    },
+    "COME_HERE": {
+      "clip_id": "come_here",
+      "asl_lex_entry": "come_here",
+      "reference_video": "https://player.vimeo.com/video/346883383",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=come_here"
+    },
+    "CONGRATULATIONS": {
+      "clip_id": "congratulations",
+      "asl_lex_entry": "congratulations",
+      "reference_video": "https://player.vimeo.com/video/345537120",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=congratulations"
+    },
+    "CORRECT": {
+      "clip_id": "correct",
+      "asl_lex_entry": "correct",
+      "reference_video": "https://player.vimeo.com/video/346938530",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=correct"
+    },
+    "DANGER": {
+      "clip_id": "danger",
+      "asl_lex_entry": "danger",
+      "reference_video": "https://player.vimeo.com/video/346059671",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=danger"
+    },
+    "DAY": {
+      "clip_id": "day",
+      "asl_lex_entry": "day",
+      "reference_video": "https://player.vimeo.com/video/345578171",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=day"
+    },
+    "DEAF": {
+      "clip_id": "deaf",
+      "asl_lex_entry": "deaf_1",
+      "reference_video": "https://player.vimeo.com/video/346601385",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=deaf_1"
+    },
+    "DELICIOUS": {
+      "clip_id": "delicious",
+      "asl_lex_entry": "delicious",
+      "reference_video": "https://player.vimeo.com/video/344409281",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=delicious"
+    },
+    "DISAGREEMENT": {
+      "clip_id": "disagreement",
+      "asl_lex_entry": "disagreement",
+      "reference_video": "https://player.vimeo.com/video/345555669",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=disagreement"
+    },
+    "DOCTOR": {
+      "clip_id": "doctor",
+      "asl_lex_entry": "doctor",
+      "reference_video": "https://player.vimeo.com/video/344225789",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=doctor"
+    },
+    "DOESNT_MATTER": {
+      "clip_id": "doesnt_matter",
+      "asl_lex_entry": "doesnt_matter",
+      "reference_video": "https://player.vimeo.com/video/346601093",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=doesnt_matter"
+    },
+    "DOG": {
+      "clip_id": "dog",
+      "asl_lex_entry": "dog",
+      "reference_video": "https://player.vimeo.com/video/344218518",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=dog"
+    },
+    "DONT_CARE": {
+      "clip_id": "dont_care",
+      "asl_lex_entry": "dont_care",
+      "reference_video": "https://player.vimeo.com/video/346779261",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=dont_care"
+    },
+    "DONT_KNOW": {
+      "clip_id": "dont_know",
+      "asl_lex_entry": "dont_know",
+      "reference_video": "https://player.vimeo.com/video/346068087",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=dont_know"
+    },
+    "DONT_LIKE": {
+      "clip_id": "dont_like",
+      "asl_lex_entry": "dont_like",
+      "reference_video": "https://player.vimeo.com/video/346488481",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=dont_like"
+    },
+    "DONT_NEED": {
+      "clip_id": "dont_need",
+      "asl_lex_entry": "dont_need",
+      "reference_video": "https://player.vimeo.com/video/346798085",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=dont_need"
+    },
+    "DONT_WANT": {
+      "clip_id": "dont_want",
+      "asl_lex_entry": "dont_want",
+      "reference_video": "https://player.vimeo.com/video/346057447",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=dont_want"
+    },
+    "DO_DO": {
+      "clip_id": "do_do",
+      "asl_lex_entry": "do_do",
+      "reference_video": "https://player.vimeo.com/video/346054005",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=do_do"
+    },
+    "DRINK": {
+      "clip_id": "drink",
+      "asl_lex_entry": "drink",
+      "reference_video": "https://player.vimeo.com/video/345536731",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=drink"
+    },
+    "DRIVE": {
+      "clip_id": "drive",
+      "asl_lex_entry": "drive",
+      "reference_video": "https://player.vimeo.com/video/346059002",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=drive"
+    },
+    "EAT": {
+      "clip_id": "eat",
+      "asl_lex_entry": "eat_1",
+      "reference_video": "https://player.vimeo.com/video/345536275",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=eat_1"
+    },
+    "EMAIL": {
+      "clip_id": "email",
+      "asl_lex_entry": "email",
+      "reference_video": "https://player.vimeo.com/video/344361814",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=email"
+    },
+    "EVENING": {
+      "clip_id": "evening",
+      "asl_lex_entry": "evening",
+      "reference_video": "https://player.vimeo.com/video/345972375",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=evening"
+    },
+    "EVERYDAY": {
+      "clip_id": "everyday",
+      "asl_lex_entry": "everyday",
+      "reference_video": "https://player.vimeo.com/video/346053736",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=everyday"
+    },
+    "EVERYONE": {
+      "clip_id": "everyone",
+      "asl_lex_entry": "all",
+      "reference_video": "https://player.vimeo.com/video/345801576",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=all"
+    },
+    "EXCITED": {
+      "clip_id": "excited",
+      "asl_lex_entry": "excited",
+      "reference_video": "https://player.vimeo.com/video/346796891",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=excited"
+    },
+    "EXCUSE": {
+      "clip_id": "excuse",
+      "asl_lex_entry": "excuse",
+      "reference_video": "https://player.vimeo.com/video/345984842",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=excuse"
+    },
+    "FAMILY": {
+      "clip_id": "family",
+      "asl_lex_entry": "family",
+      "reference_video": "https://player.vimeo.com/video/345577346",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=family"
+    },
+    "FAR": {
+      "clip_id": "far",
+      "asl_lex_entry": "far",
+      "reference_video": "https://player.vimeo.com/video/345981010",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=far"
+    },
+    "FATHER": {
+      "clip_id": "father",
+      "asl_lex_entry": "father",
+      "reference_video": "https://player.vimeo.com/video/344408800",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=father"
+    },
+    "FEEL": {
+      "clip_id": "feel",
+      "asl_lex_entry": "feel",
+      "reference_video": "https://player.vimeo.com/video/345587091",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=feel"
+    },
+    "FINE": {
+      "clip_id": "fine",
+      "asl_lex_entry": "fine_1",
+      "reference_video": "https://player.vimeo.com/video/345578134",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=fine_1"
+    },
+    "FINGERSPELL": {
+      "clip_id": "fingerspell",
+      "asl_lex_entry": "fingerspell",
+      "reference_video": "https://player.vimeo.com/video/344394029",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=fingerspell"
+    },
+    "FINISH": {
+      "clip_id": "finish",
+      "asl_lex_entry": "finish",
+      "reference_video": "https://player.vimeo.com/video/345562964",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=finish"
+    },
+    "FRIDAY": {
+      "clip_id": "friday",
+      "asl_lex_entry": "friday",
+      "reference_video": "https://player.vimeo.com/video/345537035",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=friday"
+    },
+    "FRIEND": {
+      "clip_id": "friend",
+      "asl_lex_entry": "friend",
+      "reference_video": "https://player.vimeo.com/video/345981419",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=friend"
+    },
+    "FROM": {
+      "clip_id": "from",
+      "asl_lex_entry": "from",
+      "reference_video": "https://player.vimeo.com/video/345805480",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=from"
+    },
+    "FULL": {
+      "clip_id": "full",
+      "asl_lex_entry": "full",
+      "reference_video": "https://player.vimeo.com/video/345972464",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=full"
+    },
+    "GET": {
+      "clip_id": "get",
+      "asl_lex_entry": "get",
+      "reference_video": "https://player.vimeo.com/video/345562557",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=get"
+    },
+    "GIVE": {
+      "clip_id": "give",
+      "asl_lex_entry": "give",
+      "reference_video": "https://player.vimeo.com/video/346488122",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=give"
+    },
+    "GO": {
+      "clip_id": "go",
+      "asl_lex_entry": "go",
+      "reference_video": "https://player.vimeo.com/video/345800220",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=go"
+    },
+    "GOOD": {
+      "clip_id": "good",
+      "asl_lex_entry": "good",
+      "reference_video": "https://player.vimeo.com/video/344398148",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=good"
+    },
+    "GOODBYE": {
+      "clip_id": "goodbye",
+      "asl_lex_entry": "bye",
+      "reference_video": "https://player.vimeo.com/video/346052832",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=bye"
+    },
+    "GO_AHEAD": {
+      "clip_id": "go_ahead",
+      "asl_lex_entry": "go_ahead",
+      "reference_video": "https://player.vimeo.com/video/346917724",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=go_ahead"
+    },
+    "HAPPEN": {
+      "clip_id": "happen",
+      "asl_lex_entry": "happen",
+      "reference_video": "https://player.vimeo.com/video/344361474",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=happen"
+    },
+    "HAPPY": {
+      "clip_id": "happy",
+      "asl_lex_entry": "happy",
+      "reference_video": "https://player.vimeo.com/video/345801212",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=happy"
+    },
+    "HARD_OF_HEARING": {
+      "clip_id": "hard_of_hearing",
+      "asl_lex_entry": "hard_of_hearing",
+      "reference_video": "https://player.vimeo.com/video/346918806",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=hard_of_hearing"
+    },
+    "HAVE": {
+      "clip_id": "have",
+      "asl_lex_entry": "have",
+      "reference_video": "https://player.vimeo.com/video/344359321",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=have"
+    },
+    "HE": {
+      "clip_id": "he",
+      "asl_lex_entry": "he",
+      "reference_video": "https://player.vimeo.com/video/346494952",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=he"
+    },
+    "HEADACHE": {
+      "clip_id": "headache",
+      "asl_lex_entry": "headache",
+      "reference_video": "https://player.vimeo.com/video/344392917",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=headache"
+    },
+    "HEARING": {
+      "clip_id": "hearing",
+      "asl_lex_entry": "hearing",
+      "reference_video": "https://player.vimeo.com/video/345587849",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=hearing"
+    },
+    "HELLO": {
+      "clip_id": "hello",
+      "asl_lex_entry": "hello",
+      "reference_video": "https://player.vimeo.com/video/345973004",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=hello"
+    },
+    "HELP": {
+      "clip_id": "help",
+      "asl_lex_entry": "help",
+      "reference_video": "https://player.vimeo.com/video/345804607",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=help"
+    },
+    "HERE": {
+      "clip_id": "here",
+      "asl_lex_entry": "here",
+      "reference_video": "https://player.vimeo.com/video/345806806",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=here"
+    },
+    "HOME": {
+      "clip_id": "home",
+      "asl_lex_entry": "home",
+      "reference_video": "https://player.vimeo.com/video/344359901",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=home"
+    },
+    "HOMEWORK": {
+      "clip_id": "homework",
+      "asl_lex_entry": "homework",
+      "reference_video": "https://player.vimeo.com/video/344224369",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=homework"
+    },
+    "HOSPITAL": {
+      "clip_id": "hospital",
+      "asl_lex_entry": "hospital",
+      "reference_video": "https://player.vimeo.com/video/345537295",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=hospital"
+    },
+    "HOUR": {
+      "clip_id": "hour",
+      "asl_lex_entry": "hour",
+      "reference_video": "https://player.vimeo.com/video/345589565",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=hour"
+    },
+    "HOW": {
+      "clip_id": "how",
+      "asl_lex_entry": "how",
+      "reference_video": "https://player.vimeo.com/video/345975125",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=how"
+    },
+    "HUNGRY": {
+      "clip_id": "hungry",
+      "asl_lex_entry": "hungry",
+      "reference_video": "https://player.vimeo.com/video/345576378",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=hungry"
+    },
+    "HURRY": {
+      "clip_id": "hurry",
+      "asl_lex_entry": "hurry",
+      "reference_video": "https://player.vimeo.com/video/346613035",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=hurry"
+    },
+    "HURT": {
+      "clip_id": "hurt",
+      "asl_lex_entry": "hurt",
+      "reference_video": "https://player.vimeo.com/video/346013934",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=hurt"
+    },
+    "HUSBAND": {
+      "clip_id": "husband",
+      "asl_lex_entry": "husband",
+      "reference_video": "https://player.vimeo.com/video/345806521",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=husband"
+    },
+    "INTERPRETER": {
+      "clip_id": "interpreter",
+      "asl_lex_entry": "interpreter",
+      "reference_video": "https://player.vimeo.com/video/345973859",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=interpreter"
+    },
+    "I_LOVE_YOU": {
+      "clip_id": "i_love_you",
+      "asl_lex_entry": "I_love_you",
+      "reference_video": "https://player.vimeo.com/video/346491546",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=I_love_you"
+    },
+    "LATE": {
+      "clip_id": "late",
+      "asl_lex_entry": "late",
+      "reference_video": "https://player.vimeo.com/video/345576620",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=late"
+    },
+    "LATER": {
+      "clip_id": "later",
+      "asl_lex_entry": "later",
+      "reference_video": "https://player.vimeo.com/video/345806312",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=later"
+    },
+    "LEARN": {
+      "clip_id": "learn",
+      "asl_lex_entry": "learn",
+      "reference_video": "https://player.vimeo.com/video/344393673",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=learn"
+    },
+    "LEFT": {
+      "clip_id": "left",
+      "asl_lex_entry": "left",
+      "reference_video": "https://player.vimeo.com/video/346975175",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=left"
+    },
+    "LET_ME_SEE": {
+      "clip_id": "let_me_see",
+      "asl_lex_entry": "let_me_see",
+      "reference_video": "https://player.vimeo.com/video/346053944",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=let_me_see"
+    },
+    "LIBRARY": {
+      "clip_id": "library",
+      "asl_lex_entry": "library",
+      "reference_video": "https://player.vimeo.com/video/344222042",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=library"
+    },
+    "LIKE": {
+      "clip_id": "like",
+      "asl_lex_entry": "like",
+      "reference_video": "https://player.vimeo.com/video/346602424",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=like"
+    },
+    "LIVE": {
+      "clip_id": "live",
+      "asl_lex_entry": "live_1",
+      "reference_video": "https://player.vimeo.com/video/345563876",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=live_1"
+    },
+    "LONG_TIME": {
+      "clip_id": "long_time",
+      "asl_lex_entry": "long_time",
+      "reference_video": "https://player.vimeo.com/video/346970859",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=long_time"
+    },
+    "LOST": {
+      "clip_id": "lost",
+      "asl_lex_entry": "lost",
+      "reference_video": "https://player.vimeo.com/video/346910341",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=lost"
+    },
+    "LOVE": {
+      "clip_id": "love",
+      "asl_lex_entry": "love",
+      "reference_video": "https://player.vimeo.com/video/346612501",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=love"
+    },
+    "MARRY": {
+      "clip_id": "marry",
+      "asl_lex_entry": "marry",
+      "reference_video": "https://player.vimeo.com/video/346493916",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=marry"
+    },
+    "MAYBE": {
+      "clip_id": "maybe",
+      "asl_lex_entry": "maybe",
+      "reference_video": "https://player.vimeo.com/video/345562873",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=maybe"
+    },
+    "ME": {
+      "clip_id": "me",
+      "asl_lex_entry": "me",
+      "reference_video": "https://player.vimeo.com/video/344400170",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=me"
+    },
+    "MEAN": {
+      "clip_id": "mean",
+      "asl_lex_entry": "mean_1",
+      "reference_video": "https://player.vimeo.com/video/345555751",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=mean_1"
+    },
+    "MEDICINE": {
+      "clip_id": "medicine",
+      "asl_lex_entry": "medicine",
+      "reference_video": "https://player.vimeo.com/video/345799438",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=medicine"
+    },
+    "MEET": {
+      "clip_id": "meet",
+      "asl_lex_entry": "meet",
+      "reference_video": "https://player.vimeo.com/video/345970023",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=meet"
+    },
+    "MEETING": {
+      "clip_id": "meeting",
+      "asl_lex_entry": "meeting",
+      "reference_video": "https://player.vimeo.com/video/345801351",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=meeting"
+    },
+    "MINUTE": {
+      "clip_id": "minute",
+      "asl_lex_entry": "minute",
+      "reference_video": "https://player.vimeo.com/video/344405644",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=minute"
+    },
+    "MISUNDERSTAND": {
+      "clip_id": "misunderstand",
+      "asl_lex_entry": "misunderstand",
+      "reference_video": "https://player.vimeo.com/video/345798727",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=misunderstand"
+    },
+    "MONDAY": {
+      "clip_id": "monday",
+      "asl_lex_entry": "monday",
+      "reference_video": "https://player.vimeo.com/video/345800849",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=monday"
+    },
+    "MORE": {
+      "clip_id": "more",
+      "asl_lex_entry": "more",
+      "reference_video": "https://player.vimeo.com/video/345563151",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=more"
+    },
+    "MORNING": {
+      "clip_id": "morning",
+      "asl_lex_entry": "morning",
+      "reference_video": "https://player.vimeo.com/video/345587486",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=morning"
+    },
+    "MOTHER": {
+      "clip_id": "mother",
+      "asl_lex_entry": "mother",
+      "reference_video": "https://player.vimeo.com/video/345536499",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=mother"
+    },
+    "MUCH": {
+      "clip_id": "much",
+      "asl_lex_entry": "much",
+      "reference_video": "https://player.vimeo.com/video/344399198",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=much"
+    },
+    "MY": {
+      "clip_id": "my",
+      "asl_lex_entry": "my",
+      "reference_video": "https://player.vimeo.com/video/345578777",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=my"
+    },
+    "NAME": {
+      "clip_id": "name",
+      "asl_lex_entry": "name",
+      "reference_video": "https://player.vimeo.com/video/345803647",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=name"
+    },
+    "NEAR": {
+      "clip_id": "near",
+      "asl_lex_entry": "near",
+      "reference_video": "https://player.vimeo.com/video/346607198",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=near"
+    },
+    "NEED": {
+      "clip_id": "need",
+      "asl_lex_entry": "need",
+      "reference_video": "https://player.vimeo.com/video/345588222",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=need"
+    },
+    "NEXT": {
+      "clip_id": "next",
+      "asl_lex_entry": "next",
+      "reference_video": "https://player.vimeo.com/video/346070046",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=next"
+    },
+    "NICE": {
+      "clip_id": "nice",
+      "asl_lex_entry": "nice",
+      "reference_video": "https://player.vimeo.com/video/346777900",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=nice"
+    },
+    "NIGHT": {
+      "clip_id": "night",
+      "asl_lex_entry": "night",
+      "reference_video": "https://player.vimeo.com/video/344216312",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=night"
+    },
+    "NO": {
+      "clip_id": "no",
+      "asl_lex_entry": "no",
+      "reference_video": "https://player.vimeo.com/video/345799501",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=no"
+    },
+    "NOT": {
+      "clip_id": "not",
+      "asl_lex_entry": "not",
+      "reference_video": "https://player.vimeo.com/video/346054960",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=not"
+    },
+    "NOT_UNDERSTAND": {
+      "clip_id": "not_understand",
+      "asl_lex_entry": "not_understand",
+      "reference_video": "https://player.vimeo.com/video/346611056",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=not_understand"
+    },
+    "NOT_YET": {
+      "clip_id": "not_yet",
+      "asl_lex_entry": "not_yet",
+      "reference_video": "https://player.vimeo.com/video/345804727",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=not_yet"
+    },
+    "NOW": {
+      "clip_id": "now",
+      "asl_lex_entry": "now",
+      "reference_video": "https://player.vimeo.com/video/345800480",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=now"
+    },
+    "NO_BIG_DEAL": {
+      "clip_id": "no_big_deal",
+      "asl_lex_entry": "no_big_deal",
+      "reference_video": "https://player.vimeo.com/video/346888404",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=no_big_deal"
+    },
+    "OH_I_SEE": {
+      "clip_id": "oh_i_see",
+      "asl_lex_entry": "oh_I_see",
+      "reference_video": "https://player.vimeo.com/video/346052269",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=oh_I_see"
+    },
+    "OK": {
+      "clip_id": "ok",
+      "asl_lex_entry": "ok",
+      "reference_video": "https://player.vimeo.com/video/346603364",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=ok"
+    },
+    "OLD": {
+      "clip_id": "old",
+      "asl_lex_entry": "old",
+      "reference_video": "https://player.vimeo.com/video/345803121",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=old"
+    },
+    "ONE": {
+      "clip_id": "one",
+      "asl_lex_entry": "one",
+      "reference_video": "https://player.vimeo.com/video/346599814",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=one"
+    },
+    "OPEN": {
+      "clip_id": "open",
+      "asl_lex_entry": "open",
+      "reference_video": "https://player.vimeo.com/video/346779574",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=open"
+    },
+    "PARENTS": {
+      "clip_id": "parents",
+      "asl_lex_entry": "parents",
+      "reference_video": "https://player.vimeo.com/video/345563444",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=parents"
+    },
+    "PEN": {
+      "clip_id": "pen",
+      "asl_lex_entry": "pen",
+      "reference_video": "https://player.vimeo.com/video/346061392",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=pen"
+    },
+    "PLEASE": {
+      "clip_id": "please",
+      "asl_lex_entry": "please",
+      "reference_video": "https://player.vimeo.com/video/345536463",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=please"
+    },
+    "POLICEMAN": {
+      "clip_id": "policeman",
+      "asl_lex_entry": "policeman",
+      "reference_video": "https://player.vimeo.com/video/344218397",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=policeman"
+    },
+    "QUESTION": {
+      "clip_id": "question",
+      "asl_lex_entry": "ask",
+      "reference_video": "https://player.vimeo.com/video/345537147",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=ask"
+    },
+    "QUIET": {
+      "clip_id": "quiet",
+      "asl_lex_entry": "quiet",
+      "reference_video": "https://player.vimeo.com/video/345577879",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=quiet"
+    },
+    "READY": {
+      "clip_id": "ready",
+      "asl_lex_entry": "ready",
+      "reference_video": "https://player.vimeo.com/video/346601543",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=ready"
+    },
+    "REALLY": {
+      "clip_id": "really",
+      "asl_lex_entry": "really",
+      "reference_video": "https://player.vimeo.com/video/345537077",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=really"
+    },
+    "REMEMBER": {
+      "clip_id": "remember",
+      "asl_lex_entry": "remember",
+      "reference_video": "https://player.vimeo.com/video/345587562",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=remember"
+    },
+    "RESTAURANT": {
+      "clip_id": "restaurant",
+      "asl_lex_entry": "restaurant",
+      "reference_video": "https://player.vimeo.com/video/345972230",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=restaurant"
+    },
+    "RIGHT": {
+      "clip_id": "right",
+      "asl_lex_entry": "right_2",
+      "reference_video": "https://player.vimeo.com/video/345579177",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=right_2"
+    },
+    "SAD": {
+      "clip_id": "sad",
+      "asl_lex_entry": "sad",
+      "reference_video": "https://player.vimeo.com/video/345555398",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=sad"
+    },
+    "SAME_SAME": {
+      "clip_id": "same_same",
+      "asl_lex_entry": "same_same",
+      "reference_video": "https://player.vimeo.com/video/346966296",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=same_same"
+    },
+    "SCARED": {
+      "clip_id": "scared",
+      "asl_lex_entry": "scared",
+      "reference_video": "https://player.vimeo.com/video/344361342",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=scared"
+    },
+    "SEE": {
+      "clip_id": "see",
+      "asl_lex_entry": "see",
+      "reference_video": "https://player.vimeo.com/video/345588085",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=see"
+    },
+    "SHOP": {
+      "clip_id": "shop",
+      "asl_lex_entry": "shop_2",
+      "reference_video": "https://player.vimeo.com/video/345985251",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=shop_2"
+    },
+    "SICK": {
+      "clip_id": "sick",
+      "asl_lex_entry": "sick",
+      "reference_video": "https://player.vimeo.com/video/344400714",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=sick"
+    },
+    "SIGN": {
+      "clip_id": "sign",
+      "asl_lex_entry": "sign",
+      "reference_video": "https://player.vimeo.com/video/346068166",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=sign"
+    },
+    "SIGN_LANGUAGE": {
+      "clip_id": "sign_language",
+      "asl_lex_entry": "sign_language",
+      "reference_video": "https://player.vimeo.com/video/345971094",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=sign_language"
+    },
+    "SISTER": {
+      "clip_id": "sister",
+      "asl_lex_entry": "sister",
+      "reference_video": "https://player.vimeo.com/video/345984693",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=sister"
+    },
+    "SLEEP": {
+      "clip_id": "sleep",
+      "asl_lex_entry": "sleep",
+      "reference_video": "https://player.vimeo.com/video/345563279",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=sleep"
+    },
+    "SLOW": {
+      "clip_id": "slow",
+      "asl_lex_entry": "slow",
+      "reference_video": "https://player.vimeo.com/video/345537793",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=slow"
+    },
+    "SORRY": {
+      "clip_id": "sorry",
+      "asl_lex_entry": "sorry",
+      "reference_video": "https://player.vimeo.com/video/345577184",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=sorry"
+    },
+    "STAY": {
+      "clip_id": "stay",
+      "asl_lex_entry": "stay",
+      "reference_video": "https://player.vimeo.com/video/346495146",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=stay"
+    },
+    "STOP": {
+      "clip_id": "stop",
+      "asl_lex_entry": "stop",
+      "reference_video": "https://player.vimeo.com/video/345803235",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=stop"
+    },
+    "STRAIGHT": {
+      "clip_id": "straight",
+      "asl_lex_entry": "straight",
+      "reference_video": "https://player.vimeo.com/video/346053656",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=straight"
+    },
+    "STRESS": {
+      "clip_id": "stress",
+      "asl_lex_entry": "stress",
+      "reference_video": "https://player.vimeo.com/video/345555934",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=stress"
+    },
+    "STUDENT": {
+      "clip_id": "student",
+      "asl_lex_entry": "student",
+      "reference_video": "https://player.vimeo.com/video/344220657",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=student"
+    },
+    "STUDY": {
+      "clip_id": "study",
+      "asl_lex_entry": "study",
+      "reference_video": "https://player.vimeo.com/video/346613344",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=study"
+    },
+    "SURE": {
+      "clip_id": "sure",
+      "asl_lex_entry": "sure",
+      "reference_video": "https://player.vimeo.com/video/345799652",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=sure"
+    },
+    "TAKE_CARE": {
+      "clip_id": "take_care",
+      "asl_lex_entry": "take_care",
+      "reference_video": "https://player.vimeo.com/video/346602859",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=take_care"
+    },
+    "TEACHER": {
+      "clip_id": "teacher",
+      "asl_lex_entry": "teacher",
+      "reference_video": "https://player.vimeo.com/video/344221738",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=teacher"
+    },
+    "TEST": {
+      "clip_id": "test",
+      "asl_lex_entry": "test",
+      "reference_video": "https://player.vimeo.com/video/345805526",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=test"
+    },
+    "TEXT": {
+      "clip_id": "text",
+      "asl_lex_entry": "text",
+      "reference_video": "https://player.vimeo.com/video/344359006",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=text"
+    },
+    "THANK_YOU": {
+      "clip_id": "thank_you",
+      "asl_lex_entry": "thank_you",
+      "reference_video": "https://player.vimeo.com/video/346804430",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=thank_you"
+    },
+    "THAT": {
+      "clip_id": "that",
+      "asl_lex_entry": "that",
+      "reference_video": "https://player.vimeo.com/video/345800350",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=that"
+    },
+    "THINK": {
+      "clip_id": "think",
+      "asl_lex_entry": "think",
+      "reference_video": "https://player.vimeo.com/video/345800071",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=think"
+    },
+    "THIRSTY": {
+      "clip_id": "thirsty",
+      "asl_lex_entry": "thirsty",
+      "reference_video": "https://player.vimeo.com/video/345800892",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=thirsty"
+    },
+    "THIS": {
+      "clip_id": "this",
+      "asl_lex_entry": "this/it",
+      "reference_video": "https://player.vimeo.com/video/346488552",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=this/it"
+    },
+    "TIME": {
+      "clip_id": "time",
+      "asl_lex_entry": "time",
+      "reference_video": "https://player.vimeo.com/video/345556155",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=time"
+    },
+    "TIRED": {
+      "clip_id": "tired",
+      "asl_lex_entry": "tired",
+      "reference_video": "https://player.vimeo.com/video/345972634",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=tired"
+    },
+    "TODAY": {
+      "clip_id": "today",
+      "asl_lex_entry": "today",
+      "reference_video": "https://player.vimeo.com/video/346056665",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=today"
+    },
+    "TOMORROW": {
+      "clip_id": "tomorrow",
+      "asl_lex_entry": "tomorrow",
+      "reference_video": "https://player.vimeo.com/video/346494879",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=tomorrow"
+    },
+    "TURN": {
+      "clip_id": "turn",
+      "asl_lex_entry": "turn",
+      "reference_video": "https://player.vimeo.com/video/346920452",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=turn"
+    },
+    "TWO": {
+      "clip_id": "two",
+      "asl_lex_entry": "two",
+      "reference_video": "https://player.vimeo.com/video/345587268",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=two"
+    },
+    "UNDERSTAND": {
+      "clip_id": "understand",
+      "asl_lex_entry": "understand",
+      "reference_video": "https://player.vimeo.com/video/345576018",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=understand"
+    },
+    "VERY": {
+      "clip_id": "very",
+      "asl_lex_entry": "very",
+      "reference_video": "https://player.vimeo.com/video/346773299",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=very"
+    },
+    "WAIT": {
+      "clip_id": "wait",
+      "asl_lex_entry": "wait",
+      "reference_video": "https://player.vimeo.com/video/345536899",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=wait"
+    },
+    "WANT": {
+      "clip_id": "want",
+      "asl_lex_entry": "want",
+      "reference_video": "https://player.vimeo.com/video/345798094",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=want"
+    },
+    "WATER": {
+      "clip_id": "water",
+      "asl_lex_entry": "water",
+      "reference_video": "https://player.vimeo.com/video/344221671",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=water"
+    },
+    "WEEK": {
+      "clip_id": "week",
+      "asl_lex_entry": "week",
+      "reference_video": "https://player.vimeo.com/video/345556119",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=week"
+    },
+    "WELCOME": {
+      "clip_id": "welcome",
+      "asl_lex_entry": "welcome_1",
+      "reference_video": "https://player.vimeo.com/video/346939885",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=welcome_1"
+    },
+    "WE_WILL_SEE": {
+      "clip_id": "we_will_see",
+      "asl_lex_entry": "we_will_see",
+      "reference_video": "https://player.vimeo.com/video/346600875",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=we_will_see"
+    },
+    "WHAT": {
+      "clip_id": "what",
+      "asl_lex_entry": "what_1",
+      "reference_video": "https://player.vimeo.com/video/345975305",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=what_1"
+    },
+    "WHEN": {
+      "clip_id": "when",
+      "asl_lex_entry": "when",
+      "reference_video": "https://player.vimeo.com/video/345801477",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=when"
+    },
+    "WHERE": {
+      "clip_id": "where",
+      "asl_lex_entry": "where",
+      "reference_video": "https://player.vimeo.com/video/345537550",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=where"
+    },
+    "WHICH": {
+      "clip_id": "which",
+      "asl_lex_entry": "which",
+      "reference_video": "https://player.vimeo.com/video/344409828",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=which"
+    },
+    "WHO": {
+      "clip_id": "who",
+      "asl_lex_entry": "who",
+      "reference_video": "https://player.vimeo.com/video/345578041",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=who"
+    },
+    "WHY": {
+      "clip_id": "why",
+      "asl_lex_entry": "why",
+      "reference_video": "https://player.vimeo.com/video/345805853",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=why"
+    },
+    "WHY_NOT": {
+      "clip_id": "why_not",
+      "asl_lex_entry": "why_not",
+      "reference_video": "https://player.vimeo.com/video/346802083",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=why_not"
+    },
+    "WIFE": {
+      "clip_id": "wife",
+      "asl_lex_entry": "wife",
+      "reference_video": "https://player.vimeo.com/video/345982781",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=wife"
+    },
+    "WILL": {
+      "clip_id": "will",
+      "asl_lex_entry": "will",
+      "reference_video": "https://player.vimeo.com/video/346600676",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=will"
+    },
+    "WORK": {
+      "clip_id": "work",
+      "asl_lex_entry": "work",
+      "reference_video": "https://player.vimeo.com/video/344359531",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=work"
+    },
+    "WORRY": {
+      "clip_id": "worry",
+      "asl_lex_entry": "worry",
+      "reference_video": "https://player.vimeo.com/video/345587600",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=worry"
+    },
+    "WOW": {
+      "clip_id": "wow",
+      "asl_lex_entry": "wow",
+      "reference_video": "https://player.vimeo.com/video/346487357",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=wow"
+    },
+    "WRITE": {
+      "clip_id": "write",
+      "asl_lex_entry": "write",
+      "reference_video": "https://player.vimeo.com/video/345805060",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=write"
+    },
+    "WRONG": {
+      "clip_id": "wrong",
+      "asl_lex_entry": "wrong_1",
+      "reference_video": "https://player.vimeo.com/video/344398411",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=wrong_1"
+    },
+    "YES": {
+      "clip_id": "yes",
+      "asl_lex_entry": "yes",
+      "reference_video": "https://player.vimeo.com/video/346778768",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=yes"
+    },
+    "YESTERDAY": {
+      "clip_id": "yesterday",
+      "asl_lex_entry": "yesterday",
+      "reference_video": "https://player.vimeo.com/video/345803814",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=yesterday"
+    },
+    "YOU": {
+      "clip_id": "you",
+      "asl_lex_entry": "you",
+      "reference_video": "https://player.vimeo.com/video/345973780",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=you"
+    },
+    "YOUR": {
+      "clip_id": "your",
+      "asl_lex_entry": "your",
+      "reference_video": "https://player.vimeo.com/video/346489117",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=your"
+    }
+  },
+  "phrases": [
+    {
+      "id": "hello",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "good-morning",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "good-afternoon",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "good-evening",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "good-night",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "goodbye",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "see-you-later",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "see-you-tomorrow",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "see-you-next-week",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "nice-to-meet-you",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "long-time-no-see",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "take-care",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-love-you",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "happy-birthday",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "congratulations",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "what-is-your-name",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "my-name-is-alex",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "are-you-deaf",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-am-deaf",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-am-hearing",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-am-hard-of-hearing",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "where-are-you-from",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-live-in-boston",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "where-do-you-live",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "how-old-are-you",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-am-a-student",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-am-a-teacher",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "what-do-you-do-for-work",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "this-is-my-friend",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "how-are-you",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-fine",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-good-thank-you",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-tired",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-sick",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-happy",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-sad",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-angry",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-excited",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-scared",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-hungry",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-thirsty",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-busy",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-worried",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "are-you-okay",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-feel-better",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-dont-feel-well",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-stressed",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "do-you-understand",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-understand",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-dont-understand",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "please-repeat-that",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "please-sign-slower",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "what-does-that-mean",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "how-do-you-sign-that",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "can-you-fingerspell-it",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-learning-asl",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "do-you-sign",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-dont-know",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-remember",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "oh-i-see",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "let-me-think",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "wait-a-minute",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "are-you-sure",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-misunderstood",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "please-write-it-down",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "yes",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "no",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "maybe",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "okay",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "thank-you",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "thank-you-very-much",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "youre-welcome",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "please",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "sorry",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "excuse-me",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "no-problem",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "it-doesnt-matter",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-dont-care",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-agree",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-disagree",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "thats-right",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "thats-wrong",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "really",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "wow",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "me-too",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "go-ahead",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "not-yet",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "we-will-see",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "what",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "where",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "who",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "why",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "when",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "how",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "which-one",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "what-time-is-it",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "what-are-you-doing",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "what-happened",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "who-is-that",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "why-not",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "where-are-you-going",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "what-do-you-want",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "do-you-like-it",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "do-you-have-a-question",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "can-i-ask-you-something",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "are-you-ready",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "please-help-me",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "can-you-help-me",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-need-help",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "where-is-the-bathroom",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-want-water",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-need-to-go-home",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-want-to-sleep",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-need-a-break",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-need-an-interpreter",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "can-i-borrow-a-pen",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-need-to-charge-my-phone",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-dont-want-that",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-dont-need-it",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "give-me-that",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "come-here",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "hurry-up",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "stop",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "be-careful",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "be-quiet",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "lets-go",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "are-you-hungry",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "lets-eat",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "what-do-you-want-to-eat",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-want-coffee",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "do-you-want-more",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-full",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "its-delicious",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-dont-like-it",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "can-i-have-the-check",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "do-you-want-a-drink",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "breakfast-is-ready",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "this-is-my-mother",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "this-is-my-father",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "do-you-have-brothers-or-sisters",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-have-one-sister",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "my-parents-are-deaf",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "are-you-married",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-have-two-children",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "my-family-is-big",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "this-is-my-wife",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "he-is-my-husband",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-love-my-family",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "thats-my-dog",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "do-you-have-pets",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "what-day-is-it-today",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "today-is-monday",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "see-you-on-friday",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "yesterday-i-was-busy",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "tomorrow-i-will-go",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-late",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "now",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "every-day",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "next-week",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "what-time-is-the-meeting",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-will-be-there-in-an-hour",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "where-is-my-class",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "do-you-have-homework",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-have-a-test-tomorrow",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-go-to-college",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "my-teacher-is-deaf",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "open-your-book",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-finished-my-work",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-work-at-a-hospital",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-have-a-meeting",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-need-to-study",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "email-me",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "text-me",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "what-is-your-email",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-like-my-job",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "where-is-the-store",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "where-is-the-hospital",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "go-straight",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "turn-left",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "turn-right",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "its-near",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "its-far-away",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-lost",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "where-is-the-bus",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-going-home",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "lets-go-to-the-restaurant",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-drive-to-work",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "the-library-is-closed",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "call-911",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-need-a-doctor",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "call-the-police",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "im-hurt",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "where-does-it-hurt",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-have-a-headache",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "i-need-medicine",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "are-you-hurt",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "danger",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "help",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "stay-here",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    },
+    {
+      "id": "is-everyone-okay",
+      "status": "playable",
+      "missing_motion": [],
+      "missing_video": []
+    }
+  ]
+}

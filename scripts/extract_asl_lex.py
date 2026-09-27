@@ -171,6 +171,23 @@ MAPPING: dict[str, tuple[str, str, str]] = {
     "what":         ("what_1", "approximate",
                      "ASL-LEX splits WHAT into what_1 and what_2; what_1 is used."),
 
+    # -- common-phrase bank (data/asl/phrase_bank.json) ----------------------
+    # Signs the 200 everyday phrases need that auto-expansion skips: below the
+    # frequency cut, a function word in English but a real ASL sign, or a
+    # sense-split lemma whose sense the phrase decides. Keep in step with
+    # `lex_senses` in the bank.
+    "big":          ("big",         "exact", "below the auto frequency cut"),
+    "breakfast":    ("breakfast_1", "exact", "EAT+MORNING compound, the more frequent form"),
+    "fine":         ("fine_1",      "exact", "I'M FINE; fine_1 and fine_2 share every gloss"),
+    "from":         ("from",        "exact", "a real ASL sign (YOU FROM WHERE), though an English function word"),
+    "homework":     ("homework",    "exact", "same lemma as `assignment`, under its everyday name"),
+    "live":         ("live_1",      "exact", "live/life/alive sense"),
+    "marry":        ("marry",       "exact", "below the auto frequency cut"),
+    "right":        ("right_2",     "exact", "the direction sense (TURN RIGHT); 'correct' is CORRECT"),
+    "shop":         ("shop_2",      "exact", "store/shop sense"),
+    "welcome":      ("welcome_1",   "exact", "YOU'RE WELCOME / welcome"),
+    "wrong":        ("wrong_1",     "exact", "the more frequent of two identical-gloss forms"),
+
     # Intentionally absent - no plausible single ASL-LEX lemma. These stay in
     # data/asl_custom_motions.json and remain flagged as descriptor-free:
     #   artificial_intelligence, compile, do, explain, five, part, refill
