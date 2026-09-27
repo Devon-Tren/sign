@@ -205,7 +205,7 @@ test('played plans move at human speed: no impossible transitions between signs'
 
 test('repeated straight signs repeat their path', () => {
   // Root cause R3: Straight + RepeatedMovement signs moved exactly once.
-  for (const id of ['mother', 'yes', 'more']) {
+  for (const id of ['mother', 'more']) {
     const dur = clipLengthMs(id, 'continuous')
     const opts = { mode: 'continuous' as const, durationMs: dur, skipOnset: true, skipRelease: true }
     const ys: number[] = []
@@ -357,4 +357,22 @@ test('question raises the index and curls it twice with a puzzled expression', (
     assert.ok(pose.head[2] > 0 && pose.head[2] < .1, 'small questioning head tilt')
   }
   assert.equal(curls, 2)
+})
+
+
+test('YES repeats a wrist nod while WHERE and BATHROOM keep their handshapes', () => {
+  const yes = authoredClipFor('yes')!
+  assert.equal(yes.right_handshape, 's')
+  const axes = yes.keyframes.map(f => f.right.point![2])
+  const reversals = axes.slice(2).filter((v, i) => (v - axes[i + 1]) * (axes[i + 1] - axes[i]) < -1e-9)
+  assert.ok(reversals.length >= 2, 'YES needs repeated wrist nods')
+  for (const frame of yes.keyframes) assert.deepEqual(frame.right.target, yes.keyframes[0].right.target)
+  for (const [id, shape] of [['where', '1'], ['bathroom', 't']]) {
+    const clip = authoredClipFor(id)!
+    assert.equal(clip.right_handshape, shape)
+    assert.ok(clip.keyframes.every(f => !f.right_handshape || f.right_handshape === shape))
+    const xs = clip.keyframes.map(f => f.right.point![0])
+    assert.ok(Math.min(...xs) < -.15 && Math.max(...xs) > .15, `${id} pivots both ways`)
+  }
+  assert.ok(authoredClipFor('where')!.expression!.browFurrow! > .4)
 })

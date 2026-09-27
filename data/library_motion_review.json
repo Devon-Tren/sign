@@ -1,0 +1,6593 @@
+{
+  "version": 1,
+  "date": "2026-09-27",
+  "scope": "All built-in Phrase Library entries, including Motion Catalog. Metadata triage covers every entry; only the cited candidates received individual reference review. Skipped does not mean the existing animation is known to be incorrect. Previously customized clips are preserved.",
+  "reasons": {
+    "preserved": "Kept your existing customized animation.",
+    "updated": "Reference-based movement adjustment; still awaiting signer validation.",
+    "no_motion": "No playable lexical motion is mapped. Please specify fingerspelling or the intended phrase and movements.",
+    "variant": "Multiple regional variants are documented. Please choose which movement to use.",
+    "closure": "The timing and contact of the index, middle finger, and thumb closure have not been verified on this rig.",
+    "rig": "A reference-based candidate was tried but withdrawn because rig checks left unresolved wrist, finger, speed, or contact concerns.",
+    "mapping": "The entry uses an approximate English-to-sign mapping. Its intended meaning and a complete movement reference need confirmation.",
+    "contact": "Metadata indicates contact, but the full hand orientation, contact point, and timing have not been individually verified against a signing reference.",
+    "fingers": "Metadata indicates finger changes, but their complete sequence and timing have not been individually verified against a signing reference.",
+    "coordination": "The two-hand movement and relative orientation have not been individually verified against a complete signing reference.",
+    "reference": "A complete signing reference has not been individually checked. Descriptor metadata alone is insufficient to confidently replace this animation."
+  },
+  "entries": {
+    "abbreviate": {
+      "label": "Abbreviate",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "accept": {
+      "label": "Accept",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "accessible": {
+      "label": "Accessible",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "accident": {
+      "label": "Accident",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "accomplish": {
+      "label": "Accomplish",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "acquire": {
+      "label": "Acquire",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "act": {
+      "label": "Act",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "action": {
+      "label": "Action",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "actor": {
+      "label": "Actor",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "add": {
+      "label": "Add",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "addict": {
+      "label": "Addict",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "address": {
+      "label": "Address",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "admire": {
+      "label": "Admire",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "admit": {
+      "label": "Admit",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "adopt": {
+      "label": "Adopt",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "adult": {
+      "label": "Adult",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "advantage": {
+      "label": "Advantage",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "advertise": {
+      "label": "Advertise",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "afternoon": {
+      "label": "Afternoon",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "again": {
+      "label": "Again",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "against": {
+      "label": "Against",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "age": {
+      "label": "Age",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "agency": {
+      "label": "Agency",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "agreement": {
+      "label": "Agreement",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "airplane": {
+      "label": "Airplane",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "alarm": {
+      "label": "Alarm",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "alcohol": {
+      "label": "Alcohol",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "align": {
+      "label": "Align",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "all_day": {
+      "label": "All Day",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "all_gone": {
+      "label": "All Gone",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "all_of_sudden": {
+      "label": "All Of Sudden",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "all_over": {
+      "label": "All Over",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "all_together": {
+      "label": "All Together",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "all_way": {
+      "label": "All Way",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "alone": {
+      "label": "Alone",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "alright": {
+      "label": "Alright",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "always": {
+      "label": "Always",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "amazing": {
+      "label": "Amazing",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "america": {
+      "label": "America",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "analyze": {
+      "label": "Analyze",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "angry": {
+      "label": "Angry",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "animal": {
+      "label": "Animal",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "announce": {
+      "label": "Announce",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "answer": {
+      "label": "Answer",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "any": {
+      "label": "Any",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "anyone": {
+      "label": "Anyone",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "apart": {
+      "label": "Apart",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "appear": {
+      "label": "Appear",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "apple": {
+      "label": "Apple",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "appointment": {
+      "label": "Appointment",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "area": {
+      "label": "Area",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "argue": {
+      "label": "Argue",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "arrive": {
+      "label": "Arrive",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "art": {
+      "label": "Art",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "article": {
+      "label": "Article",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "articulate_sign": {
+      "label": "Articulate Sign",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "artificial_intelligence": {
+      "label": "Artificial intelligence",
+      "status": "skipped",
+      "reason": "no_motion"
+    },
+    "asia": {
+      "label": "Asia",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "ask": {
+      "label": "Ask",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "assignment": {
+      "label": "Assignment",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "assist": {
+      "label": "Assist",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "assistant": {
+      "label": "Assistant",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "atlanta": {
+      "label": "Atlanta",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "attention": {
+      "label": "Attention",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "attitude": {
+      "label": "Attitude",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "audience": {
+      "label": "Audience",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "auditorium": {
+      "label": "Auditorium",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "automatic": {
+      "label": "Automatic",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "average": {
+      "label": "Average",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "avoid": {
+      "label": "Avoid",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "awake": {
+      "label": "Awake",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "award": {
+      "label": "Award",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "away": {
+      "label": "Away",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "awkward": {
+      "label": "Awkward",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "baby": {
+      "label": "Baby",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bachelor": {
+      "label": "Bachelor",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "back": {
+      "label": "Back",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "back_out": {
+      "label": "Back Out",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "back_up": {
+      "label": "Back Up",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "bacon": {
+      "label": "Bacon",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bad": {
+      "label": "Bad",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bag": {
+      "label": "Bag",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "balance": {
+      "label": "Balance",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "ball": {
+      "label": "Ball",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bank": {
+      "label": "Bank",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "bar": {
+      "label": "Bar",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "barely": {
+      "label": "Barely",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "baseball": {
+      "label": "Baseball",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "baseball_cap": {
+      "label": "Baseball Cap",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "basic": {
+      "label": "Basic",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "basketball": {
+      "label": "Basketball",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "bath": {
+      "label": "Bath",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bathroom": {
+      "label": "Bathroom",
+      "status": "updated",
+      "reason": "updated",
+      "summary": "Outward-facing T hand shakes side to side twice",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/b/bathroom.htm"
+      ]
+    },
+    "battery": {
+      "label": "Battery",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "beaver": {
+      "label": "Beaver",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "because": {
+      "label": "Because",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "become": {
+      "label": "Become",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bed": {
+      "label": "Bed",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bedroom": {
+      "label": "Bedroom",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "beer": {
+      "label": "Beer",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "before": {
+      "label": "Before",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "behind": {
+      "label": "Behind",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "believe": {
+      "label": "Believe",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "best": {
+      "label": "Best",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bet": {
+      "label": "Bet",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "better": {
+      "label": "Better",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "between": {
+      "label": "Between",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bicycle": {
+      "label": "Bicycle",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "big": {
+      "label": "Big",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "bind": {
+      "label": "Bind",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "bird": {
+      "label": "Bird",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "birth": {
+      "label": "Birth",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "birthday": {
+      "label": "Birthday",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bitch": {
+      "label": "Bitch",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bite_on_arm": {
+      "label": "Bite On Arm",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "black": {
+      "label": "Black",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "blackbird": {
+      "label": "Blackbird",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "blanket": {
+      "label": "Blanket",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bleed": {
+      "label": "Bleed",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bless": {
+      "label": "Bless",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "blink": {
+      "label": "Blink",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "blond": {
+      "label": "Blond",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "blue": {
+      "label": "Blue",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "board": {
+      "label": "Board",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "body": {
+      "label": "Body",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "boiling_mad": {
+      "label": "Boiling Mad",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "book": {
+      "label": "Book",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bored": {
+      "label": "Bored",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "borrow": {
+      "label": "Borrow",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "boss": {
+      "label": "Boss",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "boston": {
+      "label": "Boston",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "both": {
+      "label": "Both",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bother": {
+      "label": "Bother",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "bottle": {
+      "label": "Bottle",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bowl": {
+      "label": "Bowl",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "box": {
+      "label": "Box",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "boy": {
+      "label": "Boy",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "boyfriend": {
+      "label": "Boyfriend",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "brainstorm": {
+      "label": "Brainstorm",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "brave": {
+      "label": "Brave",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bread": {
+      "label": "Bread",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "break": {
+      "label": "Break",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "break_down": {
+      "label": "Break Down",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "breakdown": {
+      "label": "Breakdown",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "breakfast": {
+      "label": "Breakfast",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "breaktime": {
+      "label": "Breaktime",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "breathe": {
+      "label": "Breathe",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "brick": {
+      "label": "Brick",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bridge": {
+      "label": "Bridge",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bright": {
+      "label": "Bright",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bring": {
+      "label": "Bring",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "brother": {
+      "label": "Brother",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "brown": {
+      "label": "Brown",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "budget": {
+      "label": "Budget",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bug": {
+      "label": "Bug",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "building": {
+      "label": "Building",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "bullshit": {
+      "label": "Bullshit",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "bury": {
+      "label": "Bury",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "bus": {
+      "label": "Bus",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "business": {
+      "label": "Business",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "busted": {
+      "label": "Busted",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "busy": {
+      "label": "Busy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "butter": {
+      "label": "Butter",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "buy": {
+      "label": "Buy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cabbage": {
+      "label": "Cabbage",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cafeteria": {
+      "label": "Cafeteria",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "calendar": {
+      "label": "Calendar",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "california": {
+      "label": "California",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "call": {
+      "label": "Call",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "call_attention": {
+      "label": "Call Attention",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "calm": {
+      "label": "Calm",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "camcorder": {
+      "label": "Camcorder",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "camera": {
+      "label": "Camera",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "camping": {
+      "label": "Camping",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "can": {
+      "label": "Can",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "cannot": {
+      "label": "Cannot",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "caption": {
+      "label": "Caption",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "capture": {
+      "label": "Capture",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "car": {
+      "label": "Car",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "cards": {
+      "label": "Cards",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "careful": {
+      "label": "Careful",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "carry": {
+      "label": "Carry",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "carve": {
+      "label": "Carve",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "casual": {
+      "label": "Casual",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "cat": {
+      "label": "Cat",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "category": {
+      "label": "Category",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "caught": {
+      "label": "Caught",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "celebrate": {
+      "label": "Celebrate",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "cellphone": {
+      "label": "Cellphone",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cereal": {
+      "label": "Cereal",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "certificate": {
+      "label": "Certificate",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "chair": {
+      "label": "Chair",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "challenge": {
+      "label": "Challenge",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "champ": {
+      "label": "Champ",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "champion": {
+      "label": "Champion",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "chance": {
+      "label": "Chance",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "chaos": {
+      "label": "Chaos",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "charge": {
+      "label": "Charge",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "charge_card": {
+      "label": "Charge Card",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "chase": {
+      "label": "Chase",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "chat": {
+      "label": "Chat",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "cheap": {
+      "label": "Cheap",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "check": {
+      "label": "Check",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cheese": {
+      "label": "Cheese",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cherish": {
+      "label": "Cherish",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "child": {
+      "label": "Child",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "children": {
+      "label": "Children",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "chocolate": {
+      "label": "Chocolate",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "chop": {
+      "label": "Chop",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "chopsticks": {
+      "label": "Chopsticks",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "city": {
+      "label": "City",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "clash": {
+      "label": "Clash",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "classroom": {
+      "label": "Classroom",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "clause": {
+      "label": "Clause",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "clean": {
+      "label": "Clean",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "clear": {
+      "label": "Clear",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "click": {
+      "label": "Click",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "client": {
+      "label": "Client",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "clip": {
+      "label": "Clip",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "close": {
+      "label": "Close",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "close_door": {
+      "label": "Close Door",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "close_eyes": {
+      "label": "Close Eyes",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "clothes": {
+      "label": "Clothes",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "clueless": {
+      "label": "Clueless",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "code": {
+      "label": "Code",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "coffee": {
+      "label": "Coffee",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cold": {
+      "label": "Cold",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "college": {
+      "label": "College",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "color": {
+      "label": "Color",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "come": {
+      "label": "Come",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "come_here": {
+      "label": "Come Here",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "come_out": {
+      "label": "Come Out",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "comfortable": {
+      "label": "Comfortable",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "comment": {
+      "label": "Comment",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "committee": {
+      "label": "Committee",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "communication": {
+      "label": "Communication",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "community": {
+      "label": "Community",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "commute": {
+      "label": "Commute",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "compile": {
+      "label": "Compile",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "complain": {
+      "label": "Complain",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "complex": {
+      "label": "Complex",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "computer": {
+      "label": "Computer",
+      "status": "skipped",
+      "reason": "variant",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/c/computer.htm"
+      ]
+    },
+    "concerned": {
+      "label": "Concerned",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "confident": {
+      "label": "Confident",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "confidential": {
+      "label": "Confidential",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "conflict": {
+      "label": "Conflict",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "congratulations": {
+      "label": "Congratulations",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "consume": {
+      "label": "Consume",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "contact": {
+      "label": "Contact",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "continue": {
+      "label": "Continue",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "convince": {
+      "label": "Convince",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cook": {
+      "label": "Cook",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cookie": {
+      "label": "Cookie",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cool_5": {
+      "label": "Cool 5",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "cooperate": {
+      "label": "Cooperate",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "copy": {
+      "label": "Copy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "corner": {
+      "label": "Corner",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "correct": {
+      "label": "Correct",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cost": {
+      "label": "Cost",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "counselor": {
+      "label": "Counselor",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "count": {
+      "label": "Count",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cousin": {
+      "label": "Cousin",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "cranky": {
+      "label": "Cranky",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "crash_plane": {
+      "label": "Crash Plane",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cream": {
+      "label": "Cream",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "create": {
+      "label": "Create",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "credit_card": {
+      "label": "Credit Card",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "crewcut": {
+      "label": "Crewcut",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "criticize": {
+      "label": "Criticize",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cry": {
+      "label": "Cry",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "culture": {
+      "label": "Culture",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "cup": {
+      "label": "Cup",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "curious": {
+      "label": "Curious",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "damn": {
+      "label": "Damn",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "danger": {
+      "label": "Danger",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "date": {
+      "label": "Date",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "daughter": {
+      "label": "Daughter",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "day": {
+      "label": "Day",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "deaf": {
+      "label": "Deaf",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "deaf_school": {
+      "label": "Deaf School",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "death": {
+      "label": "Death",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "deflate": {
+      "label": "Deflate",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "degree": {
+      "label": "Degree",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "deliberate": {
+      "label": "Deliberate",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "delicious": {
+      "label": "Delicious",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "delinquent": {
+      "label": "Delinquent",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "demand": {
+      "label": "Demand",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "deny": {
+      "label": "Deny",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "department": {
+      "label": "Department",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "depend_on": {
+      "label": "Depend On",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "depress": {
+      "label": "Depress",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "depth": {
+      "label": "Depth",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "design": {
+      "label": "Design",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dessert": {
+      "label": "Dessert",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "destroy": {
+      "label": "Destroy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "devour": {
+      "label": "Devour",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "die": {
+      "label": "Die",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "different": {
+      "label": "Different",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "different_situation": {
+      "label": "Different Situation",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "director": {
+      "label": "Director",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "dirty": {
+      "label": "Dirty",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "disagreement": {
+      "label": "Disagreement",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "disappoint": {
+      "label": "Disappoint",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "disconnect": {
+      "label": "Disconnect",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "discuss": {
+      "label": "Discuss",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dislike": {
+      "label": "Dislike",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dispatch": {
+      "label": "Dispatch",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "disrupt": {
+      "label": "Disrupt",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "dissolve": {
+      "label": "Dissolve",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "distracted": {
+      "label": "Distracted",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "divide": {
+      "label": "Divide",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "divorce": {
+      "label": "Divorce",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "do": {
+      "label": "Do",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "do_do": {
+      "label": "Do Do",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "doctor": {
+      "label": "Doctor",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "document": {
+      "label": "Document",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "doesnt_matter": {
+      "label": "Doesnt Matter",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dog": {
+      "label": "Dog",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "dominant": {
+      "label": "Dominant",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "dont_care": {
+      "label": "Dont Care",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dont_feel_like": {
+      "label": "Dont Feel Like",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dont_know": {
+      "label": "Dont Know",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dont_like": {
+      "label": "Dont Like",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dont_mind": {
+      "label": "Dont Mind",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dont_need": {
+      "label": "Dont Need",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dont_want": {
+      "label": "Dont Want",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "door": {
+      "label": "Door",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dormitory": {
+      "label": "Dormitory",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "double": {
+      "label": "Double",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "doubt": {
+      "label": "Doubt",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "downstairs": {
+      "label": "Downstairs",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "draw": {
+      "label": "Draw",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "dream": {
+      "label": "Dream",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "dress": {
+      "label": "Dress",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dress_up": {
+      "label": "Dress Up",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "drink": {
+      "label": "Drink",
+      "status": "skipped",
+      "reason": "rig",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/d/drink.htm"
+      ]
+    },
+    "drive": {
+      "label": "Drive",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "drop": {
+      "label": "Drop",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "dry": {
+      "label": "Dry",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "due": {
+      "label": "Due",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dumb": {
+      "label": "Dumb",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "dye": {
+      "label": "Dye",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "each": {
+      "label": "Each",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "each_other": {
+      "label": "Each Other",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "early": {
+      "label": "Early",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "earn": {
+      "label": "Earn",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "ears_up": {
+      "label": "Ears Up",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "easel": {
+      "label": "Easel",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "east": {
+      "label": "East",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "easy": {
+      "label": "Easy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "easy_to_do": {
+      "label": "Easy To Do",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "eat": {
+      "label": "Eat",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "effect": {
+      "label": "Effect",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "egg": {
+      "label": "Egg",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "eight": {
+      "label": "Eight",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "either": {
+      "label": "Either",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "electrocute": {
+      "label": "Electrocute",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "elegance": {
+      "label": "Elegance",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "elementary_school": {
+      "label": "Elementary School",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "eleven": {
+      "label": "Eleven",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "email": {
+      "label": "Email",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "emotion": {
+      "label": "Emotion",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "emphasis": {
+      "label": "Emphasis",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "end": {
+      "label": "End",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "enemy": {
+      "label": "Enemy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "energy": {
+      "label": "Energy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "engine_start": {
+      "label": "Engine Start",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "english": {
+      "label": "English",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "enjoy": {
+      "label": "Enjoy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "enough": {
+      "label": "Enough",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "enter": {
+      "label": "Enter",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "environment": {
+      "label": "Environment",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "equal": {
+      "label": "Equal",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "erase": {
+      "label": "Erase",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "eraser": {
+      "label": "Eraser",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "escape": {
+      "label": "Escape",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "evaluate": {
+      "label": "Evaluate",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "evening": {
+      "label": "Evening",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "event": {
+      "label": "Event",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "every_night": {
+      "label": "Every Night",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "every_year": {
+      "label": "Every Year",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "everyday": {
+      "label": "Everyday",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "everyone": {
+      "label": "Everyone",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "everything": {
+      "label": "Everything",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "evidence": {
+      "label": "Evidence",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "example": {
+      "label": "Example",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "excited": {
+      "label": "Excited",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "excuse": {
+      "label": "Excuse",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "exercise": {
+      "label": "Exercise",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "expect": {
+      "label": "Expect",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "expensive": {
+      "label": "Expensive",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "experience": {
+      "label": "Experience",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "experienced": {
+      "label": "Experienced",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "experiment": {
+      "label": "Experiment",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "explain": {
+      "label": "Explain",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "explanation": {
+      "label": "Explanation",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "express": {
+      "label": "Express",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "eye_turn": {
+      "label": "Eye Turn",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "eyes": {
+      "label": "Eyes",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "eyes_awake": {
+      "label": "Eyes Awake",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "face": {
+      "label": "Face",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "faculty": {
+      "label": "Faculty",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fade": {
+      "label": "Fade",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "fail": {
+      "label": "Fail",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fair": {
+      "label": "Fair",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fake": {
+      "label": "Fake",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "falling_asleep": {
+      "label": "Falling Asleep",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "family": {
+      "label": "Family",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "famous": {
+      "label": "Famous",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "far": {
+      "label": "Far",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fascinated": {
+      "label": "Fascinated",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fast": {
+      "label": "Fast",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "fat": {
+      "label": "Fat",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "father": {
+      "label": "Father",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fault": {
+      "label": "Fault",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "favorite": {
+      "label": "Favorite",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fed_up": {
+      "label": "Fed Up",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "feedback": {
+      "label": "Feedback",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "feel": {
+      "label": "Feel",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "few": {
+      "label": "Few",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "fiance": {
+      "label": "Fiance",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fifth": {
+      "label": "Fifth",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "fight": {
+      "label": "Fight",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fill_out": {
+      "label": "Fill Out",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "film": {
+      "label": "Film",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "finally": {
+      "label": "Finally",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "finance": {
+      "label": "Finance",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "find": {
+      "label": "Find",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "fine": {
+      "label": "Fine",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fingers_crossed": {
+      "label": "Fingers Crossed",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "fingerspell": {
+      "label": "Fingerspell",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "fingerspelling": {
+      "label": "Fingerspelling",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "finish": {
+      "label": "Finish",
+      "status": "skipped",
+      "reason": "rig",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/f/finish.htm"
+      ]
+    },
+    "fired": {
+      "label": "Fired",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "first": {
+      "label": "First",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "fish": {
+      "label": "Fish",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fit": {
+      "label": "Fit",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "five": {
+      "label": "Five",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "fix": {
+      "label": "Fix",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "flower": {
+      "label": "Flower",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "focus": {
+      "label": "Focus",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fold": {
+      "label": "Fold",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "fool": {
+      "label": "Fool",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "football": {
+      "label": "Football",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "forbid": {
+      "label": "Forbid",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "forest": {
+      "label": "Forest",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "forgetful": {
+      "label": "Forgetful",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "former": {
+      "label": "Former",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "four": {
+      "label": "Four",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "fourth": {
+      "label": "Fourth",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "freak_out": {
+      "label": "Freak Out",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "free": {
+      "label": "Free",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "freedom": {
+      "label": "Freedom",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "freeze": {
+      "label": "Freeze",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "frenchfries": {
+      "label": "Frenchfries",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "friday": {
+      "label": "Friday",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "friend": {
+      "label": "Friend",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "from": {
+      "label": "From",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "from_then_on": {
+      "label": "From Then On",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "front": {
+      "label": "Front",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "fruit": {
+      "label": "Fruit",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "frustrate": {
+      "label": "Frustrate",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fry": {
+      "label": "Fry",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "full": {
+      "label": "Full",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "fun": {
+      "label": "Fun",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "funny": {
+      "label": "Funny",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "future": {
+      "label": "Future",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "fuzzy": {
+      "label": "Fuzzy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "gallaudet": {
+      "label": "Gallaudet",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "game": {
+      "label": "Game",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "garage": {
+      "label": "Garage",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "gas": {
+      "label": "Gas",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "gate_close": {
+      "label": "Gate Close",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "gay": {
+      "label": "Gay",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "generation": {
+      "label": "Generation",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "gesture": {
+      "label": "Gesture",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "get": {
+      "label": "Get",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "get_in_bed": {
+      "label": "Get In Bed",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "get_off": {
+      "label": "Get Off",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "get_through": {
+      "label": "Get Through",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "get_together": {
+      "label": "Get Together",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "gift": {
+      "label": "Gift",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "girl": {
+      "label": "Girl",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "give": {
+      "label": "Give",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "go": {
+      "label": "Go",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "go_ahead": {
+      "label": "Go Ahead",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "go_through": {
+      "label": "Go Through",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "goal": {
+      "label": "Goal",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "god": {
+      "label": "God",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "going_through_a_hard_time": {
+      "label": "Going Through A Hard Time",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "gone": {
+      "label": "Gone",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "good": {
+      "label": "Good",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "good_morning": {
+      "label": "Good morning",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "goodbye": {
+      "label": "Goodbye",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "goody_goody": {
+      "label": "Goody Goody",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "gossip": {
+      "label": "Gossip",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "gotcha": {
+      "label": "Gotcha",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "government": {
+      "label": "Government",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "grade": {
+      "label": "Grade",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "graduate": {
+      "label": "Graduate",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "graduate_school": {
+      "label": "Graduate School",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "grandfather": {
+      "label": "Grandfather",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "grandmother": {
+      "label": "Grandmother",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "grandparents": {
+      "label": "Grandparents",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "grapes": {
+      "label": "Grapes",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "grass": {
+      "label": "Grass",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "gray": {
+      "label": "Gray",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "great": {
+      "label": "Great",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "green": {
+      "label": "Green",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "grieve": {
+      "label": "Grieve",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "grind": {
+      "label": "Grind",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "group": {
+      "label": "Group",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "grow": {
+      "label": "Grow",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "grow_up": {
+      "label": "Grow Up",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "guide": {
+      "label": "Guide",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "gum": {
+      "label": "Gum",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "gym": {
+      "label": "Gym",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "habit": {
+      "label": "Habit",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "had_enough": {
+      "label": "Had Enough",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "haha": {
+      "label": "Haha",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "hair": {
+      "label": "Hair",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "hairdresser": {
+      "label": "Hairdresser",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "half": {
+      "label": "Half",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "half_hour": {
+      "label": "Half Hour",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hamburger": {
+      "label": "Hamburger",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hands": {
+      "label": "Hands",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hands_off": {
+      "label": "Hands Off",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "happen": {
+      "label": "Happen",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "happy": {
+      "label": "Happy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hard": {
+      "label": "Hard",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hard_of_hearing": {
+      "label": "Hard Of Hearing",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "hat": {
+      "label": "Hat",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hate": {
+      "label": "Hate",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "have": {
+      "label": "Have",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "he": {
+      "label": "He",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "head": {
+      "label": "Head",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "head_back": {
+      "label": "Head Back",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "headache": {
+      "label": "Headache",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "headcold": {
+      "label": "Headcold",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "health": {
+      "label": "Health",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "heap": {
+      "label": "Heap",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "hearing": {
+      "label": "Hearing",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "hearing_aid": {
+      "label": "Hearing Aid",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "heart_touch": {
+      "label": "Heart Touch",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "heartbody": {
+      "label": "Heartbody",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "heavy": {
+      "label": "Heavy",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "hello": {
+      "label": "Hello",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "help": {
+      "label": "Help",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "her": {
+      "label": "Her",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "here": {
+      "label": "Here",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "hide": {
+      "label": "Hide",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "high": {
+      "label": "High",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "high_school": {
+      "label": "High School",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "highlighter": {
+      "label": "Highlighter",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "his": {
+      "label": "His",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "history": {
+      "label": "History",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "home": {
+      "label": "Home",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "homework": {
+      "label": "Homework",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "honest": {
+      "label": "Honest",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hope": {
+      "label": "Hope",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hospital": {
+      "label": "Hospital",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hot": {
+      "label": "Hot",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "hot_competition": {
+      "label": "Hot Competition",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hotel": {
+      "label": "Hotel",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hour": {
+      "label": "Hour",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "house": {
+      "label": "House",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "how": {
+      "label": "How",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hug": {
+      "label": "Hug",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hungry": {
+      "label": "Hungry",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hurry": {
+      "label": "Hurry",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "hurt": {
+      "label": "Hurt",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "husband": {
+      "label": "Husband",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "hypocrite": {
+      "label": "Hypocrite",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "i_love_you": {
+      "label": "I Love You",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "ice": {
+      "label": "Ice",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "icecream": {
+      "label": "Icecream",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "idea": {
+      "label": "Idea",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "identity": {
+      "label": "Identity",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "ignore": {
+      "label": "Ignore",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "im_fine": {
+      "label": "Im Fine",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "imagine": {
+      "label": "Imagine",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "immature": {
+      "label": "Immature",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "impact": {
+      "label": "Impact",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "important": {
+      "label": "Important",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "impossible": {
+      "label": "Impossible",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "impress": {
+      "label": "Impress",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "improve": {
+      "label": "Improve",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "independent": {
+      "label": "Independent",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "infection": {
+      "label": "Infection",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "influence": {
+      "label": "Influence",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "innocent": {
+      "label": "Innocent",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "inside": {
+      "label": "Inside",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "inspire": {
+      "label": "Inspire",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "inspiring": {
+      "label": "Inspiring",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "instead": {
+      "label": "Instead",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "institute": {
+      "label": "Institute",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "insult": {
+      "label": "Insult",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "insurance": {
+      "label": "Insurance",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "intelligent": {
+      "label": "Intelligent",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "intentional": {
+      "label": "Intentional",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "interest": {
+      "label": "Interest",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "interested": {
+      "label": "Interested",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "internet": {
+      "label": "Internet",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "interpret": {
+      "label": "Interpret",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "interpreter": {
+      "label": "Interpreter",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "intervene": {
+      "label": "Intervene",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "interview": {
+      "label": "Interview",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "introduce": {
+      "label": "Introduce",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "intuitive": {
+      "label": "Intuitive",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "invite": {
+      "label": "Invite",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "iphone": {
+      "label": "Iphone",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "isolated": {
+      "label": "Isolated",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "jacket": {
+      "label": "Jacket",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "jaw_drop": {
+      "label": "Jaw Drop",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "join": {
+      "label": "Join",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "joke": {
+      "label": "Joke",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "journey": {
+      "label": "Journey",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "judge": {
+      "label": "Judge",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "keep": {
+      "label": "Keep",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "key": {
+      "label": "Key",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "kid": {
+      "label": "Kid",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "kindergarten": {
+      "label": "Kindergarten",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "kiss": {
+      "label": "Kiss",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "kiss_fist": {
+      "label": "Kiss Fist",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "kiss_on_cheek": {
+      "label": "Kiss On Cheek",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "kitchen": {
+      "label": "Kitchen",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "knife": {
+      "label": "Knife",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "know": {
+      "label": "Know",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "know_nothing": {
+      "label": "Know Nothing",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "label": {
+      "label": "Label",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "lamp": {
+      "label": "Lamp",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "language": {
+      "label": "Language",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "laptop": {
+      "label": "Laptop",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "last": {
+      "label": "Last",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "last_week": {
+      "label": "Last Week",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "late": {
+      "label": "Late",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "later": {
+      "label": "Later",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "laugh": {
+      "label": "Laugh",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "law": {
+      "label": "Law",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "lazy": {
+      "label": "Lazy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "lead": {
+      "label": "Lead",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "leak": {
+      "label": "Leak",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "learn": {
+      "label": "Learn",
+      "status": "skipped",
+      "reason": "rig",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/l/learn.htm"
+      ]
+    },
+    "learn_lesson": {
+      "label": "Learn Lesson",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "leave": {
+      "label": "Leave",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "lecture": {
+      "label": "Lecture",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "left": {
+      "label": "Left",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "lemon": {
+      "label": "Lemon",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "lesbian": {
+      "label": "Lesbian",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "less": {
+      "label": "Less",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "lesson": {
+      "label": "Lesson",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "let_go": {
+      "label": "Let Go",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "let_know": {
+      "label": "Let Know",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "let_me_see": {
+      "label": "Let Me See",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "letter": {
+      "label": "Letter",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "lettuce": {
+      "label": "Lettuce",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "library": {
+      "label": "Library",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "license": {
+      "label": "License",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "lie": {
+      "label": "Lie",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "light_candle": {
+      "label": "Light Candle",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "lights_on": {
+      "label": "Lights On",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "like": {
+      "label": "Like",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "limited": {
+      "label": "Limited",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "lipread": {
+      "label": "Lipread",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "list": {
+      "label": "List",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "listen": {
+      "label": "Listen",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "live": {
+      "label": "Live",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "lock": {
+      "label": "Lock",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "long": {
+      "label": "Long",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "long_ago": {
+      "label": "Long Ago",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "long_line": {
+      "label": "Long Line",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "long_time": {
+      "label": "Long Time",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "long_word": {
+      "label": "Long Word",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "look_appearance": {
+      "label": "Look Appearance",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "look_at": {
+      "label": "Look At",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "look_back": {
+      "label": "Look Back",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "look_for": {
+      "label": "Look For",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "look_forward": {
+      "label": "Look Forward",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "look_like": {
+      "label": "Look Like",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "loop": {
+      "label": "Loop",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "lose": {
+      "label": "Lose",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "lost": {
+      "label": "Lost",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "lousy": {
+      "label": "Lousy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "love": {
+      "label": "Love",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "lucky": {
+      "label": "Lucky",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "machine": {
+      "label": "Machine",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "mad": {
+      "label": "Mad",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "magazine": {
+      "label": "Magazine",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "mail": {
+      "label": "Mail",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "mainstream": {
+      "label": "Mainstream",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "make": {
+      "label": "Make",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "make_believe": {
+      "label": "Make Believe",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "man": {
+      "label": "Man",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "many": {
+      "label": "Many",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "marry": {
+      "label": "Marry",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "match": {
+      "label": "Match",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "math": {
+      "label": "Math",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "maybe": {
+      "label": "Maybe",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "me": {
+      "label": "Me",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "mea_culpa": {
+      "label": "Mea Culpa",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "mean": {
+      "label": "Mean",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "meaning": {
+      "label": "Meaning",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "medicine": {
+      "label": "Medicine",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "meet": {
+      "label": "Meet",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "meeting": {
+      "label": "Meeting",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "melt": {
+      "label": "Melt",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "member": {
+      "label": "Member",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "memorize": {
+      "label": "Memorize",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "memorize_memorize": {
+      "label": "Memorize Memorize",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "mess": {
+      "label": "Mess",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "middle": {
+      "label": "Middle",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "milk": {
+      "label": "Milk",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "mind": {
+      "label": "Mind",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "mind_turned": {
+      "label": "Mind Turned",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "minimum": {
+      "label": "Minimum",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "minute": {
+      "label": "Minute",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "mirror": {
+      "label": "Mirror",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "mischievous": {
+      "label": "Mischievous",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "miss": {
+      "label": "Miss",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "missing": {
+      "label": "Missing",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "misunderstand": {
+      "label": "Misunderstand",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "monday": {
+      "label": "Monday",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "money": {
+      "label": "Money",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "month": {
+      "label": "Month",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "moon": {
+      "label": "Moon",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "more": {
+      "label": "More",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "morning": {
+      "label": "Morning",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "most": {
+      "label": "Most",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "mother": {
+      "label": "Mother",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "mountain": {
+      "label": "Mountain",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "move": {
+      "label": "Move",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "movie": {
+      "label": "Movie",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "movies": {
+      "label": "Movies",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "much": {
+      "label": "Much",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "mummy": {
+      "label": "Mummy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "muscle": {
+      "label": "Muscle",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "mushroom": {
+      "label": "Mushroom",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "music": {
+      "label": "Music",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "must": {
+      "label": "Must",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "my": {
+      "label": "My",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "myself": {
+      "label": "Myself",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "naked": {
+      "label": "Naked",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "name": {
+      "label": "Name",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "napkin": {
+      "label": "Napkin",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "near": {
+      "label": "Near",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "need": {
+      "label": "Need",
+      "status": "skipped",
+      "reason": "rig",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/n/need.htm"
+      ]
+    },
+    "negative": {
+      "label": "Negative",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "network": {
+      "label": "Network",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "neutral": {
+      "label": "Neutral",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "never": {
+      "label": "Never",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "new": {
+      "label": "New",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "news_to_me": {
+      "label": "News To Me",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "newspaper": {
+      "label": "Newspaper",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "next": {
+      "label": "Next",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "next_to": {
+      "label": "Next To",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "next_year": {
+      "label": "Next Year",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "nice": {
+      "label": "Nice",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "night": {
+      "label": "Night",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "nine": {
+      "label": "Nine",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "no": {
+      "label": "No",
+      "status": "skipped",
+      "reason": "closure",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/n/no.htm"
+      ]
+    },
+    "no_big_deal": {
+      "label": "No Big Deal",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "noise": {
+      "label": "Noise",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "nonsense": {
+      "label": "Nonsense",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "normal": {
+      "label": "Normal",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "north": {
+      "label": "North",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "nose": {
+      "label": "Nose",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "nose_bleed": {
+      "label": "Nose Bleed",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "not": {
+      "label": "Not",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "not_a_thing": {
+      "label": "Not A Thing",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "not_care": {
+      "label": "Not Care",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "not_interested": {
+      "label": "Not Interested",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "not_mind": {
+      "label": "Not Mind",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "not_understand": {
+      "label": "Not Understand",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "not_yet": {
+      "label": "Not Yet",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "nothing": {
+      "label": "Nothing",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "nothing_at_all": {
+      "label": "Nothing At All",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "now": {
+      "label": "Now",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "numbers": {
+      "label": "Numbers",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "nurse": {
+      "label": "Nurse",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "nut": {
+      "label": "Nut",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "obsess": {
+      "label": "Obsess",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "obvious": {
+      "label": "Obvious",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "ocean": {
+      "label": "Ocean",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "off": {
+      "label": "Off",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "off_the_point": {
+      "label": "Off The Point",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "offend": {
+      "label": "Offend",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "offhand": {
+      "label": "Offhand",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "office": {
+      "label": "Office",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "often": {
+      "label": "Often",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "oh_i_see": {
+      "label": "Oh I See",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "ok": {
+      "label": "Ok",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "old": {
+      "label": "Old",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "oldest": {
+      "label": "Oldest",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "once": {
+      "label": "Once",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "one": {
+      "label": "One",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "one_year_ago": {
+      "label": "One Year Ago",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "onion": {
+      "label": "Onion",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "ooh": {
+      "label": "Ooh",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "open": {
+      "label": "Open",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "open_book": {
+      "label": "Open Book",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "operate_machine": {
+      "label": "Operate Machine",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "opportunity": {
+      "label": "Opportunity",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "option": {
+      "label": "Option",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "or": {
+      "label": "Or",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "oral": {
+      "label": "Oral",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "orange": {
+      "label": "Orange",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "orange_eyes": {
+      "label": "Orange Eyes",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "orange_throat": {
+      "label": "Orange Throat",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "organization": {
+      "label": "Organization",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "other": {
+      "label": "Other",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "our": {
+      "label": "Our",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "out": {
+      "label": "Out",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "outside": {
+      "label": "Outside",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "over": {
+      "label": "Over",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "overlook": {
+      "label": "Overlook",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "overnight": {
+      "label": "Overnight",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "overwhelmed": {
+      "label": "Overwhelmed",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "owe": {
+      "label": "Owe",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "own": {
+      "label": "Own",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "pack": {
+      "label": "Pack",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "page": {
+      "label": "Page",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "pain": {
+      "label": "Pain",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "paint": {
+      "label": "Paint",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "pair": {
+      "label": "Pair",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "pancake": {
+      "label": "Pancake",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "paper": {
+      "label": "Paper",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "paranoid": {
+      "label": "Paranoid",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "parents": {
+      "label": "Parents",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "park": {
+      "label": "Park",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "part": {
+      "label": "Part",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "pass_out": {
+      "label": "Pass Out",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "past": {
+      "label": "Past",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "pay": {
+      "label": "Pay",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "peanut_butter": {
+      "label": "Peanut Butter",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "pen": {
+      "label": "Pen",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "pencil": {
+      "label": "Pencil",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "people": {
+      "label": "People",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "permission": {
+      "label": "Permission",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "persistent": {
+      "label": "Persistent",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "person": {
+      "label": "Person",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "perspective": {
+      "label": "Perspective",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "photography": {
+      "label": "Photography",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "picture": {
+      "label": "Picture",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "pink": {
+      "label": "Pink",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "pissed_off": {
+      "label": "Pissed Off",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "pity": {
+      "label": "Pity",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "place": {
+      "label": "Place",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "plan": {
+      "label": "Plan",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "planet": {
+      "label": "Planet",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "plant": {
+      "label": "Plant",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "plate": {
+      "label": "Plate",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "play": {
+      "label": "Play",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "players": {
+      "label": "Players",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "please": {
+      "label": "Please",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "plenty": {
+      "label": "Plenty",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "plus": {
+      "label": "Plus",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "point_index": {
+      "label": "Point Index",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "policeman": {
+      "label": "Policeman",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "policy": {
+      "label": "Policy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "polish": {
+      "label": "Polish",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "ponder": {
+      "label": "Ponder",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "poop": {
+      "label": "Poop",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "popular": {
+      "label": "Popular",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "positive": {
+      "label": "Positive",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "possible": {
+      "label": "Possible",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "postpone": {
+      "label": "Postpone",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "potato": {
+      "label": "Potato",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "practice": {
+      "label": "Practice",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "precious": {
+      "label": "Precious",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "predict": {
+      "label": "Predict",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "president": {
+      "label": "President",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "press_in_mind": {
+      "label": "Press In Mind",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "pretty": {
+      "label": "Pretty",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "price": {
+      "label": "Price",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "pride": {
+      "label": "Pride",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "principal": {
+      "label": "Principal",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "print": {
+      "label": "Print",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "priority": {
+      "label": "Priority",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "process": {
+      "label": "Process",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "produce_sign": {
+      "label": "Produce Sign",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "profoundly_deaf": {
+      "label": "Profoundly Deaf",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "project": {
+      "label": "Project",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "promise": {
+      "label": "Promise",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "proof": {
+      "label": "Proof",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "propose": {
+      "label": "Propose",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "provide": {
+      "label": "Provide",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "psychology": {
+      "label": "Psychology",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "public": {
+      "label": "Public",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "pull_convince": {
+      "label": "Pull Convince",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "purple": {
+      "label": "Purple",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "put": {
+      "label": "Put",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "put_aside": {
+      "label": "Put Aside",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "put_in_back_mind": {
+      "label": "Put In Back Mind",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "puzzled": {
+      "label": "Puzzled",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "qm": {
+      "label": "Qm",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "quality": {
+      "label": "Quality",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "question": {
+      "label": "Question",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "quiet": {
+      "label": "Quiet",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "quit": {
+      "label": "Quit",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "race": {
+      "label": "Race",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "racecar_track": {
+      "label": "Racecar Track",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "rain": {
+      "label": "Rain",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "rainbow": {
+      "label": "Rainbow",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "reach": {
+      "label": "Reach",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "react": {
+      "label": "React",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "read": {
+      "label": "Read",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "ready": {
+      "label": "Ready",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "real_sick": {
+      "label": "Real Sick",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "really": {
+      "label": "Really",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "really_into": {
+      "label": "Really Into",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "reason": {
+      "label": "Reason",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "red": {
+      "label": "Red",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "reduce": {
+      "label": "Reduce",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "refill": {
+      "label": "Refill",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "reflect": {
+      "label": "Reflect",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "refuse": {
+      "label": "Refuse",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "register": {
+      "label": "Register",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "regular": {
+      "label": "Regular",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "relationship": {
+      "label": "Relationship",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "relax": {
+      "label": "Relax",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "relief": {
+      "label": "Relief",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "religion": {
+      "label": "Religion",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "remember": {
+      "label": "Remember",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "remind": {
+      "label": "Remind",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "remote_control": {
+      "label": "Remote Control",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "remove": {
+      "label": "Remove",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "replace": {
+      "label": "Replace",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "represent": {
+      "label": "Represent",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "request": {
+      "label": "Request",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "requirement": {
+      "label": "Requirement",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "rescue": {
+      "label": "Rescue",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "research": {
+      "label": "Research",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "resent": {
+      "label": "Resent",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "resign": {
+      "label": "Resign",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "resist": {
+      "label": "Resist",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "respect": {
+      "label": "Respect",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "responsibility": {
+      "label": "Responsibility",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "rest": {
+      "label": "Rest",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "restaurant": {
+      "label": "Restaurant",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "restless": {
+      "label": "Restless",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "result": {
+      "label": "Result",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "rich": {
+      "label": "Rich",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "right": {
+      "label": "Right",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "right_correct": {
+      "label": "Right Correct",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "risk": {
+      "label": "Risk",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "road": {
+      "label": "Road",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "role": {
+      "label": "Role",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "roll_up_sleeves": {
+      "label": "Roll Up Sleeves",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "room": {
+      "label": "Room",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "rough": {
+      "label": "Rough",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "ruin": {
+      "label": "Ruin",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "rule": {
+      "label": "Rule",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "ruler": {
+      "label": "Ruler",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "run": {
+      "label": "Run",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "run_faucet": {
+      "label": "Run Faucet",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "run_out_of": {
+      "label": "Run Out Of",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "rush": {
+      "label": "Rush",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "sad": {
+      "label": "Sad",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "safe": {
+      "label": "Safe",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "salad": {
+      "label": "Salad",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "salt": {
+      "label": "Salt",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "salt_shaker": {
+      "label": "Salt Shaker",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "same_same": {
+      "label": "Same Same",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "same_time": {
+      "label": "Same Time",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sandals": {
+      "label": "Sandals",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sarcastic": {
+      "label": "Sarcastic",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "saturday": {
+      "label": "Saturday",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "sauce": {
+      "label": "Sauce",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "save": {
+      "label": "Save",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "save_money": {
+      "label": "Save Money",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "say": {
+      "label": "Say",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "scan": {
+      "label": "Scan",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "scar_memory": {
+      "label": "Scar Memory",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "scarcely": {
+      "label": "Scarcely",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "scared": {
+      "label": "Scared",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "schedule": {
+      "label": "Schedule",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "school": {
+      "label": "School",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "science": {
+      "label": "Science",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "scissors": {
+      "label": "Scissors",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "scold": {
+      "label": "Scold",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "score": {
+      "label": "Score",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "scrub": {
+      "label": "Scrub",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "secret": {
+      "label": "Secret",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "secretary": {
+      "label": "Secretary",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "see": {
+      "label": "See",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "see_see": {
+      "label": "See See",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "seem": {
+      "label": "Seem",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "select": {
+      "label": "Select",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "sell": {
+      "label": "Sell",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "senior_citizen": {
+      "label": "Senior Citizen",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sensitive": {
+      "label": "Sensitive",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sentence": {
+      "label": "Sentence",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sequence": {
+      "label": "Sequence",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "serious": {
+      "label": "Serious",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "set_up": {
+      "label": "Set Up",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "seven": {
+      "label": "Seven",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "several": {
+      "label": "Several",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "shampoo": {
+      "label": "Shampoo",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "share": {
+      "label": "Share",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "shield": {
+      "label": "Shield",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "shocked": {
+      "label": "Shocked",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "shoes": {
+      "label": "Shoes",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "shop": {
+      "label": "Shop",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "short_distance": {
+      "label": "Short Distance",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "shorts": {
+      "label": "Shorts",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "should": {
+      "label": "Should",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "show": {
+      "label": "Show",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "shower": {
+      "label": "Shower",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "shut_out": {
+      "label": "Shut Out",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sick": {
+      "label": "Sick",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "side": {
+      "label": "Side",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "sign": {
+      "label": "Sign",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "sign_language": {
+      "label": "Sign Language",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "sign_paper": {
+      "label": "Sign Paper",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "signature": {
+      "label": "Signature",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "signing_fluently": {
+      "label": "Signing Fluently",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "silly": {
+      "label": "Silly",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "since": {
+      "label": "Since",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "single": {
+      "label": "Single",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "single_out": {
+      "label": "Single Out",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sister": {
+      "label": "Sister",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sit": {
+      "label": "Sit",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "situation": {
+      "label": "Situation",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "six": {
+      "label": "Six",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "skill": {
+      "label": "Skill",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "skin": {
+      "label": "Skin",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sleep": {
+      "label": "Sleep",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "slow": {
+      "label": "Slow",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "small": {
+      "label": "Small",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "smart": {
+      "label": "Smart",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "smell": {
+      "label": "Smell",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "smile": {
+      "label": "Smile",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "smooth": {
+      "label": "Smooth",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "snap": {
+      "label": "Snap",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "snap_stick": {
+      "label": "Snap Stick",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sneak_adventure": {
+      "label": "Sneak Adventure",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "soap": {
+      "label": "Soap",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "social": {
+      "label": "Social",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "socks": {
+      "label": "Socks",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "soda": {
+      "label": "Soda",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "soft": {
+      "label": "Soft",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "softball": {
+      "label": "Softball",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "some": {
+      "label": "Some",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "something": {
+      "label": "Something",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "sometimes": {
+      "label": "Sometimes",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "son": {
+      "label": "Son",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sophisticated": {
+      "label": "Sophisticated",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sorry": {
+      "label": "Sorry",
+      "status": "skipped",
+      "reason": "rig",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/s/sorry.htm"
+      ]
+    },
+    "sound": {
+      "label": "Sound",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "soup": {
+      "label": "Soup",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "south": {
+      "label": "South",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "space": {
+      "label": "Space",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "speak": {
+      "label": "Speak",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "specialist": {
+      "label": "Specialist",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "specific": {
+      "label": "Specific",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "spicy": {
+      "label": "Spicy",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "spontaneous": {
+      "label": "Spontaneous",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "sports": {
+      "label": "Sports",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "spring": {
+      "label": "Spring",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "square": {
+      "label": "Square",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "square_idiot": {
+      "label": "Square Idiot",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "sshh": {
+      "label": "Sshh",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "stairs": {
+      "label": "Stairs",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "stand_up": {
+      "label": "Stand Up",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "star": {
+      "label": "Star",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "starbucks": {
+      "label": "Starbucks",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "stare": {
+      "label": "Stare",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "stars": {
+      "label": "Stars",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "start": {
+      "label": "Start",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "state": {
+      "label": "State",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "stay": {
+      "label": "Stay",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "step": {
+      "label": "Step",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "sticky": {
+      "label": "Sticky",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "still": {
+      "label": "Still",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "stimulate": {
+      "label": "Stimulate",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "stink": {
+      "label": "Stink",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "stop": {
+      "label": "Stop",
+      "status": "skipped",
+      "reason": "rig",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/s/stop.htm"
+      ]
+    },
+    "straight": {
+      "label": "Straight",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "strange": {
+      "label": "Strange",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "street": {
+      "label": "Street",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "stress": {
+      "label": "Stress",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "string": {
+      "label": "String",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "strong": {
+      "label": "Strong",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "structure": {
+      "label": "Structure",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "struggle": {
+      "label": "Struggle",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "stubborn": {
+      "label": "Stubborn",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "stuck": {
+      "label": "Stuck",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "student": {
+      "label": "Student",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "study": {
+      "label": "Study",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "suit": {
+      "label": "Suit",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "summarize": {
+      "label": "Summarize",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "summer": {
+      "label": "Summer",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "summon": {
+      "label": "Summon",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sun": {
+      "label": "Sun",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "superior": {
+      "label": "Superior",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "supervise": {
+      "label": "Supervise",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sure": {
+      "label": "Sure",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "surgery": {
+      "label": "Surgery",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "surprise": {
+      "label": "Surprise",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sushi": {
+      "label": "Sushi",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "suspend": {
+      "label": "Suspend",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sweat": {
+      "label": "Sweat",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "sweet": {
+      "label": "Sweet",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "swim": {
+      "label": "Swim",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "sympathy": {
+      "label": "Sympathy",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "system": {
+      "label": "System",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "table": {
+      "label": "Table",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "tablet": {
+      "label": "Tablet",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "take": {
+      "label": "Take",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "take_care": {
+      "label": "Take Care",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "take_notes": {
+      "label": "Take Notes",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "talk_dirty": {
+      "label": "Talk Dirty",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "tan": {
+      "label": "Tan",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "taste": {
+      "label": "Taste",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "tea": {
+      "label": "Tea",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "teach": {
+      "label": "Teach",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "teacher": {
+      "label": "Teacher",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "team": {
+      "label": "Team",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "tease": {
+      "label": "Tease",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "technology": {
+      "label": "Technology",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "teeth": {
+      "label": "Teeth",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "telephone": {
+      "label": "Telephone",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "temper_blow_up": {
+      "label": "Temper Blow Up",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "temporary": {
+      "label": "Temporary",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "tend_your": {
+      "label": "Tend Your",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "tendency": {
+      "label": "Tendency",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "test": {
+      "label": "Test",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "text": {
+      "label": "Text",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "thank_you": {
+      "label": "Thank you",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "that": {
+      "label": "That",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "there": {
+      "label": "There",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "thermometer": {
+      "label": "Thermometer",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "these": {
+      "label": "These",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "things": {
+      "label": "Things",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "think": {
+      "label": "Think",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "think_chin": {
+      "label": "Think Chin",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "think_connect": {
+      "label": "Think Connect",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "think_expand": {
+      "label": "Think Expand",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "think_obsess": {
+      "label": "Think Obsess",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "think_penetrate": {
+      "label": "Think Penetrate",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "think_ponder": {
+      "label": "Think Ponder",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "thirsty": {
+      "label": "Thirsty",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "this": {
+      "label": "This",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "thought_disappear": {
+      "label": "Thought Disappear",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "three": {
+      "label": "Three",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "thrilled": {
+      "label": "Thrilled",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "throw_away": {
+      "label": "Throw Away",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "thunder": {
+      "label": "Thunder",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "thursday": {
+      "label": "Thursday",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "ticket": {
+      "label": "Ticket",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "time": {
+      "label": "Time",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "time_progress": {
+      "label": "Time Progress",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "time_to_time": {
+      "label": "Time To Time",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "timeout": {
+      "label": "Timeout",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "tired": {
+      "label": "Tired",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "tired_of": {
+      "label": "Tired Of",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "tissue": {
+      "label": "Tissue",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "to_a_goal": {
+      "label": "To A Goal",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "toast": {
+      "label": "Toast",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "today": {
+      "label": "Today",
+      "status": "skipped",
+      "reason": "rig",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/t/today.htm"
+      ]
+    },
+    "together": {
+      "label": "Together",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "toilet": {
+      "label": "Toilet",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "tomato": {
+      "label": "Tomato",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "tomorrow": {
+      "label": "Tomorrow",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "too_much": {
+      "label": "Too Much",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "toothbrush": {
+      "label": "Toothbrush",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "top": {
+      "label": "Top",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "topic": {
+      "label": "Topic",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "toss_out": {
+      "label": "Toss Out",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "total": {
+      "label": "Total",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "touch": {
+      "label": "Touch",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "tough": {
+      "label": "Tough",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "towel": {
+      "label": "Towel",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "traffic": {
+      "label": "Traffic",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "train": {
+      "label": "Train",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "transfer": {
+      "label": "Transfer",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "transgender": {
+      "label": "Transgender",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "translate": {
+      "label": "Translate",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "trash": {
+      "label": "Trash",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "travel": {
+      "label": "Travel",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "tree": {
+      "label": "Tree",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "trouble": {
+      "label": "Trouble",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "true": {
+      "label": "True",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "true_business": {
+      "label": "True Business",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "truth": {
+      "label": "Truth",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "tube_top": {
+      "label": "Tube Top",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "tuesday": {
+      "label": "Tuesday",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "turn": {
+      "label": "Turn",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "tv": {
+      "label": "Tv",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "two": {
+      "label": "Two",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "two_of_us": {
+      "label": "Two Of Us",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "two_open": {
+      "label": "Two Open",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "two_weeks": {
+      "label": "Two Weeks",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "type": {
+      "label": "Type",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "ugly": {
+      "label": "Ugly",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "unaware": {
+      "label": "Unaware",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "uncertain": {
+      "label": "Uncertain",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "uncle": {
+      "label": "Uncle",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "under": {
+      "label": "Under",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "understand": {
+      "label": "Understand",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "unique": {
+      "label": "Unique",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "universe": {
+      "label": "Universe",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "university": {
+      "label": "University",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "upstairs": {
+      "label": "Upstairs",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "use": {
+      "label": "Use",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "vacation": {
+      "label": "Vacation",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "vagina": {
+      "label": "Vagina",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "vampire": {
+      "label": "Vampire",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "vanish": {
+      "label": "Vanish",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "variable": {
+      "label": "Variable",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "vegetable": {
+      "label": "Vegetable",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "very": {
+      "label": "Very",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "very_interested": {
+      "label": "Very Interested",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "videocamera": {
+      "label": "Videocamera",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "videogame": {
+      "label": "Videogame",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "videophone": {
+      "label": "Videophone",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "view": {
+      "label": "View",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "village": {
+      "label": "Village",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "vision": {
+      "label": "Vision",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "visit": {
+      "label": "Visit",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "visitor": {
+      "label": "Visitor",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "visualize": {
+      "label": "Visualize",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "vlog": {
+      "label": "Vlog",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "voice": {
+      "label": "Voice",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "volunteer": {
+      "label": "Volunteer",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "wait": {
+      "label": "Wait",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "waiter": {
+      "label": "Waiter",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "walk": {
+      "label": "Walk",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "wall": {
+      "label": "Wall",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "want": {
+      "label": "Want",
+      "status": "skipped",
+      "reason": "rig",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/w/want.htm"
+      ]
+    },
+    "warm": {
+      "label": "Warm",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "warn": {
+      "label": "Warn",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "wash_dishes": {
+      "label": "Wash Dishes",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "wash_hands": {
+      "label": "Wash Hands",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "wash_machine": {
+      "label": "Wash Machine",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "watch": {
+      "label": "Watch",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "water": {
+      "label": "Water",
+      "status": "skipped",
+      "reason": "rig",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/w/water.htm"
+      ]
+    },
+    "way": {
+      "label": "Way",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "we": {
+      "label": "We",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "we_will_see": {
+      "label": "We Will See",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "wear": {
+      "label": "Wear",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "weather": {
+      "label": "Weather",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "wedding": {
+      "label": "Wedding",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "wednesday": {
+      "label": "Wednesday",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "week": {
+      "label": "Week",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "weigh": {
+      "label": "Weigh",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "weight": {
+      "label": "Weight",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "weird": {
+      "label": "Weird",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "welcome": {
+      "label": "Welcome",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "well": {
+      "label": "Well",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "west": {
+      "label": "West",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "wet": {
+      "label": "Wet",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "what": {
+      "label": "What",
+      "status": "skipped",
+      "reason": "mapping"
+    },
+    "what_for": {
+      "label": "What For",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "whats_up": {
+      "label": "Whats Up",
+      "status": "preserved",
+      "reason": "preserved"
+    },
+    "wheelchair": {
+      "label": "Wheelchair",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "when": {
+      "label": "When",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "where": {
+      "label": "Where",
+      "status": "updated",
+      "reason": "updated",
+      "summary": "Index pivots side to side with questioning brows; finger stays straight",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/w/where.htm"
+      ]
+    },
+    "which": {
+      "label": "Which",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "while": {
+      "label": "While",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "whisper": {
+      "label": "Whisper",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "white": {
+      "label": "White",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "white_person": {
+      "label": "White Person",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "who": {
+      "label": "Who",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "whole": {
+      "label": "Whole",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "why": {
+      "label": "Why",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "why_not": {
+      "label": "Why Not",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "wife": {
+      "label": "Wife",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "will": {
+      "label": "Will",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "win": {
+      "label": "Win",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "wind": {
+      "label": "Wind",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "window": {
+      "label": "Window",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "window_open": {
+      "label": "Window Open",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "windy": {
+      "label": "Windy",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "wine": {
+      "label": "Wine",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "winter": {
+      "label": "Winter",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "wise": {
+      "label": "Wise",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "wish": {
+      "label": "Wish",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "without": {
+      "label": "Without",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "woman": {
+      "label": "Woman",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "wonder": {
+      "label": "Wonder",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "wood": {
+      "label": "Wood",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "word": {
+      "label": "Word",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "work": {
+      "label": "Work",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "work_out": {
+      "label": "Work Out",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "workshop": {
+      "label": "Workshop",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "world": {
+      "label": "World",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "worry": {
+      "label": "Worry",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "worse": {
+      "label": "Worse",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "wow": {
+      "label": "Wow",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "write": {
+      "label": "Write",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "wrong": {
+      "label": "Wrong",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "yay": {
+      "label": "Yay",
+      "status": "skipped",
+      "reason": "coordination"
+    },
+    "yeah": {
+      "label": "Yeah",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "year": {
+      "label": "Year",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "yellow": {
+      "label": "Yellow",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "yes": {
+      "label": "Yes",
+      "status": "updated",
+      "reason": "updated",
+      "summary": "S-hand nods twice at the wrist; small conversational affirmative",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/y/yes.htm"
+      ]
+    },
+    "yesterday": {
+      "label": "Yesterday",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "you": {
+      "label": "You",
+      "status": "skipped",
+      "reason": "rig",
+      "sources": [
+        "https://www.lifeprint.com/asl101/pages-signs/y/you.htm"
+      ]
+    },
+    "young": {
+      "label": "Young",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "your": {
+      "label": "Your",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "yourself": {
+      "label": "Yourself",
+      "status": "skipped",
+      "reason": "contact"
+    },
+    "yucky": {
+      "label": "Yucky",
+      "status": "skipped",
+      "reason": "fingers"
+    },
+    "zero": {
+      "label": "Zero",
+      "status": "skipped",
+      "reason": "reference"
+    },
+    "zoom_off": {
+      "label": "Zoom Off",
+      "status": "skipped",
+      "reason": "fingers"
+    }
+  }
+}
