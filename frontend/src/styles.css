@@ -397,3 +397,103 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .tutor-page .camera-corner{font-size:14px;line-height:1.4;letter-spacing:0;max-width:calc(100% - 28px)}
 .tutor-page .results-feedback>strong{font-size:18px;line-height:1.5}
 @media(max-width:760px){.tutor-page .practice-controls{flex-wrap:wrap}.tutor-page .tip-row{font-size:17px}.tutor-page .attempt-progress>span{font-size:18px}}
+
+/* User-selectable appearance modes */
+.theme-choice-row{display:grid;gap:8px;margin-top:14px}
+.theme-choice{width:100%;display:flex;align-items:center;gap:11px;text-align:left;border:1px solid var(--border);background:var(--surface);color:var(--foreground);padding:11px 12px;border-radius:2px}
+.theme-choice svg{flex:none;color:#8b651f}.theme-choice span{display:block}.theme-choice strong{display:block;font-size:12px}.theme-choice small{display:block;margin-top:3px;color:var(--muted-foreground);font-size:10px}
+.theme-choice.active{background:var(--accent);border-color:var(--accent-hover,#c78d24);color:var(--foreground)}
+.theme-choice.active small,.theme-choice.active svg{color:var(--foreground)}
+
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --background:#11130f;
+  --surface:#1a1d17;
+  --surface-muted:#24281f;
+  --foreground:#f0efe6;
+  --muted-foreground:#aaa89c;
+  --border:#34382f;
+  --border-strong:#565c4c;
+  --accent:#9fd36d;
+  --accent-hover:#b8e47f;
+  --accent-soft:#2a3522;
+  --dark-panel:#090b09;
+  --dark-panel-foreground:#f0efe6;
+  --success:#8fd69a;
+  --danger:#d76f66;
+}
+:root[data-theme="future"]{
+  color-scheme:dark;
+  --background:#070b16;
+  --surface:#0d1424;
+  --surface-muted:#131d31;
+  --foreground:#ecf7ff;
+  --muted-foreground:#91a8c7;
+  --border:#213150;
+  --border-strong:#3a5f91;
+  --accent:#4df0ff;
+  --accent-hover:#8af7ff;
+  --accent-soft:#102f43;
+  --dark-panel:#050814;
+  --dark-panel-foreground:#effaff;
+  --success:#5ef0b2;
+  --danger:#ff667a;
+}
+:root[data-theme="dark"] body,:root[data-theme="future"] body,
+:root[data-theme="dark"] .main-shell,:root[data-theme="future"] .main-shell,
+:root[data-theme="dark"] .app-shell,:root[data-theme="future"] .app-shell,
+:root[data-theme="dark"] .home-entry,:root[data-theme="future"] .home-entry{background:var(--background);color:var(--foreground)}
+:root[data-theme="dark"] .main-shell main{background-image:linear-gradient(90deg,transparent 0,transparent calc(100% - 1px),#2f342a77 calc(100% - 1px))}
+:root[data-theme="future"] .main-shell main{background-image:linear-gradient(90deg,transparent 0,transparent calc(100% - 1px),#21e6ff18 calc(100% - 1px)),linear-gradient(#21e6ff0e 1px,transparent 1px);background-size:72px 100%,100% 48px}
+:root[data-theme="dark"] .app-header,:root[data-theme="future"] .app-header{background:color-mix(in srgb,var(--surface) 88%,transparent);border-color:var(--border)}
+:root[data-theme="dark"] .sidebar,:root[data-theme="future"] .sidebar{background:var(--dark-panel);border-color:var(--border)}
+:root[data-theme="dark"] .sidebar .brand-row,:root[data-theme="future"] .sidebar .brand-row,
+:root[data-theme="dark"] .avatar-panel,:root[data-theme="future"] .avatar-panel,
+:root[data-theme="dark"] .transcript-panel,:root[data-theme="future"] .transcript-panel,
+:root[data-theme="dark"] .library-list,:root[data-theme="future"] .library-list,
+:root[data-theme="dark"] .library-preview,:root[data-theme="future"] .library-preview,
+:root[data-theme="dark"] .lesson-sidebar,:root[data-theme="future"] .lesson-sidebar,
+:root[data-theme="dark"] .lesson-workspace-header,:root[data-theme="future"] .lesson-workspace-header,
+:root[data-theme="dark"] .settings-card,:root[data-theme="future"] .settings-card,
+:root[data-theme="dark"] .tips-panel,:root[data-theme="future"] .tips-panel,
+:root[data-theme="dark"] .plan-preview,:root[data-theme="future"] .plan-preview,
+:root[data-theme="dark"] .feature-note,:root[data-theme="future"] .feature-note,
+:root[data-theme="dark"] .catalog-row,:root[data-theme="future"] .catalog-row{background:var(--surface);border-color:var(--border);color:var(--foreground)}
+:root[data-theme="dark"] .panel-top,:root[data-theme="future"] .panel-top,
+:root[data-theme="dark"] .library-preview-header,:root[data-theme="future"] .library-preview-header,
+:root[data-theme="dark"] .input-zone,:root[data-theme="future"] .input-zone,
+:root[data-theme="dark"] .app-footer,:root[data-theme="future"] .app-footer{background:var(--surface-muted);border-color:var(--border);color:var(--muted-foreground)}
+:root[data-theme="dark"] input,:root[data-theme="future"] input,
+:root[data-theme="dark"] textarea,:root[data-theme="future"] textarea,
+:root[data-theme="dark"] select,:root[data-theme="future"] select,
+:root[data-theme="dark"] .entry-row input,:root[data-theme="future"] .entry-row input,
+:root[data-theme="dark"] .library-search,:root[data-theme="future"] .library-search{background:#0f130e;color:var(--foreground);border-color:var(--border)}
+:root[data-theme="future"] input,:root[data-theme="future"] textarea,:root[data-theme="future"] select,
+:root[data-theme="future"] .entry-row input,:root[data-theme="future"] .library-search{background:#091121}
+:root[data-theme="dark"] .avatar-stage,:root[data-theme="dark"] .reference-view,:root[data-theme="dark"] .library-avatar,:root[data-theme="dark"] .inspector-avatar{background:radial-gradient(circle at 50% 34%,#242b21,#12160f 72%);border-color:var(--border)}
+:root[data-theme="future"] .avatar-stage,:root[data-theme="future"] .reference-view,:root[data-theme="future"] .library-avatar,:root[data-theme="future"] .inspector-avatar{background:radial-gradient(circle at 50% 34%,#102a45,#07101f 72%);border-color:#2a78a0;box-shadow:inset 0 0 60px #4df0ff12}
+:root[data-theme="dark"] .stage-guidance strong,:root[data-theme="future"] .stage-guidance strong,
+:root[data-theme="dark"] .page-heading h1,:root[data-theme="future"] .page-heading h1,
+:root[data-theme="dark"] .settings-card h2,:root[data-theme="future"] .settings-card h2{color:var(--foreground)}
+:root[data-theme="dark"] .stage-guidance>span:last-child,:root[data-theme="future"] .stage-guidance>span:last-child,
+:root[data-theme="dark"] .page-heading p,:root[data-theme="future"] .page-heading p,
+:root[data-theme="dark"] .settings-card>p,:root[data-theme="future"] .settings-card>p{color:var(--muted-foreground)}
+:root[data-theme="dark"] .secondary-button,:root[data-theme="future"] .secondary-button,
+:root[data-theme="dark"] .ghost-button,:root[data-theme="future"] .ghost-button,
+:root[data-theme="dark"] .round-control,:root[data-theme="future"] .round-control,
+:root[data-theme="dark"] .motion-inspector button,:root[data-theme="future"] .motion-inspector button{background:var(--surface);border-color:var(--border-strong);color:var(--foreground)}
+:root[data-theme="dark"] .primary-button,:root[data-theme="future"] .primary-button,
+:root[data-theme="dark"] .mic-button,:root[data-theme="future"] .mic-button,
+:root[data-theme="dark"] .send-button,:root[data-theme="future"] .send-button{background:var(--accent);border-color:var(--accent);color:#07100d}
+:root[data-theme="future"] .primary-button,:root[data-theme="future"] .mic-button,:root[data-theme="future"] .send-button{color:#041019;text-shadow:0 0 10px #ffffff70}
+:root[data-theme="dark"] .settings-state,:root[data-theme="future"] .settings-state,
+:root[data-theme="dark"] .settings-footer,:root[data-theme="future"] .settings-footer,
+:root[data-theme="dark"] .safety-inline,:root[data-theme="future"] .safety-inline,
+:root[data-theme="dark"] .live-control-actions,:root[data-theme="future"] .live-control-actions,
+:root[data-theme="dark"] .live-control-text,:root[data-theme="future"] .live-control-text{background:var(--surface-muted);border-color:var(--border);color:var(--muted-foreground)}
+:root[data-theme="dark"] .settings-state strong,:root[data-theme="future"] .settings-state strong{color:var(--foreground)}
+:root[data-theme="dark"] .phrase-tag,:root[data-theme="future"] .phrase-tag,
+:root[data-theme="dark"] .queue-token,:root[data-theme="future"] .queue-token{background:var(--accent-soft);border-color:var(--border-strong);color:var(--foreground)}
+:root[data-theme="future"] .sidebar{box-shadow:10px 0 42px #4df0ff0c}
+:root[data-theme="future"] .nav-item.active,:root[data-theme="future"] .theme-choice.active{box-shadow:0 0 22px #4df0ff22}
+:root[data-theme="future"] .brand-mark,:root[data-theme="future"] .settings-card:before,:root[data-theme="future"] .panel-top:before{box-shadow:0 0 18px #4df0ff66}

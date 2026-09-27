@@ -1,13 +1,21 @@
 import {useEffect,useState} from 'react'
-import {AudioLines,BookOpen,CheckCircle2,ExternalLink,Info,KeyRound,LockKeyhole,Server,ShieldCheck,Wifi,WifiOff} from 'lucide-react'
+import {AudioLines,BookOpen,CheckCircle2,ExternalLink,Info,KeyRound,LockKeyhole,Moon,Server,ShieldCheck,Sparkles,Sun,Wifi,WifiOff} from 'lucide-react'
 import {fetchHealth} from '../api'
-export default function Settings(){
+import type {ThemeMode} from '../App'
+type SettingsProps = {theme: ThemeMode; onThemeChange: (theme: ThemeMode) => void}
+const THEMES:{id:ThemeMode;label:string;description:string;Icon:typeof Sun}[]=[
+  {id:'light',label:'Light',description:'Editorial workspace',Icon:Sun},
+  {id:'dark',label:'Dark',description:'Low-glare contrast',Icon:Moon},
+  {id:'future',label:'Futuristic',description:'Neon command deck',Icon:Sparkles},
+]
+export default function Settings({theme,onThemeChange}:SettingsProps){
   const [health,setHealth]=useState<Awaited<ReturnType<typeof fetchHealth>>>(null)
   const [checked,setChecked]=useState(false)
   const refresh=async()=>{setHealth(await fetchHealth());setChecked(true)}
   useEffect(()=>{void refresh()},[])
   return <div className="page-content settings-page"><div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/> ABOUT YOUR WORKSPACE</div><h1>Make it yours<span className="heading-period">.</span></h1><p>Connection health, API configuration and demo constraints.</p></div></div>
     <div className="settings-grid"><section className="settings-card"><div className="settings-icon"><Server size={24}/></div><h2>Backend connection</h2><p>The interface and browser microphone captions can run without FastAPI. Add an OpenAI API key to use server-side realtime transcription.</p><div className="settings-state">{health?<Wifi size={17}/>:<WifiOff size={17}/>}<strong>{health?'Backend connected':'Backend not detected'}</strong><span>{health?'localhost:8000':'Browser mode is available'}</span></div><button className="secondary-button" onClick={()=>void refresh()}>{checked?'Check again':'Check connection'}</button></section>
+      <section className="settings-card"><div className="settings-icon blue"><Sparkles size={24}/></div><h2>Appearance</h2><p>Choose the workspace display style. Your preference is saved on this device.</p><div className="theme-choice-row" role="radiogroup" aria-label="Workspace appearance">{THEMES.map(({id,label,description,Icon})=><button key={id} role="radio" aria-checked={theme===id} className={`theme-choice ${theme===id?'active':''}`} onClick={()=>onThemeChange(id)}><Icon size={17}/><span><strong>{label}</strong><small>{description}</small></span></button>)}</div></section>
       <section className="settings-card"><div className="settings-icon green"><KeyRound size={24}/></div><h2>API configuration</h2><p>Put your OpenAI key in <code>backend/.env</code>, never in your React source. Restart the backend after editing it.</p><div className="settings-state"><span className={`small-dot ${health?.live_configured?'green':'amber'}`}/><strong>{health?.live_configured?'Configured':'Not configured'}</strong><span>{health?.transcription_model||'gpt-live-transcribe'}</span></div><span className="muted-inline"><LockKeyhole size={14}/> Your key remains server-side.</span></section>
       <section className="settings-card"><div className="settings-icon blue"><AudioLines size={24}/></div><h2>Realtime pipeline</h2><p>With an API key, speech streams as 24 kHz PCM to the backend. Otherwise, supported browsers provide partial and final captions directly.</p><div className="settings-list"><span><CheckCircle2 size={16}/> Live partial and final captions</span><span><CheckCircle2 size={16}/> Exportable English transcript</span><span><CheckCircle2 size={16}/> Browser transcription fallback</span></div></section>
       <section className="settings-card"><div className="settings-icon orange"><BookOpen size={24}/></div><h2>ASL validation</h2><p>The bundled animations are procedural illustrations, not authentic ASL. The tutor checks simple finger configurations only.</p><div className="settings-list"><span><Info size={16}/> All starter clips are marked unverified</span><span><Info size={16}/> Unknown content falls back to captions</span><span><Info size={16}/> Qualified review required before real use</span></div></section></div>
