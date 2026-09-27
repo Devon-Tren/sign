@@ -5,6 +5,7 @@ import { applyHand, applyTorso, handPoint, reachOffset, relaxPoint, resetContinu
 import { breathAt, idlePose, type ArmPose, type Pose, type Vec3 } from './clips'
 import { torsoFrontZ } from './anchors'
 import { bodyMotion } from './body'
+import { bodySurface, cmToWorld, deepestContact } from './bodySurface'
 
 const target = new THREE.Vector3(), palm = new THREE.Vector3(), point = new THREE.Vector3()
 const elbow = new THREE.Vector3()
@@ -71,6 +72,77 @@ const WRIST_CLEARANCE = 0.05
 export const bodyTuning = { wristClearance: WRIST_CLEARANCE }
 
 /**
+ * Whole-hand body clearance. keepOutOfTorso holds only the wrist, against a
+ * torso profile; the fingers and palm could still sink into the chest and
+ * nothing kept the hand out of the head. After each frame's solve, the
+ * deepest overlap of any hand point with the real body mesh (./bodySurface)
+ * becomes a push on that arm's target for the next frame, along the surface
+ * normal. It holds while the hand is in contact and eases off once it is
+ * clear, so contact signs settle ON the skin. At 60 Hz the one-frame lag is
+ * invisible, and it never solves the arm twice in a frame (which would double
+ * the solver's rate limits).
+ */
+const bodyPush = new WeakMap<ArmChain, THREE.Vector3>()
+const pushOf = (arm: ArmChain) => {
+  let v = bodyPush.get(arm)
+  if (!v) { v = new THREE.Vector3(); bodyPush.set(arm, v) }
+  return v
+}
+/** Fraction of an overlap corrected per frame, and the easing once clear. */
+const PUSH_GAIN = 0.8, PUSH_RELEASE = 0.9
+/** Contact within this much of the skin (cm) holds the push instead of easing it. */
+const PUSH_HOLD_CM = 0.6
+/** Largest correction (cm): a bigger overlap is a data error to fix, not hide. */
+const PUSH_MAX_CM = 12
+/** Most the push may change in one frame (cm): ~0.9 m/s at 60 Hz, so a
+ *  correction is a slide, never a snap. */
+const PUSH_STEP_CM = 1.5
+/** Off by default until it is reconciled with the authored motions: it
+ *  pushes THANK-YOU sideways and AGAIN's tap off the palm (rig.test). The
+ *  safety audit and phrase verification can turn it on to compare. */
+export const clearanceTuning = { enabled: false }
+/** Current push and last contact per arm, for tests/safety.audit.ts --trace. */
+export const clearanceDebug = new WeakMap<ArmChain, { push: number; applied: number; depth: number | null; bone: string | null }>()
+
+/** In-frame correction passes when a solve leaves the hand in the body. A
+ *  fast sign (FEEL) outruns a push that only lands on the next frame. */
+const CLEARANCE_PASSES = 2
+type Resolve = (shift: THREE.Vector3) => void
+
+/**
+ * Keep one arm's hand out of the body this frame: measure, shift the target
+ * out along the surface normal and re-solve (exact mode lands on the target),
+ * then carry the total correction into the next frame's push.
+ */
+function clearBody(rig: SignerRig, arm: ArmChain, resolve: Resolve) {
+  const push = pushOf(arm)
+  const before = push.clone()
+  let applied = push.length()
+  let budget = cmToWorld(rig, PUSH_STEP_CM)
+  const parts = bodySurface(rig)
+  let contact = deepestContact(rig, arm, parts, PUSH_HOLD_CM)
+  for (let pass = 0; pass < CLEARANCE_PASSES && contact && contact.depth > 0 && budget > 1e-9; pass++) {
+    const shift = contact.normal.clone().multiplyScalar(Math.min(contact.depth, budget))
+    budget -= shift.length()
+    applied += shift.length()
+    push.addScaledVector(shift, PUSH_GAIN)
+    resolve(shift)
+    rig.root.updateMatrixWorld(true)
+    contact = deepestContact(rig, arm, bodySurface(rig), PUSH_HOLD_CM)
+  }
+  // Touching (within the hold band): keep the push, so a contact sign rests on
+  // the skin instead of pulsing in and out. Clear: ease off, so the hand
+  // returns to its own path.
+  if (!contact) push.multiplyScalar(PUSH_RELEASE)
+  const max = cmToWorld(rig, PUSH_MAX_CM)
+  if (push.length() > max) push.setLength(max)
+  const step = push.clone().sub(before), stepMax = cmToWorld(rig, PUSH_STEP_CM)
+  if (step.length() > stepMax) push.copy(before).add(step.setLength(stepMax))
+  if (!contact && push.length() < cmToWorld(rig, 0.05)) push.set(0, 0, 0)
+  clearanceDebug.set(arm, { push: push.length(), applied, depth: contact?.depth ?? null, bone: contact?.bone ?? null })
+}
+
+/**
  * A request that moves further in one step than any planned motion can (the
  * scheduler caps transitions at 3.2 reach/s and 12 rad/s: 0.053 reach and
  * 0.2 rad per 60 fps frame) is a discontinuity, not motion.
@@ -105,7 +177,9 @@ export function applyManualPose(rig: SignerRig, pose: Pose, at: number, dt: numb
     const body = bodyMotion(pose)
     applyTorso(rig.face, body.forward, body.yaw, body.side + pose.torso, breathAt(at) * 0.018, dt)
     const rest = idlePose(at)
-    const drive = (arm: ArmChain, side: number, value: ArmPose) => {
+    const drive = (arm: ArmChain, side: number, value: ArmPose): Resolve => {
+      // The body push is NOT reset here: dropping up to 12 cm of it in one
+      // frame is itself a jump (hand-speed spikes in the safety audit).
       if (isJump(arm, value)) resetContinuity(arm)
       // Settle an inferred finger direction FIRST (against the forearm from the
       // last frame), so the contact offset below and the solve use the same
@@ -132,14 +206,27 @@ export function applyManualPose(rig: SignerRig, pose: Pose, at: number, dt: numb
         // the torso (MORNING's support wrist was authored 0.19 inside it).
         keepOutOfTorso(rig, target)
       }
-      const pole = value.elbow ? directionToWorld(value.elbow, elbow) : undefined
+      if (clearanceTuning.enabled) target.add(pushOf(arm))
+      const pole = value.elbow ? directionToWorld(value.elbow, elbow).clone() : undefined
       solveArmIK(arm, smoothTarget(arm, target, dt), side, dt, pole, palmW, pointW, value.wristMax)
       setHandOrientation(arm, palmW, pointW, dt, value.wristMax, 0)
+      // The scratch vectors are shared by both arms: keep this arm's copies.
+      const aim = arm.smooth.pos.clone(), p = palmW.clone(), q = pointW.clone()
+      return (shift) => {
+        aim.add(shift)
+        solveArmIK(arm, smoothTarget(arm, aim, dt), side, dt, pole, p, q, value.wristMax)
+        setHandOrientation(arm, p, q, dt, value.wristMax, 0)
+      }
     }
-    drive(rig.right, -1, pose.rightArm ?? rest.rightArm!)
-    drive(rig.left, 1, pose.leftArm ?? rest.leftArm!)
+    const resolveRight = drive(rig.right, -1, pose.rightArm ?? rest.rightArm!)
+    const resolveLeft = drive(rig.left, 1, pose.leftArm ?? rest.leftArm!)
     applyHand(rig.right, pose.rightHand.fingers, pose.rightHand.thumb, dt)
     applyHand(rig.left, pose.leftHand.fingers, pose.leftHand.thumb, dt)
+    if (clearanceTuning.enabled) {
+      rig.root.updateMatrixWorld(true)
+      clearBody(rig, rig.right, resolveRight)
+      clearBody(rig, rig.left, resolveLeft)
+    }
   } finally {
     tracking.exact = previous
   }

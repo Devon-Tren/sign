@@ -159,6 +159,31 @@ export function bridgeClearance(a: Vec3, b: Vec3): number {
     const t = k / 8
     const p: Vec3 = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
     if (Math.abs(p[0]) < 0.42 && p[1] > -0.88 && p[1] < 0.08) deficit = Math.max(deficit, BRIDGE_CLEARANCE - p[2])
+    // The face: a straight path between two points on it (PARENTS at the
+    // forehead to DEAF at the cheek) is a chord through the head. The safety
+    // audit measured the wrist 8 cm inside the head on exactly that move.
+    if (Math.abs(p[0]) < HEAD_HALF_WIDTH && p[1] > 0.12 && p[1] < 0.74) {
+      deficit = Math.max(deficit, headFrontZ(p[1]) + HEAD_BRIDGE_MARGIN - p[2])
+    }
   }
   return deficit
+}
+
+/** Half-width of the face (arm reach) inside which a path must pass in front of it. */
+const HEAD_HALF_WIDTH = 0.17
+/** How far in front of the face a mid-transition contact point stays (~2.5 cm). */
+const HEAD_BRIDGE_MARGIN = 0.05
+/**
+ * Front of the face (arm reach) at height y, from the ./anchors surface points
+ * (chin 0.245, lips 0.268, eyes 0.225, forehead 0.235) plus the nose, which
+ * stands forward of them at the midline.
+ */
+function headFrontZ(y: number): number {
+  const table: [number, number][] = [[0.74, 0.08], [0.64, 0.19], [0.56, 0.235], [0.47, 0.235], [0.40, 0.30],
+    [0.35, 0.27], [0.26, 0.245], [0.2, 0.17], [0.12, 0.11]]
+  for (let i = 1; i < table.length; i++) {
+    const [y0, z0] = table[i - 1], [y1, z1] = table[i]
+    if (y >= y1) return z0 + (z1 - z0) * (y0 - y) / (y0 - y1)
+  }
+  return table[table.length - 1][1]
 }

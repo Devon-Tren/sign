@@ -28,15 +28,17 @@
  * Writes ../artifacts/safety/report.json. Exits 1 when any hard limit fails.
  */
 import fs from 'node:fs/promises'
+import { pathToFileURL } from 'node:url'
 import * as THREE from 'three'
 import bank from '../../data/asl/phrase_bank.json'
 import { loadTestSigner } from './rigFixture'
-import { applyManualPose } from '../src/rigPose'
+import { applyManualPose, clearanceDebug, clearanceTuning } from '../src/rigPose'
 import { playbackPlan, poseAt, singleSignPlan } from '../src/playback'
 import { CONTINUOUS_LENGTH_MS, allSignIds, clipLengthMs, motionFor } from '../src/clips'
 import { authoredSequenceFor } from '../src/authored'
 import type { ArmChain } from '../src/signerRig'
 import type { PlaybackTimeline } from '../src/types'
+import type { Pose } from '../src/clips'
 
 /** Adult shoulder-to-wrist length. Converts rig units to cm and m/s. */
 const REACH_M = 0.52
@@ -52,6 +54,9 @@ const LIMITS = {
   wristFlex: [70, 85],
   wristDeviation: [25, 35],
   fingerHyperextension: [10, 25],
+  // The thumb's joint frames differ from the fingers'; its sign convention is
+  // unverified, so it is reported apart and needs a visual check.
+  thumbHyperextension: [25, 45],
   penetration: [0.5, 1.5],
   handSpeed: [3.5, 5],
   handTurn: [900, 1500],
@@ -60,7 +65,14 @@ type Check = keyof typeof LIMITS
 
 const args = process.argv.slice(2)
 const flag = (name: string) => args.includes(name)
+// Compare against the solver without whole-hand body clearance.
+if (flag('--no-clearance')) clearanceTuning.enabled = false
+if (flag('--clearance')) clearanceTuning.enabled = true
+const trace = (() => { const i = args.indexOf('--trace'); return i >= 0 ? args[i + 1] : null })()
 const only = (() => { const i = args.indexOf('--only'); return i >= 0 ? new Set(args[i + 1].split(',')) : null })()
+
+/** Relative to where npm runs (frontend/), not to the bundle in node_modules. */
+const OUT_DIR = new URL('../artifacts/safety/', pathToFileURL(process.cwd() + '/'))
 
 const rig = await loadTestSigner()
 rig.root.updateMatrixWorld(true)
@@ -215,6 +227,13 @@ function armPoints(arm: ArmChain): { name: string; p: THREE.Vector3; r: number }
   return out
 }
 
+/** Hand rest axes in the forearm's rest frame, captured in bind pose. */
+const WRIST_REST = Object.fromEntries((['right', 'left'] as const).map(side => {
+  const arm = rig[side], inv = arm.fore.getWorldQuaternion(new THREE.Quaternion()).invert()
+  return [side, { along: arm.along.clone().applyQuaternion(inv), palm: arm.palmNormal.clone().applyQuaternion(inv),
+    across: arm.across.clone().applyQuaternion(inv) }]
+})) as Record<'right' | 'left', { along: THREE.Vector3; palm: THREE.Vector3; across: THREE.Vector3 }>
+
 const faceRight = rig.face.right.clone().normalize()
 const faceForward = rig.face.forward.clone().normalize()
 
@@ -234,13 +253,18 @@ function joints(arm: ArmChain) {
   const neutralPalm = new THREE.Vector3().crossVectors(arm.ikUpper, arm.ikFore).multiplyScalar(arm.side).normalize()
   const forePalm = new THREE.Vector3(0, 0, 1).applyQuaternion(arm.foreBasisInv.clone().invert()).applyQuaternion(foreWorld)
   const twist = -arm.side * Math.atan2(new THREE.Vector3().crossVectors(neutralPalm, forePalm).dot(arm.ikFore), neutralPalm.dot(forePalm))
-  // Wrist: hand direction in the forearm's frame.
-  const hand = P(arm.fingers[1].bones[0]).sub(wrist).normalize()
-  const n = forePalm.clone().sub(fore.clone().multiplyScalar(forePalm.dot(fore))).normalize()
-  const wristFlex = deg(Math.atan2(hand.dot(n), hand.dot(fore)))
-  const wristDeviation = deg(Math.asin(THREE.MathUtils.clamp(hand.dot(new THREE.Vector3().crossVectors(fore, n)), -1, 1)))
+  // Wrist: where the knuckle line points relative to the forearm, in the
+  // forearm's rest frame, against the hand's own rest axes (along, palm,
+  // across). Flexion turns it toward the palm, deviation toward the pinky or
+  // thumb side; bind pose is 0/0.
+  const rest = WRIST_REST[arm === rig.right ? 'right' : 'left']
+  const handQ = arm.hand.getWorldQuaternion(new THREE.Quaternion())
+  const along = arm.along.clone().applyQuaternion(handQ.multiply(arm.handRestWorldQ.clone().invert()))
+    .applyQuaternion(foreWorld.clone().invert())
+  const wristFlex = deg(Math.atan2(along.dot(rest.palm), along.dot(rest.along)))
+  const wristDeviation = deg(Math.atan2(along.dot(rest.across), along.dot(rest.along)))
   // Fingers: signed curl about each joint's own axis; negative = bent backwards.
-  let hyper = 0, where = ''
+  let hyper = 0, where = '', thumbHyper = 0
   for (const f of [...arm.fingers, arm.thumb]) {
     f.bones.forEach((b, i) => {
       const q = f.restQ[i].clone().invert().multiply(b.quaternion)
@@ -249,17 +273,26 @@ function joints(arm: ArmChain) {
       if (a > Math.PI) a -= 2 * Math.PI
       if (a < -Math.PI) a += 2 * Math.PI
       const back = -deg(a) * f.curlSign
-      if (back > hyper) { hyper = back; where = b.name }
+      if (f === arm.thumb) thumbHyper = Math.max(thumbHyper, back)
+      else if (back > hyper) { hyper = back; where = b.name }
     })
   }
   return { elbowFlex, shoulderBack, shoulderCross,
     forearmPronation: deg(-twist), forearmSupination: deg(twist),
     wristFlex: Math.abs(wristFlex), wristDeviation: Math.abs(wristDeviation),
-    fingerHyperextension: hyper, hyperBone: where }
+    fingerHyperextension: hyper, hyperBone: where, thumbHyperextension: thumbHyper }
 }
 
-function audit(id: string, kind: ItemReport['kind'], timeline: PlaybackTimeline, missing: string[]): ItemReport {
-  const plan = playbackPlan(timeline)
+/** Skin overlap in the idle pose, per side and body part. Hands resting at the
+ *  hips touch the jacket by design; that is reported once, on the idle item,
+ *  and only overlap BEYOND it counts against a sign. */
+let idleOverlap: Map<string, number> | null = null
+
+function audit(id: string, kind: ItemReport['kind'], timeline: PlaybackTimeline, missing: string[],
+  sample?: (ms: number) => Pose): ItemReport {
+  const plan = sample ? timeline : playbackPlan(timeline)
+  const posed = sample ?? ((ms: number) => poseAt(plan, ms))
+  const overlap = new Map<string, number>()
   const report: ItemReport = { id, kind, clips: plan.clips.map(c => c.clip_id), missing, frames: 0, max: {}, findings: [] }
   const worst = new Map<string, Finding>()
   const note = (check: Check, value: number, at: number, side: string, detail: string) => {
@@ -279,22 +312,32 @@ function audit(id: string, kind: ItemReport['kind'], timeline: PlaybackTimeline,
   const last = { right: { tip: v(), q: new THREE.Quaternion() }, left: { tip: v(), q: new THREE.Quaternion() } }
   let first = true
   for (let t = 0; t <= plan.duration_ms; t += DT * 1000) {
-    applyManualPose(rig, poseAt(plan, t), t / 1000, DT)
+    applyManualPose(rig, posed(t), t / 1000, DT)
     rig.root.updateMatrixWorld(true)
     refresh(clouds)
     report.frames++
+    if (trace === id) {
+      const fmt = (side: 'right' | 'left') => {
+        const d = clearanceDebug.get(rig[side])
+        return d ? `push ${cm(d.push).toFixed(1)}cm contact ${d.depth === null ? '-' : cm(d.depth).toFixed(1) + 'cm ' + d.bone}` : '-'
+      }
+      console.error(`${String(Math.round(t)).padStart(5)}ms  R ${fmt('right').padEnd(48)} L ${fmt('left')}`)
+    }
     for (const side of ['right', 'left'] as const) {
       const arm = rig[side]
       const j = joints(arm)
       for (const check of ['elbowFlex', 'shoulderBack', 'shoulderCross', 'forearmPronation', 'forearmSupination',
         'wristFlex', 'wristDeviation'] as const) note(check, j[check], t, side, check)
       note('fingerHyperextension', j.fingerHyperextension, t, side, j.hyperBone)
+      note('thumbHyperextension', j.thumbHyperextension, t, side, 'thumb')
 
       for (const point of armPoints(arm)) {
         for (const c of OBSTACLES[side]) {
           const d = signedDistance(c, point.p)
           if (d === null) continue
-          note('penetration', point.r - cm(d), t, side, `${point.name}→${c.bone.name}`)
+          const part = `${point.name}→${c.bone.name}`, depth = point.r - cm(d)
+          overlap.set(`${side}|${part}`, Math.max(overlap.get(`${side}|${part}`) ?? -Infinity, depth))
+          note('penetration', depth - Math.max(0, idleOverlap?.get(`${side}|${part}`) ?? 0), t, side, part)
         }
       }
 
@@ -308,6 +351,7 @@ function audit(id: string, kind: ItemReport['kind'], timeline: PlaybackTimeline,
     }
     first = false
   }
+  if (!idleOverlap) idleOverlap = overlap
   report.findings = [...worst.values()].sort((a, b) => (a.level === b.level ? b.value - a.value : a.level === 'fail' ? -1 : 1))
   return report
 }
@@ -347,18 +391,28 @@ for (const phrase of phrases) for (const t of phrase.gloss) {
 }
 if (flag('--all')) for (const id of playable) signIds.add(id)
 
-const reports: ItemReport[] = []
 const started = Date.now()
-for (const id of [...signIds].sort()) {
-  if (only && !only.has(id)) continue
-  reports.push(audit(id, 'sign', singleSignPlan(id, clipLengthMs(id, 'isolated')), []))
-}
-for (const phrase of phrases) {
-  if (only && !only.has(phrase.id)) continue
-  const { timeline, missing } = phraseTimeline(phrase)
-  if (!timeline.clips.length) continue
-  reports.push(audit(phrase.id, 'phrase', timeline, missing))
-}
+// First: the idle pose alone, which also sets the idle overlap baseline.
+const reports: ItemReport[] = [audit('(idle)', 'sign',
+  { version: 2, renderer: 'sign-procedural-v2', duration_ms: 1000, clips: [], nonmanuals: [] }, [],
+  ms => motionFor('idle', ms / 1000))]
+const queue = [
+  ...[...signIds].sort().filter(id => !only || only.has(id)).map(id => ({ id, kind: 'sign' as const })),
+  ...phrases.filter(p => !only || only.has(p.id)).map(p => ({ id: p.id, kind: 'phrase' as const, phrase: p })),
+]
+queue.forEach((item, i) => {
+  // Silent for minutes otherwise, which reads as a hang.
+  const elapsed = (Date.now() - started) / 1000
+  const eta = i ? Math.round(elapsed / i * (queue.length - i)) : 0
+  process.stderr.write(`\r[${i + 1}/${queue.length}] ${item.kind} ${item.id}`.padEnd(70) + (i ? `~${eta}s left ` : ''))
+  if (item.kind === 'sign') {
+    reports.push(audit(item.id, 'sign', singleSignPlan(item.id, clipLengthMs(item.id, 'isolated')), []))
+    return
+  }
+  const { timeline, missing } = phraseTimeline(item.phrase!)
+  if (timeline.clips.length) reports.push(audit(item.id, 'phrase', timeline, missing))
+})
+process.stderr.write('\n')
 
 // ---------------------------------------------------------------- report
 
@@ -380,8 +434,8 @@ const summary = {
   items_failing: failing.length, items_clean: reports.filter(r => !r.findings.length).length,
   mesh_parts: clouds.length,
 }
-await fs.mkdir(new URL('../../artifacts/safety/', import.meta.url), { recursive: true })
-await fs.writeFile(new URL('../../artifacts/safety/report.json', import.meta.url),
+await fs.mkdir(OUT_DIR, { recursive: true })
+await fs.writeFile(new URL('report.json', OUT_DIR),
   JSON.stringify({ summary, byCheck, items: reports }, null, 1))
 
 console.log(JSON.stringify(summary, null, 2))
