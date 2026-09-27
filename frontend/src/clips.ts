@@ -159,6 +159,11 @@ export type Augment = {
   /** Use phonological descriptors instead of the generic lexical-loan spelling
    * fallback when the ASL-LEX entry supplies the actual initialized motion. */
   use_descriptors?: boolean
+  /** Relocate the non-dominant support hand without moving the sign's target. */
+  support_offset?: Vec3
+  /** Relocate only the mirrored hand of a symmetric morpheme. Compound signs
+   * can correct their two-handed phase without moving an earlier resting hand. */
+  symmetric_offset?: Vec3
   torso_clearance?: number
   non_dominant_rest?: 'side' | 'support'
   /** Palm and finger direction at the START of the sign. ASL-LEX does not code
@@ -582,8 +587,8 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   // hand, so the two stay in register whatever the base hand is doing.
   const placement = augment.location_offset ?? [0, 0, 0]
   const baseWrist0: Vec3 = augment.carried
-    ? add(NON_DOMINANT_REST, [0, travel * 0.08, 0])
-    : NON_DOMINANT_REST
+    ? add(add(NON_DOMINANT_REST, augment.support_offset ?? [0, 0, 0]), [0, travel * 0.08, 0])
+    : add(NON_DOMINANT_REST, augment.support_offset ?? [0, 0, 0])
   // A correction for a sign articulated on the other hand relocates the whole
   // two-hand configuration, not just the dominant hand.
   const baseWrist: Vec3 = onHand ? add(baseWrist0, placement) : baseWrist0
@@ -615,7 +620,11 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
     ? scale(movementPrior, Math.sin(at * TAU) * MOVEMENT_SCALE.BackAndForth * size)
     : movementOffset(m.Movement, at, size, augment.movement_axis)
   const minorKey = m.MinorLocation && m.MinorLocation !== 'NA' ? m.MinorLocation : m.MajorLocation ?? ''
-  const target = add(add(add(base, offsetAt(phase)), onHand ? [0, 0, 0] : placement),
+  // `support_offset` relocates only the support hand. Compensate it out of the
+  // dominant target so a safe support-arm correction cannot change the path
+  // measured against the citation video.
+  const dominantPlacement = onHand ? scale(augment.support_offset ?? [0, 0, 0], -1) : placement
+  const target = add(add(add(base, offsetAt(phase)), dominantPlacement),
     scale(augment.location_end_offset ?? [0, 0, 0], travel))
 
   // --- orientation --------------------------------------------------------
@@ -688,7 +697,9 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   // A genuinely one-handed citation sign leaves the unused hand at the side.
   // Holding every unused hand in raised "signing rest" made GOOD and other
   // one-handed signs appear two-handed against their reference videos.
-  let leftArm: ArmPose = augment.non_dominant_rest === 'support' ? SUPPORT_LEFT : SIDE_REST_LEFT
+  let leftArm: ArmPose = augment.non_dominant_rest === 'support'
+    ? { ...SUPPORT_LEFT, target: add(SUPPORT_LEFT.target, augment.support_offset ?? [0, 0, 0]) }
+    : { ...SIDE_REST_LEFT, target: add(SIDE_REST_LEFT.target, augment.support_offset ?? [0, 0, 0]) }
 
   if (symmetric) {
     nonDominant = handshapeFor(m.NonDominantHandshape ?? m.Handshape, descriptors)
@@ -697,7 +708,8 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
       ? (phase + 0.5) % 1
       : phase
     leftArm = {
-      target: mirror(add(add(add(base, offsetAt(alt)), placement), hover)),
+      target: add(mirror(add(add(add(base, offsetAt(alt)), placement), hover)),
+        augment.symmetric_offset ?? augment.support_offset ?? [0, 0, 0]),
       palm: normalise(mirror(palm)),
       point: normalise(mirror(point)),
       elbow: normalise(mirror(elbow)),
@@ -790,7 +802,8 @@ function authoredPose(id: string, elapsedSeconds: number, opts: MotionOptions): 
       target: add(f.right.target, clip.location_offset ?? [0, 0, 0]),
       palm: normalise(f.right.palm), point: normalise(f.right.point) },
     leftArm: f.left ? { elbow: [-0.38, -0.90, -0.10], ...f.left,
-      palm: normalise(f.left.palm), point: normalise(f.left.point) } : SIGNING_REST_LEFT,
+      palm: normalise(f.left.palm), point: normalise(f.left.point) }
+      : augmentFor(id).non_dominant_rest === 'side' ? SIDE_REST_LEFT : SIGNING_REST_LEFT,
     rightHand: handshapeFor(f.right_handshape ?? clip.right_handshape),
     leftHand: (f.left_handshape ?? clip.left_handshape) ? handshapeFor(f.left_handshape ?? clip.left_handshape) : rest.leftHand,
     head: f.head ?? [0, 0, 0], browRaise: clip.expression?.browRaise ?? 0,

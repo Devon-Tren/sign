@@ -4232,6 +4232,7 @@
     "question": {
       "variant": "User-requested raised index curls twice with a puzzled expression",
       "references": [],
+      "location_offset": [-0.366, -0.354, 0],
       "duration_ms": {
         "isolated": 2350,
         "continuous": 2000

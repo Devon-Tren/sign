@@ -1170,6 +1170,20 @@ export function setHandOrientation(
   _cur.copy(arm.axis.fore).applyQuaternion(_rw).normalize()
   _aimCorrection.setFromUnitVectors(_cur, arm.ikFore)
   _rw.premultiply(_aimCorrection)
+  // Interpolating two legal forearm quaternions can leave the anatomical
+  // interval when the elbow's flexion plane moves. Re-aiming restores the
+  // direction but does not restore that interval (HELP -> ME and MY ->
+  // HUSBAND reached 99-145 degrees). Limit the displayed roll in the current
+  // IK frame, while keeping the wrist position and forearm direction exact.
+  _neutralPalm.crossVectors(arm.ikUpper, arm.ikFore).multiplyScalar(arm.side).normalize()
+  if (_neutralPalm.lengthSq() > 1e-8) {
+    _solvedPalm.set(0, 0, 1).applyQuaternion(_inv.copy(arm.foreBasisInv).invert()).applyQuaternion(_rw)
+    const roll = Math.atan2(_candidateFore.crossVectors(_neutralPalm, _solvedPalm).dot(arm.ikFore),
+      _neutralPalm.dot(_solvedPalm))
+    const physiological = -arm.side * roll
+    const limited = THREE.MathUtils.clamp(physiological, -PRONATION, SUPINATION)
+    _rw.premultiply(_aimCorrection.setFromAxisAngle(arm.ikFore, -arm.side * limited - roll))
+  }
   arm.fore.quaternion.copy(_pq.invert()).multiply(_rw)
   arm.fore.updateMatrixWorld(true)
   // The wrist works from the forearm as it ACTUALLY is this frame, not from

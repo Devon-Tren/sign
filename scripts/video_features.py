@@ -228,7 +228,12 @@ def summarise(token: str, raw: dict, row: dict) -> dict:
     # Hand assignment already matches detections to both pose wrists globally,
     # so require a sustained second hand track. Overlapping-contact clips may
     # still need a descriptor-backed exception in the verifier.
-    left_active = len(left) / max(1, len(stroke)) > 0.5
+    left_coverage = len(left) / max(1, len(stroke))
+    # A compound may use the support hand for only one morpheme. HOMEWORK's
+    # citation video visibly changes from one-handed HOME to two-handed WORK,
+    # so a whole-clip majority rule incorrectly calls the compound one-handed.
+    morphemes = number(row.get('NumberOfMorphemes.2.0')) or number(row.get('NumberOfMorphemes')) or 1
+    left_active = left_coverage > 0.5 or (morphemes > 1 and left_coverage > 0.25)
     return {
         'token': token, 'fps': fps, 'stroke_ms': [start, end], 'frames': len(stroke),
         'detected': {'right': len(right) / max(1, len(stroke)), 'left': len(left) / max(1, len(stroke))},

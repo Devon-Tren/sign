@@ -10,6 +10,8 @@
       "movement_axis": "vertical | lateral | forward - constrains the primitive.",
       "location_offset": "Per-sign [right, up, forward] correction in arm-reach units, measured against that entry's citation video.",
       "location_end_offset": "Additional placement correction reached across the stroke when a uniform offset cannot represent the source path.",
+      "support_offset": "Additional support-hand-only [right, up, forward] correction; compensated out of the dominant path.",
+      "symmetric_offset": "Additional mirrored-hand-only correction for symmetric morphemes; useful when an earlier compound phase is one-handed.",
       "hand_relation": "on_palm | on_back | on_radial | on_tip | on_heel | on_wrist | crossed | tip_to_tip | beside. Derived from ASL-LEX MinorLocation where possible; listed here only when the surface name is not enough.",
       "carried": "True when both hands move together as one contacted unit.",
       "orientation": "Palm and finger direction at the start of the sign, as unit vectors in the normalised body frame. ASL-LEX does not code palm orientation, so this is authored; without it a sign falls back to a direction derived from its region and whether it travels off the body.",
@@ -157,7 +159,7 @@
       "non_dominant_rest": "support"
     },
     "night": { "location_offset": [0.215, 0.281, 0] },
-    "tomorrow": { "location_offset": [-0.086, -0.314, 0] },
+    "tomorrow": { "location_offset": [-0.086, -0.314, 0.18] },
     "next": { "location_offset": [0.401, 0.126, 0] },
     "week": { "location_offset": [0.314, 0.105, 0] },
     "i_love_you": { "location_offset": [0.300, 0.211, 0] },
@@ -200,6 +202,72 @@
     "welcome": { "location_offset": [0, 0, 0.08], "torso_clearance": 0.10 },
     "agreement": { "location_offset": [0, 0, 0.12] },
     "disagreement": { "location_offset": [0, 0, 0.12] },
+    "go": { "location_offset": [0.402, 0.131, 0] },
+    "ask": { "location_offset": [-0.123, 0.475, 0] },
+    "ready": { "location_offset": [0.496, 0.247, 0] },
+    "breaktime": { "location_offset": [0.598, -0.279, 0.25], "torso_clearance": 0.12 },
+    "charge": { "location_offset": [0.456, -0.621, 0.25], "support_offset": [-0.456, 0, 0], "torso_clearance": 0.12 },
+    "dont_want": { "location_offset": [0.522, 0.034, 0] },
+    "stop": { "location_offset": [0.385, 0.242, 0] },
+    "quiet": {
+      "location_offset": [0.128, 0.076, 0.15],
+      "location_end_offset": [-0.130, -0.374, 0],
+      "torso_clearance": 0.10
+    },
+    "delicious": { "location_offset": [-0.229, -0.251, 0.16], "torso_clearance": 0.10 },
+    "breakfast": { "location_offset": [0.335, 0.422, 0], "non_dominant_rest": "support" },
+    "family": { "location_offset": [-0.005, 0.468, 0] },
+    "big": { "location_offset": [0.467, 0.134, 0] },
+    "he": { "location_offset": [0.566, 0.310, 0] },
+    "husband": { "location_offset": [0.380, -0.245, 0.25], "non_dominant_rest": "support", "torso_clearance": 0.12 },
+    "day": {
+      "location_offset": [0.299, 0.848, 0],
+      "location_end_offset": [-0.503, -0.488, 0],
+      "support_offset": [-0.18, 0, 0.18],
+      "non_dominant_rest": "support"
+    },
+    "monday": { "location_offset": [0.146, 0.441, 0], "non_dominant_rest": "support" },
+    "friday": { "location_offset": [0.162, 0.642, 0] },
+    "yesterday": { "location_offset": [0.463, -0.220, 0] },
+    "hour": { "location_offset": [0.442, 0.254, 0], "support_offset": [-0.442, 0, 0] },
+    "arrive": { "location_offset": [0.418, -0.069, 0] },
+    "test": { "location_offset": [0.239, 0.550, 0] },
+    "college": { "location_offset": [0.607, 0.273, 0.25], "support_offset": [-0.607, 0, 0], "torso_clearance": 0.12 },
+    "open": { "location_offset": [0.495, 0.405, 0] },
+    "email": { "location_offset": [0.654, 0.328, 0.25], "support_offset": [-0.854, -0.10, 0], "torso_clearance": 0.12 },
+    "shop": { "location_offset": [0.484, 0.722, 0] },
+    "turn": { "location_offset": [0.396, -0.205, 0] },
+    "left": { "location_offset": [-0.422, -0.052, 0] },
+    "near": { "location_offset": [0.673, 0.418, 0.25], "support_offset": [-0.673, 0, 0], "torso_clearance": 0.12 },
+    "far": { "location_offset": [0.564, 0.443, 0.25], "torso_clearance": 0.12 },
+    "lost": { "location_offset": [0.281, -0.429, 0] },
+    "library": { "location_offset": [0.416, 0.414, 0] },
+    "doctor": { "location_offset": [0.468, 0.152, 0], "support_offset": [-0.468, 0, 0.18] },
+    "danger": { "location_offset": [0.548, -0.171, 0.25], "support_offset": [-0.548, 0, 0], "torso_clearance": 0.12 },
+    "everyone": { "location_offset": [0.469, -0.082, 0.25], "torso_clearance": 0.12 },
+    "water": { "location_offset": [0, 0, 0.18], "repeat_count": 3, "movement_size": 0.35 },
+    "home": { "location_offset": [0, 0, 0.18], "torso_clearance": 0.10 },
+    "eat": { "location_offset": [0, 0, 0.15], "torso_clearance": 0.10 },
+    "dont_like": { "location_offset": [0, 0, 0.30], "torso_clearance": 0.16 },
+    "father": { "location_offset": [0, 0, 0.18] },
+    "mother": { "location_offset": [0, 0, 0.08] },
+    "brother": { "location_offset": [0, 0, 0.18] },
+    "sister": { "location_offset": [0, 0, 0.18] },
+    "wife": { "location_offset": [0, 0, 0.08] },
+    "have": { "location_offset": [0, 0, 0.18], "torso_clearance": 0.12 },
+    "parents": { "location_offset": [0, 0, 0.18] },
+    "love": { "location_offset": [0, 0, 0.18], "torso_clearance": 0.12 },
+    "animal": { "location_offset": [0, 0, 0.18], "torso_clearance": 0.12 },
+    "everyday": { "location_offset": [0, 0, 0.18] },
+    "homework": { "location_offset": [0, 0, 0.33], "symmetric_offset": [-0.18, 0, 0.18], "torso_clearance": 0.10 },
+    "hospital": { "location_offset": [0, 0, 0.25], "support_offset": [0, 0, -0.25], "torso_clearance": 0.12 },
+    "call": { "location_offset": [0, 0, 0.18] },
+    "restaurant": { "location_offset": [0, 0, 0.16] },
+    "straight": { "location_offset": [0, 0, 0.18] },
+    "cellphone": { "location_offset": [0, 0, 0.18] },
+    "policeman": { "location_offset": [0, 0, 0.18], "torso_clearance": 0.10 },
+    "dont_need": { "location_offset": [0.12, 0, 0.30] },
+    "will": { "location_offset": [0.12, 0, 0.15], "support_offset": [0, 0, 0.10] },
     "again": {
       "movement_size": 0.6
     },
@@ -391,6 +459,8 @@
       "movement_size": 0.85
     },
     "question": {
+      "location_offset": [-0.366, -0.354, 0],
+      "non_dominant_rest": "side",
       "nonmanual": {
         "browRaise": 1
       },
@@ -435,6 +505,9 @@
       "repeat_count": 3
     },
     "study": {
+      "location_offset": [0.551, 0.191, 0.25],
+      "support_offset": [-0.551, -0.10, 0],
+      "torso_clearance": 0.12,
       "repeat_count": 3
     },
     "thank_you": {
@@ -479,6 +552,7 @@
       }
     },
     "today": {
+      "location_offset": [0.569, 0.022, 0],
       "orientation": {
         "palm": [
           0,
@@ -508,10 +582,6 @@
           0
         ]
       }
-    },
-    "water": {
-      "repeat_count": 3,
-      "movement_size": 0.35
     },
     "what": {
       "nonmanual": {
@@ -614,6 +684,7 @@
       "orientation_note": "Citation BOOK: palms initially face each other and open upward. Replaces the generic outward palm plus ulnar roll. Orientation only; repeated contact timing still needs a phase-authored clip. https://www.lifeprint.com/asl101/pages-signs/b/book.htm"
     },
     "more": {
+      "location_offset": [-0.065, 0.529, 0],
       "orientation": {
         "palm": [
           -1,
@@ -644,6 +715,8 @@
       "orientation_note": "Citation MUST uses a clawed index with palm down and downward wrist motion. Generic neutral palm forward was incorrect. Only the orientation is corrected here. https://www.handspeak.com/word/1449/"
     },
     "drink": {
+      "location_offset": [-0.330, -0.068, 0.16],
+      "torso_clearance": 0.10,
       "orientation": {
         "palm": [
           -1,

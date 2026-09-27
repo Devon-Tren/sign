@@ -7,6 +7,37 @@ import { torsoFrontZ } from '../src/anchors'
 import { bodySurface, handPoints, REACH_M, signedDistance } from '../src/bodySurface'
 import { applyManualPose, clearanceDebug, directionToWorld, rigSnapshot } from '../src/rigPose'
 import { allSignIds, clipLengthMs, motionFor, signParams } from '../src/clips'
+import { playbackPlan, poseAt } from '../src/playback'
+import { CONTINUOUS_LENGTH_MS } from '../src/clips'
+import type { PlaybackTimeline } from '../src/types'
+
+test('moving support arms keep displayed forearm roll within anatomical limits', async () => {
+  const rig = await loadTestSigner()
+  for (const ids of [['please', 'help', 'me'], ['you', 'help', 'me'], ['he', 'my', 'husband']]) {
+    let offset = 0
+    const clips = ids.map((id, i) => {
+      const start = offset
+      offset += CONTINUOUS_LENGTH_MS[id] ?? 900
+      return { anchor: `a${i}`, sign_id: id.toUpperCase(), clip_id: id,
+        start_ms: start, end_ms: offset, realization: 'regression' }
+    })
+    const timeline: PlaybackTimeline = { version: 2, renderer: 'sign-procedural-v2',
+      duration_ms: offset, clips, nonmanuals: [] }
+    const plan = playbackPlan(timeline)
+    for (let t = 0; t <= plan.duration_ms; t += 1000 / 60) {
+      applyManualPose(rig, poseAt(plan, t), t / 1000, 1 / 60)
+      for (const side of ['right', 'left'] as const) {
+        const arm = rig[side]
+        const neutral = new THREE.Vector3().crossVectors(arm.ikUpper, arm.ikFore).multiplyScalar(arm.side).normalize()
+        const palm = new THREE.Vector3(0, 0, 1).applyQuaternion(arm.foreBasisInv.clone().invert())
+          .applyQuaternion(arm.fore.getWorldQuaternion(new THREE.Quaternion()))
+        const roll = -arm.side * Math.atan2(new THREE.Vector3().crossVectors(neutral, palm).dot(arm.ikFore), neutral.dot(palm))
+        assert.ok(roll >= -85 * Math.PI / 180 - 1e-5 && roll <= Math.PI / 2 + 1e-5,
+          `${ids.join(' -> ')} ${side} at ${t}: ${roll * 180 / Math.PI}`)
+      }
+    }
+  }
+})
 
 test('zero and nonfinite directions produce a finite unit vector', () => {
   for (const value of [[0, 0, 0], [NaN, 0, 1], [Infinity, 0, 1]] as const) {
@@ -303,7 +334,9 @@ test('coordination raises both open hands and question has working facial contro
     assert.ok(end[side].palm[2] > .97, `${side} open palm faces forward`)
   }
   const question = settle('question', .5)
-  assert.ok(question.snap.right.wrist[1] > .25, 'raised right arm')
+  // The citation holds the wrist near the upper chest and the index beside
+  // the face; the older uncorrected wrist target was itself at face height.
+  assert.ok(question.snap.right.tip[1] > .25, 'raised index beside the face')
   assert.ok(question.snap.right.point[1] > .97, 'index points up')
   for (const [name, value] of [
     ['AU_04_BrowLowerer', question.pose.browFurrow],
