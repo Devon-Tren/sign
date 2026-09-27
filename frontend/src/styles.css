@@ -381,3 +381,16 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 @media(max-width:1000px){.rehearse-layout{grid-template-columns:1fr}.rehearse-layout .reference-view,.rehearse-layout .camera-view{height:360px}.observe-layout .reference-view{height:460px}}
 @media(max-width:760px){.learning-stage-nav{grid-template-columns:repeat(2,1fr)}.learning-stage-nav button:nth-child(2){border-right:0}.learning-stage-nav button:nth-child(-n+2){border-bottom:1px solid var(--border)}.observe-layout .reference-view,.rehearse-layout .reference-view,.rehearse-layout .camera-view{height:330px}.attempt-layout .camera-view{height:min(62vh,520px)}.attempt-heading{display:block}.attempt-heading small{display:block;text-align:left;margin-top:9px}.results-stage{padding:20px}.results-score{align-items:flex-start;gap:14px}.results-score>span{font-size:45px;min-width:105px}.results-score>span small{font-size:18px}}
 @media(max-width:460px){.learning-stage-nav button{height:43px;font-size:9px}.observe-layout .reference-view,.rehearse-layout .reference-view,.rehearse-layout .camera-view{height:285px}.practice-controls{align-items:flex-start}.practice-action-row{width:100%}.practice-action-row button{flex:1}.results-score{display:block}.results-score>span{display:block;margin-bottom:14px}.finger-checks{grid-template-columns:1fr}}
+
+/* Practice guidance must remain readable while standing back from the camera. */
+.tutor-page .tip-row{font-size:18px;line-height:1.6;color:var(--foreground);align-items:flex-start;padding:16px 0}
+.tutor-page .tip-number{font-size:16px;line-height:1.8;color:var(--foreground);flex:none}
+.tutor-page .tips-panel>.mini-heading{font-size:13px;color:var(--foreground)}
+.tutor-page .practice-instruction{font-size:16px;line-height:1.5;color:var(--foreground)}
+.tutor-page .practice-instruction select{font:inherit;padding:6px 10px}
+.tutor-page .attempt-progress>span{display:block;font-size:20px;font-weight:650;line-height:1.5;color:var(--foreground)}
+.tutor-page .attempt-heading small{font-size:15px;line-height:1.5;color:var(--foreground)}
+.tutor-page .sign-components strong{font-size:16px;line-height:1.5}
+.tutor-page .camera-corner{font-size:14px;line-height:1.4;letter-spacing:0;max-width:calc(100% - 28px)}
+.tutor-page .results-feedback>strong{font-size:18px;line-height:1.5}
+@media(max-width:760px){.tutor-page .practice-controls{flex-wrap:wrap}.tutor-page .tip-row{font-size:17px}.tutor-page .attempt-progress>span{font-size:18px}}

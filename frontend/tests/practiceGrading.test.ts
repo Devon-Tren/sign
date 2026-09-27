@@ -129,3 +129,28 @@ test('two-hand coordination requires a steady support hand too',()=>{
  for(let t=0;t<5000;t+=100)attempt.update(observation({center:point(.7,-.2)},hand({center:point(-.7-(t%400)/1000,-.2)})),t)
  assert.equal(attempt.result().matched,false)
 })
+
+test('Hello accepts a continuous oblique salute with relaxed fingers on either side',()=>{
+ for(const side of [1,-1]){
+  const attempt=new PracticeAttempt('hello')
+  // No stationary pose: two frames at the brow, then a modest diagonal salute.
+  const samples=[{x:.20,y:-.55},{x:.25,y:-.57},{x:.40,y:-.64},{x:.46,y:-.67}]
+  samples.forEach(({x,y},i)=>attempt.update(observation({shape:null,fingerAngles:[150,158,148,139],center:point(side*x,y),tip:point(side*.06,-.82),palm:point(.99,0,.08)}),i*100))
+  assert.equal(attempt.result().matched,true)
+ }
+})
+test('Hello still rejects a static open hand, a downward stroke, a fist, and a chest-level wave',()=>{
+ const brow=observation({center:point(.3,-.55),tip:point(.2,-.85)})
+ for(const samples of [
+  Array(12).fill(brow),
+  [brow,brow,observation({center:point(.32,-.15)}),observation({center:point(.35,-.1)})],
+  sequences.hello.map(o=>({...o,dominant:{...o.dominant!,shape:'fist' as const,fingerAngles:[80,80,80,80]}})),
+  [observation({center:point(.3,.3),tip:point(.3,.1)}),observation({center:point(.6,.3),tip:point(.6,.1)})],
+ ])assert.equal(run('hello',samples).matched,false)
+})
+test('occluded ears do not block tracking when the nose and shoulders are visible',()=>{
+ const hiddenEars=pose.map((p,i)=>i===7||i===8?{...p,visibility:.1}:p)
+ assert.equal(observe([tracked()],hiddenEars,'Right',4/3,true).valid,true)
+ const hiddenShoulder=hiddenEars.map((p,i)=>i===11?{...p,visibility:.1}:p)
+ assert.equal(observe([tracked()],hiddenShoulder,'Right',4/3,true).valid,false)
+})
