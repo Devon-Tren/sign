@@ -183,6 +183,10 @@ MAPPING: dict[str, tuple[str, str, str]] = {
     "homework":     ("homework",    "exact", "same lemma as `assignment`, under its everyday name"),
     "live":         ("live_1",      "exact", "live/life/alive sense"),
     "marry":        ("marry",       "exact", "below the auto frequency cut"),
+    # `mean` is mean_1 (cruel) and `correct` the X-shaped CANCEL/CRITICIZE
+    # verb; the phrases need the other senses under their own ids.
+    "meaning":      ("mean_2",      "exact", "WHAT DOES THAT MEAN - define/meaning sense"),
+    "right_correct": ("right_1",    "exact", "THAT'S RIGHT - accurate/correct sense"),
     "right":        ("right_2",     "exact", "the direction sense (TURN RIGHT); 'correct' is CORRECT"),
     "shop":         ("shop_2",      "exact", "store/shop sense"),
     "welcome":      ("welcome_1",   "exact", "YOU'RE WELCOME / welcome"),

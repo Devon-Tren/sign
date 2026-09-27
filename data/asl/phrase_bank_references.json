@@ -6,9 +6,9 @@
   "summary": {
     "phrases": 200,
     "playable": 200,
-    "unique_signs": 208,
-    "signs_with_video": 208,
-    "signs_with_motion": 208
+    "unique_signs": 203,
+    "signs_with_video": 203,
+    "signs_with_motion": 203
   },
   "signs": {
     "AFTERNOON": {
@@ -202,12 +202,6 @@
       "asl_lex_entry": "congratulations",
       "reference_video": "https://player.vimeo.com/video/345537120",
       "asl_lex_page": "https://asl-lex.org/visualization/?sign=congratulations"
-    },
-    "CORRECT": {
-      "clip_id": "correct",
-      "asl_lex_entry": "correct",
-      "reference_video": "https://player.vimeo.com/video/346938530",
-      "asl_lex_page": "https://asl-lex.org/visualization/?sign=correct"
     },
     "DANGER": {
       "clip_id": "danger",
@@ -599,12 +593,6 @@
       "reference_video": "https://player.vimeo.com/video/346975175",
       "asl_lex_page": "https://asl-lex.org/visualization/?sign=left"
     },
-    "LET_ME_SEE": {
-      "clip_id": "let_me_see",
-      "asl_lex_entry": "let_me_see",
-      "reference_video": "https://player.vimeo.com/video/346053944",
-      "asl_lex_page": "https://asl-lex.org/visualization/?sign=let_me_see"
-    },
     "LIBRARY": {
       "clip_id": "library",
       "asl_lex_entry": "library",
@@ -622,12 +610,6 @@
       "asl_lex_entry": "live_1",
       "reference_video": "https://player.vimeo.com/video/345563876",
       "asl_lex_page": "https://asl-lex.org/visualization/?sign=live_1"
-    },
-    "LONG_TIME": {
-      "clip_id": "long_time",
-      "asl_lex_entry": "long_time",
-      "reference_video": "https://player.vimeo.com/video/346970859",
-      "asl_lex_page": "https://asl-lex.org/visualization/?sign=long_time"
     },
     "LOST": {
       "clip_id": "lost",
@@ -659,11 +641,11 @@
       "reference_video": "https://player.vimeo.com/video/344400170",
       "asl_lex_page": "https://asl-lex.org/visualization/?sign=me"
     },
-    "MEAN": {
-      "clip_id": "mean",
-      "asl_lex_entry": "mean_1",
-      "reference_video": "https://player.vimeo.com/video/345555751",
-      "asl_lex_page": "https://asl-lex.org/visualization/?sign=mean_1"
+    "MEANING": {
+      "clip_id": "meaning",
+      "asl_lex_entry": "mean_2",
+      "reference_video": "https://player.vimeo.com/video/345578240",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=mean_2"
     },
     "MEDICINE": {
       "clip_id": "medicine",
@@ -718,12 +700,6 @@
       "asl_lex_entry": "mother",
       "reference_video": "https://player.vimeo.com/video/345536499",
       "asl_lex_page": "https://asl-lex.org/visualization/?sign=mother"
-    },
-    "MUCH": {
-      "clip_id": "much",
-      "asl_lex_entry": "much",
-      "reference_video": "https://player.vimeo.com/video/344399198",
-      "asl_lex_page": "https://asl-lex.org/visualization/?sign=much"
     },
     "MY": {
       "clip_id": "my",
@@ -899,6 +875,12 @@
       "reference_video": "https://player.vimeo.com/video/345579177",
       "asl_lex_page": "https://asl-lex.org/visualization/?sign=right_2"
     },
+    "RIGHT_CORRECT": {
+      "clip_id": "right_correct",
+      "asl_lex_entry": "right_1",
+      "reference_video": "https://player.vimeo.com/video/345578980",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=right_1"
+    },
     "SAD": {
       "clip_id": "sad",
       "asl_lex_entry": "sad",
@@ -940,12 +922,6 @@
       "asl_lex_entry": "sign",
       "reference_video": "https://player.vimeo.com/video/346068166",
       "asl_lex_page": "https://asl-lex.org/visualization/?sign=sign"
-    },
-    "SIGN_LANGUAGE": {
-      "clip_id": "sign_language",
-      "asl_lex_entry": "sign_language",
-      "reference_video": "https://player.vimeo.com/video/345971094",
-      "asl_lex_page": "https://asl-lex.org/visualization/?sign=sign_language"
     },
     "SISTER": {
       "clip_id": "sister",
@@ -1049,11 +1025,11 @@
       "reference_video": "https://player.vimeo.com/video/345800350",
       "asl_lex_page": "https://asl-lex.org/visualization/?sign=that"
     },
-    "THINK": {
-      "clip_id": "think",
-      "asl_lex_entry": "think",
-      "reference_video": "https://player.vimeo.com/video/345800071",
-      "asl_lex_page": "https://asl-lex.org/visualization/?sign=think"
+    "THINK_PONDER": {
+      "clip_id": "think_ponder",
+      "asl_lex_entry": "think_ponder",
+      "reference_video": "https://player.vimeo.com/video/341919054",
+      "asl_lex_page": "https://asl-lex.org/visualization/?sign=think_ponder"
     },
     "THIRSTY": {
       "clip_id": "thirsty",
@@ -1108,12 +1084,6 @@
       "asl_lex_entry": "understand",
       "reference_video": "https://player.vimeo.com/video/345576018",
       "asl_lex_page": "https://asl-lex.org/visualization/?sign=understand"
-    },
-    "VERY": {
-      "clip_id": "very",
-      "asl_lex_entry": "very",
-      "reference_video": "https://player.vimeo.com/video/346773299",
-      "asl_lex_page": "https://asl-lex.org/visualization/?sign=very"
     },
     "WAIT": {
       "clip_id": "wait",
@@ -1322,7 +1292,7 @@
       "missing_video": []
     },
     {
-      "id": "long-time-no-see",
+      "id": "nice-to-see-you",
       "status": "playable",
       "missing_motion": [],
       "missing_video": []
@@ -1682,7 +1652,7 @@
       "missing_video": []
     },
     {
-      "id": "thank-you-very-much",
+      "id": "thank-you-for-your-help",
       "status": "playable",
       "missing_motion": [],
       "missing_video": []
