@@ -146,7 +146,7 @@ function forearmTwist(palm: Vec3, wrist: Vec3, side: 1 | -1): number | null {
 }
 
 /** Wrist z (arm reach) a transition keeps in front of the torso: surface plus finger length. */
-const BRIDGE_CLEARANCE = 0.42
+const BRIDGE_CLEARANCE = 0.65
 
 /**
  * How far a straight wrist path between two targets dips behind the envelope

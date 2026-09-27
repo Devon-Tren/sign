@@ -1185,7 +1185,11 @@ export function setHandOrientation(
   const wristLimit = THREE.MathUtils.clamp(maxWristSwing, 0.65, 1.22)
   if (bend > wristLimit) _handLocal.slerp(_identity, 1 - wristLimit / bend)
   _handLocal.multiply(arm.restQ.hand)
-  slerpLimited(arm.hand.quaternion, _handLocal, dt, WRIST_LAMBDA, WRIST_MAX_RAD_S)
+  // Exact tracking scales generic caps by EXACT_CAP_SCALE. Cancel that scale
+  // here just as for forearm twist above; otherwise forearm roll (9 rad/s)
+  // plus a 20.7 rad/s wrist correction exceeded the whole-hand safety limit.
+  slerpLimited(arm.hand.quaternion, _handLocal, dt, WRIST_LAMBDA,
+    tracking.exact ? WRIST_MAX_RAD_S / EXACT_CAP_SCALE : WRIST_MAX_RAD_S)
   // The eased path between two in-range wrist settings can leave the range
   // (measured 55 degrees of deviation mid-transition): limit what is shown.
   _handLocal.copy(arm.hand.quaternion).multiply(_inv.copy(arm.restQ.hand).invert())

@@ -129,7 +129,8 @@
       ]
     },
     "good": {
-      "variant": "Fingertips leave chin; dominant palm turns up onto the support hand",
+      "variant": "ASL-LEX one-handed GOOD: fingertips leave chin and the dominant palm turns up",
+      "location_offset": [0, 0, 0.10],
       "references": [
         "https://www.lifeprint.com/asl101/pages-signs/g/good.htm"
       ],
@@ -138,7 +139,6 @@
         "continuous": 1050
       },
       "right_handshape": "b",
-      "left_handshape": "b",
       "keyframes": [
         {
           "at": 0,
@@ -158,24 +158,6 @@
               0,
               0.92,
               -0.38
-            ],
-            "contact": true
-          },
-          "left": {
-            "target": [
-              -0.21,
-              -0.35,
-              0.58
-            ],
-            "palm": [
-              0,
-              1,
-              0
-            ],
-            "point": [
-              1,
-              0,
-              0
             ],
             "contact": true
           }
@@ -200,24 +182,6 @@
               -0.38
             ],
             "contact": true
-          },
-          "left": {
-            "target": [
-              -0.21,
-              -0.35,
-              0.58
-            ],
-            "palm": [
-              0,
-              1,
-              0
-            ],
-            "point": [
-              1,
-              0,
-              0
-            ],
-            "contact": true
           }
         },
         {
@@ -238,24 +202,6 @@
               0,
               0,
               1
-            ],
-            "contact": true
-          },
-          "left": {
-            "target": [
-              -0.21,
-              -0.35,
-              0.58
-            ],
-            "palm": [
-              0,
-              1,
-              0
-            ],
-            "point": [
-              1,
-              0,
-              0
             ],
             "contact": true
           }
@@ -280,24 +226,6 @@
               1
             ],
             "contact": true
-          },
-          "left": {
-            "target": [
-              -0.21,
-              -0.35,
-              0.58
-            ],
-            "palm": [
-              0,
-              1,
-              0
-            ],
-            "point": [
-              1,
-              0,
-              0
-            ],
-            "contact": true
           }
         }
       ],
@@ -307,6 +235,7 @@
     },
     "morning": {
       "variant": "Two-handed MORNING: small rising motion above a flat horizon hand",
+      "location_offset": [0, 0, 0.08],
       "references": [
         "https://www.lifeprint.com/asl101/pages-signs/m/morning.htm"
       ],
@@ -347,7 +276,7 @@
             "target": [
               0.071,
               -0.472,
-              0.172
+              0.36
             ],
             "palm": [
               0,
@@ -392,7 +321,7 @@
             "target": [
               0.071,
               -0.472,
-              0.172
+              0.36
             ],
             "palm": [
               0,
@@ -437,7 +366,7 @@
             "target": [
               0.08,
               -0.29,
-              0.34
+              0.50
             ],
             "palm": [
               0,
@@ -482,7 +411,7 @@
             "target": [
               0.089,
               -0.108,
-              0.512
+              0.68
             ],
             "palm": [
               0,
@@ -527,7 +456,7 @@
             "target": [
               0.089,
               -0.108,
-              0.512
+              0.68
             ],
             "palm": [
               0,
@@ -546,6 +475,7 @@
     },
     "my": {
       "variant": "Flat palm touches the upper chest",
+      "location_offset": [0.08, 0, 0.18],
       "references": [],
       "duration_ms": {
         "isolated": 1300,
@@ -1527,6 +1457,7 @@
     },
     "thank_you": {
       "variant": "User-requested chin contact, then straight down with palm kept facing the face and left hand lowered",
+      "location_offset": [0, 0, 0.11],
       "references": [],
       "duration_ms": {
         "isolated": 1900,
@@ -1746,6 +1677,7 @@
     },
     "please": {
       "variant": "User-requested flat palm parallel to chest, rubbing two small circles",
+      "location_offset": [0, 0, 0.11],
       "references": [],
       "duration_ms": {
         "isolated": 2200,
@@ -2706,12 +2638,12 @@
             "target": [
               0.1,
               -0.12,
-              0.38
+              0.46
             ],
             "palm": [
               0,
-              -0.6,
-              -0.8
+              -1,
+              0
             ],
             "point": [
               -0.94,
@@ -2749,8 +2681,8 @@
             ],
             "palm": [
               0,
-              -0.6,
-              -0.8
+              -1,
+              0
             ],
             "point": [
               -0.94,
@@ -2788,8 +2720,8 @@
             ],
             "palm": [
               0,
-              -0.6,
-              -0.8
+              -1,
+              0
             ],
             "point": [
               -0.94,
@@ -2858,7 +2790,7 @@
             "target": [
               0,
               -0.37,
-              0.63
+              0.78
             ],
             "palm": [
               0,
@@ -4635,6 +4567,7 @@
     },
     "yes": {
       "variant": "S-hand nods twice at the wrist; small conversational affirmative",
+      "location_offset": [0.322, 0.050, 0],
       "references": [
         "https://www.lifeprint.com/asl101/pages-signs/y/yes.htm"
       ],

@@ -221,9 +221,14 @@ def summarise(token: str, raw: dict, row: dict) -> dict:
     # Hips out of frame (many clips are cropped at the waist): use the typical
     # hip height of the clips where they are visible (-1.27 to -1.51).
     rest = float(np.median(rest_y)) if rest_y else -1.35
-    # From the pose wrist, not hand detection: overlapping hands (HELP's fist
-    # on the palm) are often detected as one hand.
-    left_active = bool(left_wrist) and float(np.mean([y > rest + 0.6 for y in left_wrist])) > 0.5
+    # A second tracked hand is the reliable one/two-hand signal. The pose
+    # model's left/right wrist labels swap on several mirrored ASL-LEX clips:
+    # it marked the active dominant hand as "left" on one-handed HEARING,
+    # THAT and NO, while missing the low support hand on two-handed WHAT.
+    # Hand assignment already matches detections to both pose wrists globally,
+    # so require a sustained second hand track. Overlapping-contact clips may
+    # still need a descriptor-backed exception in the verifier.
+    left_active = len(left) / max(1, len(stroke)) > 0.5
     return {
         'token': token, 'fps': fps, 'stroke_ms': [start, end], 'frames': len(stroke),
         'detected': {'right': len(right) / max(1, len(stroke)), 'left': len(left) / max(1, len(stroke))},

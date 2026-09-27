@@ -169,7 +169,7 @@ test('greeting keyframes use straight B hands and keep MORNING beside the face',
   const good = authoredClipFor('good')!
   const morning = authoredClipFor('morning')!
   assert.equal(good.right_handshape, 'b')
-  assert.equal(good.left_handshape, 'b')
+  assert.equal(good.left_handshape, undefined)
   assert.equal(morning.right_handshape, 'b')
   assert.equal(morning.left_handshape, 'b')
 

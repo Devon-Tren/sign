@@ -8,6 +8,8 @@
       "repeat_count": "Integer cycle count when RepeatedMovement is 1.",
       "movement_size": "Multiplier on the movement primitive amplitude.",
       "movement_axis": "vertical | lateral | forward - constrains the primitive.",
+      "location_offset": "Per-sign [right, up, forward] correction in arm-reach units, measured against that entry's citation video.",
+      "location_end_offset": "Additional placement correction reached across the stroke when a uniform offset cannot represent the source path.",
       "hand_relation": "on_palm | on_back | on_radial | on_tip | on_heel | on_wrist | crossed | tip_to_tip | beside. Derived from ASL-LEX MinorLocation where possible; listed here only when the surface name is not enough.",
       "carried": "True when both hands move together as one contacted unit.",
       "orientation": "Palm and finger direction at the start of the sign, as unit vectors in the normalised body frame. ASL-LEX does not code palm orientation, so this is authored; without it a sign falls back to a direction derived from its region and whether it travels off the body.",
@@ -151,6 +153,53 @@
     }
   },
   "augment": {
+    "afternoon": {
+      "non_dominant_rest": "support"
+    },
+    "night": { "location_offset": [0.215, 0.281, 0] },
+    "tomorrow": { "location_offset": [-0.086, -0.314, 0] },
+    "next": { "location_offset": [0.401, 0.126, 0] },
+    "week": { "location_offset": [0.314, 0.105, 0] },
+    "i_love_you": { "location_offset": [0.300, 0.211, 0] },
+    "hard_of_hearing": { "location_offset": [0.177, -0.262, 0], "use_descriptors": true },
+    "boston": { "location_offset": [0.133, 0.307, 0] },
+    "old": { "location_offset": [-0.276, 0.090, 0.10], "location_end_offset": [0, -0.670, 0], "torso_clearance": 0.10 },
+    "this": { "location_offset": [0.529, 0.063, 0] },
+    "sick": { "location_offset": [0.264, -0.179, 0] },
+    "busy": { "location_offset": [0.265, 0.354, 0] },
+    "fingerspell": { "location_offset": [0.039, 0.262, 0] },
+    "dont_know": { "location_offset": [0.372, 0.038, 0.08] },
+    "sure": { "location_offset": [-0.304, -0.198, 0.10], "torso_clearance": 0.14 },
+    "write": { "location_offset": [0.323, 0.152, 0] },
+    "excuse": { "location_offset": [0.336, 0.006, 0] },
+    "really": { "location_offset": [-0.305, -0.132, 0.10], "torso_clearance": 0.14 },
+    "wow": { "location_offset": [0.355, 0.364, 0] },
+    "go_ahead": { "location_offset": [0.346, -0.034, 0] },
+    "who": { "location_offset": [0.131, -0.050, 0.10] },
+    "time": { "location_offset": [0.325, -0.030, 0] },
+    "do_do": { "location_offset": [0.380, -0.083, -0.20], "use_descriptors": true },
+    "why_not": { "location_offset": [-0.114, -0.189, 0.07], "torso_clearance": 0.10 },
+    "thirsty": { "location_offset": [0, -0.120, 0.18], "torso_clearance": 0.12 },
+    "birthday": { "location_offset": [0, 0, 0.08] },
+    "deaf": { "location_offset": [0, 0, 0.17] },
+    "live": { "location_offset": [0, 0, 0.16] },
+    "fine": { "location_offset": [0, 0, 0.10], "torso_clearance": 0.10 },
+    "angry": { "location_offset": [0, 0, 0.08] },
+    "excited": {
+      "location_offset": [0.32, 0, 0.16],
+      "torso_clearance": 0.12,
+      "orientation": { "palm": [0, 0, -1], "point": [0, 1, 0] }
+    },
+    "scared": { "location_offset": [0.06, 0, 0.07] },
+    "hungry": { "location_offset": [0, 0, 0.08] },
+    "remember": { "location_offset": [0, 0, 0.11] },
+    "misunderstand": { "location_offset": [0, 0, 0.11] },
+    "we_will_see": { "location_offset": [0, 0, 0.21] },
+    "dont_care": { "location_offset": [0, 0, 0.08] },
+    "feel": { "location_offset": [0, 0, 0.11], "torso_clearance": 0.10 },
+    "welcome": { "location_offset": [0, 0, 0.08], "torso_clearance": 0.10 },
+    "agreement": { "location_offset": [0, 0, 0.12] },
+    "disagreement": { "location_offset": [0, 0, 0.12] },
     "again": {
       "movement_size": 0.6
     },
@@ -182,6 +231,7 @@
       }
     },
     "friend": {
+      "location_offset": [0, 0, 0.08],
       "repeat_count": 2
     },
     "good": {
@@ -211,9 +261,11 @@
       }
     },
     "goodbye": {
-      "movement_size": 0.55
+      "movement_size": 0.55,
+      "location_offset": [0.352, 0.341, 0]
     },
     "happy": {
+      "location_offset": [0, 0, 0.08],
       "repeat_count": 3
     },
     "hello": {
@@ -270,6 +322,7 @@
       "hand_relation": "tip_to_tip"
     },
     "learn": {
+      "location_offset": [0.302, -0.24, 0.16],
       "orientation": {
         "palm": [
           0,
@@ -324,6 +377,7 @@
       }
     },
     "not": {
+      "location_offset": [0, 0, 0.18],
       "nonmanual": {
         "headShake": 0.9,
         "browFurrow": 0.25
@@ -373,6 +427,8 @@
       "repeat_count": 3
     },
     "sorry": {
+      "location_offset": [0, 0, 0.11],
+      "torso_clearance": 0.10,
       "nonmanual": {
         "browFurrow": 0.3
       },
@@ -411,6 +467,8 @@
       "orientation_note": "Palm starts inward at lips and tilts upward as fingers move toward the addressee; it does not flip to an outward-facing palm. Angles are an interpretation of the citation images, not motion capture. https://www.lifeprint.com/asl101/pages-signs/t/thankyou.htm"
     },
     "tired": {
+      "location_offset": [0.215, -0.262, 0.18],
+      "torso_clearance": 0.10,
       "nonmanual": {
         "browFurrow": 0.35,
         "head": [
@@ -474,6 +532,7 @@
       "orientation_note": "Open-5 two-handed WHAT/HUH variant in this record has palms upward. Does not apply to the index-on-palm lexical variant. https://www.lifeprint.com/asl101/pages-signs/w/what.htm"
     },
     "when": {
+      "location_offset": [0.399, 0.132, 0.10],
       "nonmanual": {
         "browFurrow": 0.85
       }
@@ -488,6 +547,7 @@
       "torso_clearance": 0.12
     },
     "why": {
+      "location_offset": [0, 0, 0.20],
       "nonmanual": {
         "browFurrow": 0.85
       }
@@ -611,6 +671,7 @@
       "orientation_note": "Citation C-hand drinking gesture faces sideways toward the non-dominant side, not the dominant-side/outward direction produced by HeadAway plus the generic ulnar roll. Orientation only; cup tilt and mouth trajectory require authored phases. https://www.handspeak.com/word/627/"
     },
     "see": {
+      "location_offset": [0, 0, 0.12],
       "orientation": {
         "palm": [
           0,
@@ -638,6 +699,8 @@
       "orientation_note": "Citation SEE starts with the palm facing the signer and fingers at the eyes; travelling away does not imply an outward-facing palm. Preserve inward orientation; path and handshape transitions remain descriptor-generated. https://www.strongasl.com/american-sign-language-dictionary/words/see"
     },
     "better": {
+      "location_offset": [0.337, -0.082, 0.15],
+      "torso_clearance": 0.10,
       "orientation": {
         "palm": [
           0,

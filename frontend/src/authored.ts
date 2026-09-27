@@ -8,6 +8,8 @@ export type AuthoredClip = {
   duration_ms: { isolated: number; continuous: number }
   right_handshape: string
   left_handshape?: string
+  /** Citation-video placement correction applied to every dominant keyframe. */
+  location_offset?: Vec3
   expression?: { browFurrow?: number; browRaise?: number; mouth?: number }
   keyframes: AuthoredFrame[]
 }

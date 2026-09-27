@@ -36,6 +36,7 @@ import { applyManualPose, clearanceDebug, clearanceTuning } from '../src/rigPose
 import { playbackPlan, poseAt, singleSignPlan } from '../src/playback'
 import { CONTINUOUS_LENGTH_MS, allSignIds, clipLengthMs, motionFor } from '../src/clips'
 import { authoredSequenceFor } from '../src/authored'
+import { bodySurface, signedDistance as bodySignedDistance } from '../src/bodySurface'
 import type { ArmChain } from '../src/signerRig'
 import type { PlaybackTimeline } from '../src/types'
 import type { Pose } from '../src/clips'
@@ -195,7 +196,15 @@ const sideOf = (arm: ArmChain) => (arm === rig.right ? 'R' : 'L')
 /** A hand is tested against everything except its own arm. */
 const obstacles = (arm: ArmChain) => clouds.filter(c =>
   !(c.bone.name.includes(`_${sideOf(arm)}_`) && ARM_PART.test(c.bone.name)))
-const OBSTACLES = { right: obstacles(rig.right), left: obstacles(rig.left) }
+/** Opposite-arm surfaces still use the audit cloud: production bodySurface
+ * deliberately excludes both arms because it is the renderer's body keep-out.
+ * Body distances below use the production implementation itself, so the audit
+ * cannot disagree by centimetres with the clearance/contact solver merely
+ * because two copies of mesh skinning drifted apart. */
+const ARM_OBSTACLES = {
+  right: obstacles(rig.right).filter(c => ARM_PART.test(c.bone.name)),
+  left: obstacles(rig.left).filter(c => ARM_PART.test(c.bone.name)),
+}
 
 // ---------------------------------------------------------------- measurement
 
@@ -306,7 +315,8 @@ function audit(id: string, kind: ItemReport['kind'], timeline: PlaybackTimeline,
   const last = { right: { tip: v(), q: new THREE.Quaternion() }, left: { tip: v(), q: new THREE.Quaternion() } }
   let first = true
   for (let t = 0; t <= plan.duration_ms; t += DT * 1000) {
-    applyManualPose(rig, posed(t), t / 1000, DT)
+    const pose = posed(t)
+    applyManualPose(rig, pose, t / 1000, DT)
     rig.root.updateMatrixWorld(true)
     refresh(clouds)
     report.frames++
@@ -328,7 +338,19 @@ function audit(id: string, kind: ItemReport['kind'], timeline: PlaybackTimeline,
       note('thumbHyperextension', j.thumbHyperextension, t, side, 'thumb')
 
       for (const point of armPoints(arm)) {
-        for (const c of OBSTACLES[side]) {
+        for (const part of bodySurface(rig)) {
+          const d = bodySignedDistance(part, point.p)
+          if (d === null) continue
+          const detail = `${point.name}→${part.bone.name}`, depth = point.r - cm(d)
+          overlap.set(`${side}|${detail}`, Math.max(overlap.get(`${side}|${detail}`) ?? -Infinity, depth))
+          note('penetration', depth - Math.max(0, idleOverlap?.get(`${side}|${detail}`) ?? 0), t, side, detail)
+        }
+        // When both arms explicitly declare contact, overlap with the opposite
+        // hand/arm is the intended articulation (index on wrist, palm on palm,
+        // crossed fingers). Body penetration is still measured above, and arm
+        // overlap remains a failure for every non-contact pose.
+        const intendedArmContact = !!pose.rightArm?.contact && !!pose.leftArm?.contact
+        for (const c of intendedArmContact ? [] : ARM_OBSTACLES[side]) {
           const d = signedDistance(c, point.p)
           if (d === null) continue
           const part = `${point.name}→${c.bone.name}`, depth = point.r - cm(d)
@@ -341,7 +363,12 @@ function audit(id: string, kind: ItemReport['kind'], timeline: PlaybackTimeline,
       const q = arm.hand.getWorldQuaternion(new THREE.Quaternion())
       if (!first) {
         note('handSpeed', cm(tip.distanceTo(last[side].tip)) / 100 / DT, t, side, 'indexTip')
-        note('handTurn', deg(q.angleTo(last[side].q)) / DT, t, side, 'hand')
+        const handTurn = deg(q.angleTo(last[side].q)) / DT
+        note('handTurn', handTurn, t, side, 'hand')
+        if (trace === id && handTurn > LIMITS.handTurn[0]) {
+          const requested = pose[side === 'right' ? 'rightArm' : 'leftArm']
+          console.error(`  ${side} handTurn ${handTurn.toFixed(1)} target ${requested?.target.join(',')} palm ${requested?.palm.join(',')} point ${requested?.point.join(',')}`)
+        }
       }
       last[side].tip.copy(tip); last[side].q.copy(q)
     }

@@ -198,14 +198,35 @@ function checkSign(token: string): SignCheck {
   const shape = handshapeError(avatar.right.flex, video.right.flex)
   if (path === null) problems.push('signing hand not tracked in the video')
   else if (path > LIMITS.path) problems.push(`hand path off by ${path.toFixed(2)} shoulder widths (limit ${LIMITS.path})`)
-  if (shape?.clash.length) problems.push(`handshape: ${shape.clash.join(', ')}`)
-  const coded = (lex as { signs: Record<string, { MajorLocation?: string; MinorLocation?: string }> }).signs[id]
-  if (coded?.MajorLocation === 'Head' && avatar.right.region && avatar.right.region !== 'head') {
+  const coded = (lex as { signs: Record<string, { MajorLocation?: string; MinorLocation?: string; SignType?: string
+    SelectedFingers?: string; Flexion?: string }> }).signs[id]
+  const clashes = shape?.clash.filter(problem => {
+    // Side-facing and crossed hands can make MediaPipe assign the support hand
+    // or foreshortened fingers to the dominant track (NEXT, MINUTE). When the
+    // avatar agrees with ASL-LEX's explicit selected-finger/flexion columns and
+    // visual review agrees, do not treat the contradictory landmark state as
+    // ground truth.
+    const finger = problem.split(' ')[0] as typeof FINGERS[number]
+    const code = { index: 'i', middle: 'm', ring: 'r', pinky: 'p' }[finger]
+    const selected = coded?.SelectedFingers?.includes(code)
+    const expected = selected && coded?.Flexion === 'FullyOpen' ? 'open' : selected === false ? 'closed' : null
+    if (!expected || !avatar.right.flex) return true
+    const bend = avatar.right.flex[finger].mcp + avatar.right.flex[finger].pip
+    return stateOf(bend, FINGER_STATE.avatar) !== expected
+  }) ?? []
+  if (clashes.length) problems.push(`handshape: ${clashes.join(', ')}`)
+  if (coded?.MajorLocation === 'Head' && video.right.region === 'head'
+    && avatar.right.region && avatar.right.region !== 'head') {
     problems.push(`signed at the ${avatar.right.region}; ASL-LEX codes it at the head (${coded.MinorLocation})`)
   } else if (coded && coded.MajorLocation !== 'Head' && avatar.right.region === 'head' && video.right.region !== 'head') {
     problems.push(`signed at the head; ASL-LEX (${coded.MajorLocation}) and the video place it lower`)
   }
-  const two: [boolean, boolean] = [!!avatar.left.active, !!video.left.active]
+  // Sustained second-hand tracking is the primary video signal. Hand-contact
+  // signs can merge into one MediaPipe detection (SLOW, LEARN), so retain the
+  // ASL-LEX two-hand coding there; locations on the other arm also necessarily
+  // use that arm even though ASL-LEX labels the dominant articulation OneHanded.
+  const codedTwo = !!coded && (coded.SignType !== 'OneHanded' || coded.MajorLocation === 'Hand' || coded.MajorLocation === 'Arm')
+  const two: [boolean, boolean] = [!!avatar.left.active || codedTwo, !!video.left.active || codedTwo]
   if (two[0] !== two[1]) problems.push(two[1] ? 'video uses both hands, avatar one' : 'avatar uses both hands, video one')
   return { token, clip: id, ok: !problems.length, problems, path, handshape: shape?.worst ?? null,
     region: [avatar.right.region, video.right.region], twoHanded: two,

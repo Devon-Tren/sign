@@ -150,10 +150,17 @@ export type Augment = {
   repeat_count?: number
   movement_size?: number
   movement_axis?: 'vertical' | 'lateral' | 'forward'
+  /** Citation-video placement correction in the normalised body frame. */
+  location_offset?: Vec3
+  /** Additional placement reached across the stroke for source-specific paths. */
+  location_end_offset?: Vec3
   hand_relation?: string
   carried?: boolean
+  /** Use phonological descriptors instead of the generic lexical-loan spelling
+   * fallback when the ASL-LEX entry supplies the actual initialized motion. */
+  use_descriptors?: boolean
   torso_clearance?: number
-  non_dominant_rest?: 'side'
+  non_dominant_rest?: 'side' | 'support'
   /** Palm and finger direction at the START of the sign. ASL-LEX does not code
    *  palm orientation at all, so this is authored, and it overrides the
    *  derivation in ./anchors for signs whose presentation is distinctive. */
@@ -553,11 +560,14 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   // OR and RUN all rendered one-handed.
   const type = m.SignType ?? 'OneHanded'
   const symmetric = type === 'SymmetricalOrAlternating' || type === 'SymmetryViolation'
+  // A dominant hand articulated on the other hand/arm necessarily activates
+  // that limb even when ASL-LEX labels the sign OneHanded (TIME at WristBack).
   const contacted = type.startsWith('Asymmetrical') || type === 'DominanceViolation'
+    || m.MajorLocation === 'Hand' || m.MajorLocation === 'Arm'
   const twoHanded = symmetric || contacted
 
   // --- location -----------------------------------------------------------
-  const relation = contacted || type === 'DominanceViolation'
+  const relation = contacted
     ? relationFor(m.MinorLocation, augment.hand_relation)
     : relationFor(null, augment.hand_relation)
   const onHand = isHandLocated(m.MinorLocation, m.MajorLocation) && relation !== null
@@ -570,9 +580,13 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
 
   // A sign articulated on the non-dominant hand is positioned RELATIVE to that
   // hand, so the two stay in register whatever the base hand is doing.
-  const baseWrist: Vec3 = augment.carried
+  const placement = augment.location_offset ?? [0, 0, 0]
+  const baseWrist0: Vec3 = augment.carried
     ? add(NON_DOMINANT_REST, [0, travel * 0.08, 0])
     : NON_DOMINANT_REST
+  // A correction for a sign articulated on the other hand relocates the whole
+  // two-hand configuration, not just the dominant hand.
+  const baseWrist: Vec3 = onHand ? add(baseWrist0, placement) : baseWrist0
   const from: Vec3 = onHand
     ? relation!.at ? onBaseHand(baseWrist, relation!.basePalm, relation!.basePoint, relation!.at) : add(baseWrist, relation!.offset)
     : start
@@ -601,7 +615,8 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
     ? scale(movementPrior, Math.sin(at * TAU) * MOVEMENT_SCALE.BackAndForth * size)
     : movementOffset(m.Movement, at, size, augment.movement_axis)
   const minorKey = m.MinorLocation && m.MinorLocation !== 'NA' ? m.MinorLocation : m.MajorLocation ?? ''
-  const target = add(base, offsetAt(phase))
+  const target = add(add(add(base, offsetAt(phase)), onHand ? [0, 0, 0] : placement),
+    scale(augment.location_end_offset ?? [0, 0, 0], travel))
 
   // --- orientation --------------------------------------------------------
   const derived = orientationFor(m.MajorLocation, m.SecondMinorLocation, m)
@@ -667,10 +682,13 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
   const hover: Vec3 = onSurface && m.Contact !== '1' ? [0, 0, 0.06] : [0, 0, 0]
 
   // --- the non-dominant hand ---------------------------------------------
-  let nonDominant: HandPose = rest.leftHand
+  let nonDominant: HandPose = augment.non_dominant_rest === 'support' ? HANDSHAPES.open_b : rest.leftHand
   // Never null: a null arm made blendPoses switch hard at the midpoint rather
   // than interpolate, which put a snap in every one-handed sign.
-  let leftArm: ArmPose = augment.non_dominant_rest === 'side' ? SIDE_REST_LEFT : SIGNING_REST_LEFT
+  // A genuinely one-handed citation sign leaves the unused hand at the side.
+  // Holding every unused hand in raised "signing rest" made GOOD and other
+  // one-handed signs appear two-handed against their reference videos.
+  let leftArm: ArmPose = augment.non_dominant_rest === 'support' ? SUPPORT_LEFT : SIDE_REST_LEFT
 
   if (symmetric) {
     nonDominant = handshapeFor(m.NonDominantHandshape ?? m.Handshape, descriptors)
@@ -679,7 +697,7 @@ function poseForMorpheme(m: Morpheme, ctx: MorphemeContext): Pose {
       ? (phase + 0.5) % 1
       : phase
     leftArm = {
-      target: mirror(add(add(base, offsetAt(alt)), hover)),
+      target: mirror(add(add(add(base, offsetAt(alt)), placement), hover)),
       palm: normalise(mirror(palm)),
       point: normalise(mirror(point)),
       elbow: normalise(mirror(elbow)),
@@ -769,6 +787,7 @@ function authoredPose(id: string, elapsedSeconds: number, opts: MotionOptions): 
   const framePose = (f: AuthoredFrame): Pose => ({
     ...rest,
     rightArm: { elbow: [0.38, -0.90, -0.10], ...f.right,
+      target: add(f.right.target, clip.location_offset ?? [0, 0, 0]),
       palm: normalise(f.right.palm), point: normalise(f.right.point) },
     leftArm: f.left ? { elbow: [-0.38, -0.90, -0.10], ...f.left,
       palm: normalise(f.left.palm), point: normalise(f.left.point) } : SIGNING_REST_LEFT,
@@ -827,7 +846,7 @@ export function motionFor(
   // the one thing they are definitely not. The real articulation is a reduced,
   // fluid version of the spelling rather than crisp letters, so this is still
   // an approximation - but a far closer one than holding one letter.
-  if (sign.FingerspelledLoanSign === '1') {
+  if (sign.FingerspelledLoanSign === '1' && !augmentFor(id).use_descriptors) {
     const word = (sign.asl_lex_entry ?? id).replace(/[^A-Za-z0-9]/g, '')
     const nm = augmentFor(id).nonmanual ?? {}
     const pose = fingerspellPose(word, elapsedSeconds)
@@ -991,10 +1010,20 @@ export const SIGNING_REST_LEFT: ArmPose = {
 
 /** Relaxed left-hand rest used by one-handed signs that keep the arm at the hip. */
 export const SIDE_REST_LEFT: ArmPose = {
-  target: [-0.43, -0.92, 0.02],
+  target: [-0.43, -0.92, 0.22],
   palm: normalise([-0.35, 0.72, -0.6]),
   point: pointForPalm(normalise([-0.35, 0.72, -0.6]), [0.5, -0.2, 0.84]),
   elbow: normalise([-0.38, -0.9, -0.08]),
+}
+
+/** Flat palm held below the dominant hand for citation variants whose source
+ * video uses a support hand even though ASL-LEX codes the sign OneHanded. */
+export const SUPPORT_LEFT: ArmPose = {
+  target: [-0.21, -0.35, 0.58],
+  palm: [0, 1, 0],
+  point: [1, 0, 0],
+  elbow: normalise(mirror(ELBOW_BY_LOCATION.Hand)),
+  contact: true,
 }
 
 /** Linear blend between two poses, used for the release and for sign changes. */
@@ -1025,7 +1054,7 @@ export function blendPoses(a: Pose, b: Pose, t: number): Pose {
         ? undefined : (x.pointTolerance ?? 0) + ((y.pointTolerance ?? 0) - (x.pointTolerance ?? 0)) * t,
       // Contact is asserted while either side asserts it, so the renderer does
       // not push the hand off the body midway through a contacting sign.
-      contact: t < 0.5 ? x.contact : y.contact,
+      contact: !!(x.contact || y.contact),
     }
   }
   const n = (p: number, q: number) => p + (q - p) * t
