@@ -118,7 +118,7 @@ async def transcribe_audio(file: UploadFile):
 @app.post('/api/feedback')
 async def feedback(body: FeedbackRequest):
     """Never send camera frames or personal identifiers to a language model."""
-    default = f'Observed: {body.observed}. Target: {body.expected}. Review the next required step and retry.'
+    default = f'Observed: {body.observed}. Target: {body.expected}. Adjust one finger at a time and retry.'
     key = os.getenv('OPENAI_API_KEY', '').strip()
     if not key:
         return {'feedback': default, 'mode': 'deterministic'}
@@ -130,7 +130,7 @@ async def feedback(body: FeedbackRequest):
             temperature=0.2,
             max_tokens=120,
             messages=[
-                {'role': 'system', 'content': 'Write one concise actionable coaching sentence about sign practice. Explain only the supplied measured steps and unmet requirements. Do not infer ASL correctness from the score. No invented observations or sign-language fluency claims.'},
+                {'role': 'system', 'content': 'Write one concise actionable coaching sentence about basic handshape practice. Explain only the given measured finger states, not ASL correctness. No invented observations or sign-language fluency claims.'},
                 {'role': 'user', 'content': body.model_dump_json()},
             ],
         )

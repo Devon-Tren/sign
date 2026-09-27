@@ -24,7 +24,7 @@ export async function generateFeedback(drill_name:string, observed:string, expec
       body:JSON.stringify({drill_name,observed,expected,score}),signal:AbortSignal.timeout(12000)})
     if (!r.ok) throw new Error()
     const data=await r.json();return data.feedback || observed
-  } catch { return `Observed: ${observed}. Target: ${expected}. Review the next required step and retry.` }
+  } catch { return `Observed: ${observed}. Target: ${expected}. Adjust one finger at a time and retry.` }
 }
 export function liveWsUrl():string {
   if (base) return `${base.replace(/^http/,'ws')}/ws/live`

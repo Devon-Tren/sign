@@ -9,7 +9,6 @@ import { playbackPlan, poseAt } from '../src/playback'
 import { ORIENTATION_BY_LOCATION } from '../src/anchors'
 import { FINGERSPELL } from '../src/handshapes'
 import './rig.test'
-import './practiceGrading.test'
 import { learningItem } from '../src/learning'
 import { orientationFor } from '../src/anchors'
 

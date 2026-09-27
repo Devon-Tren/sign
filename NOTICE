@@ -77,13 +77,12 @@ Microsoft Rocketbox
   MIT terms, so no NonCommercial restriction applies to these files.
 
 --------------------------------------------------------------------------------
-RUNTIME DEPENDENCIES
+RUNTIME DEPENDENCIES (not redistributed; fetched at runtime)
 --------------------------------------------------------------------------------
 
 MediaPipe Tasks Vision (Apache-2.0) - Google LLC
-  WASM runtime and hand/pose landmark models are bundled under
-  frontend/public/mediapipe/ and loaded locally in the Learning studio.
-  Pose model source and checksum: frontend/public/mediapipe/MODELS.md.
+  WASM runtime and hand-landmark model downloaded from jsDelivr and
+  storage.googleapis.com at first launch of the Learning studio.
 
 Node and Python package dependencies retain their own licenses; see
 frontend/package-lock.json and backend/requirements.txt.
