@@ -544,7 +544,7 @@
       "non_dominant_rest": "side"
     },
     "like": {
-      "torso_clearance": 0.12
+      "torso_clearance": 0.25
     },
     "why": {
       "location_offset": [0, 0, 0.20],
