@@ -67,8 +67,8 @@ test('citation overrides reach playback and contact relations respect explicit o
   }
   assert.ok(motionFor('thank_you', clipLengthMs('thank_you') * .75 / 1000).rightArm!.palm[2] < 0)
   const help = motionFor('help', clipLengthMs('help') * .55 / 1000).rightArm!
-  const expected = augmentFor('help').orientation!.palm
-  assert.ok(help.palm.reduce((s, v, i) => s + v * expected[i], 0) > .99)
+  // The authored thumb-up hammer takes precedence over the older HELP prior.
+  assert.deepEqual(help.palm, [-1, 0, 0])
 })
 
 test('all signs retain ASL-LEX handshape, location anchors and timing', () => {
@@ -299,4 +299,35 @@ test('hello keeps its original salute path and timing after wrist correction', (
     [0, [.34, .25, .17]], [.22, [.34, .25, .17]],
     [.72, [.54, .28, .4]], [1, [.54, .28, .4]],
   ])
+})
+
+test('understand raises the index twice with two subtle nods', () => {
+  let previousRaised = false, rises = 0
+  let previousNodding = false, nods = 0
+  for (let i = 0; i < 200; i++) {
+    const pose = motionFor('understand', i / 100, { mode: 'continuous', skipOnset: true, skipRelease: true })
+    const raised = pose.rightHand.fingers[0].curl[0] < .1
+    const nodding = pose.head[0] < -.07
+    if (raised && !previousRaised) rises++
+    if (nodding && !previousNodding) nods++
+    assert.ok(pose.rightHand.fingers.slice(1).every(f => f.curl[0] > 1), 'other fingers stay in fist')
+    assert.ok(pose.head[0] >= -.1 && pose.head[0] <= 0, 'nod stays subtle and tilts down')
+    previousRaised = raised; previousNodding = nodding
+  }
+  assert.equal(rises, 2)
+  assert.equal(nods, 2)
+})
+
+test('help and again each make exactly two downward taps', () => {
+  for (const id of ['help', 'again']) {
+    let contacts = 0, previousContact = false
+    for (let i = 0; i < 200; i++) {
+      const pose = motionFor(id, clipLengthMs(id, 'continuous') * i / 200000,
+        { mode: 'continuous', skipOnset: true, skipRelease: true })
+      const contact = pose.rightArm!.target[1] < (id === 'help' ? -.29 : -.34)
+      if (contact && !previousContact) contacts++
+      previousContact = contact
+    }
+    assert.equal(contacts, 2, id)
+  }
 })

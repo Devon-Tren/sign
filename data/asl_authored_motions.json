@@ -2689,6 +2689,1409 @@
           }
         }
       ]
+    },
+    "me": {
+      "variant": "Index finger points to the signer\u2019s own chest",
+      "references": [],
+      "duration_ms": {
+        "isolated": 1300,
+        "continuous": 950
+      },
+      "right_handshape": "1",
+      "keyframes": [
+        {
+          "at": 0,
+          "phase": "approach chest",
+          "right": {
+            "target": [
+              0.1,
+              -0.12,
+              0.38
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.94,
+              0,
+              -0.342
+            ],
+            "elbow": [
+              0.8,
+              -0.6,
+              0
+            ],
+            "contact": false,
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                0,
+                0,
+                0
+              ]
+            },
+            "attach": {
+              "torso": 0
+            }
+          }
+        },
+        {
+          "at": 0.35,
+          "phase": "index to chest",
+          "right": {
+            "target": [
+              0.1,
+              -0.12,
+              0.29
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.94,
+              0,
+              -0.342
+            ],
+            "elbow": [
+              0.8,
+              -0.6,
+              0
+            ],
+            "contact": true,
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                0,
+                0,
+                0
+              ]
+            },
+            "attach": {
+              "torso": 1
+            }
+          }
+        },
+        {
+          "at": 1,
+          "phase": "hold self point",
+          "right": {
+            "target": [
+              0.1,
+              -0.12,
+              0.29
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.94,
+              0,
+              -0.342
+            ],
+            "elbow": [
+              0.8,
+              -0.6,
+              0
+            ],
+            "contact": true,
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                0,
+                0,
+                0
+              ]
+            },
+            "attach": {
+              "torso": 1
+            }
+          }
+        }
+      ]
+    },
+    "help": {
+      "variant": "User-requested thumb-up fist hammers twice onto an outward flat left palm",
+      "references": [],
+      "duration_ms": {
+        "isolated": 2200,
+        "continuous": 1850
+      },
+      "right_handshape": "thumbsup",
+      "left_handshape": "b",
+      "keyframes": [
+        {
+          "at": 0,
+          "phase": "lift thumb-up fist",
+          "right": {
+            "target": [
+              0.07,
+              -0.025,
+              0.51
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              0,
+              1
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 0.14,
+          "phase": "lift thumb-up fist",
+          "right": {
+            "target": [
+              0.07,
+              -0.025,
+              0.51
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              0,
+              1
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 0.29,
+          "phase": "fist taps flat palm",
+          "right": {
+            "target": [
+              0.07,
+              -0.30500000000000005,
+              0.51
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              0,
+              1
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 0.38,
+          "phase": "fist taps flat palm",
+          "right": {
+            "target": [
+              0.07,
+              -0.30500000000000005,
+              0.51
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              0,
+              1
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 0.53,
+          "phase": "lift thumb-up fist",
+          "right": {
+            "target": [
+              0.07,
+              -0.025,
+              0.51
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              0,
+              1
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 0.64,
+          "phase": "lift thumb-up fist",
+          "right": {
+            "target": [
+              0.07,
+              -0.025,
+              0.51
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              0,
+              1
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 0.8,
+          "phase": "fist taps flat palm",
+          "right": {
+            "target": [
+              0.07,
+              -0.30500000000000005,
+              0.51
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              0,
+              1
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 1,
+          "phase": "fist taps flat palm",
+          "right": {
+            "target": [
+              0.07,
+              -0.30500000000000005,
+              0.51
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              0,
+              1
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        }
+      ]
+    },
+    "again": {
+      "variant": "User-requested four fingers rise and tap the centre of the flat left palm twice",
+      "references": [],
+      "duration_ms": {
+        "isolated": 2200,
+        "continuous": 1850
+      },
+      "right_handshape": "bent_b",
+      "left_handshape": "b",
+      "keyframes": [
+        {
+          "at": 0,
+          "phase": "lift four fingers",
+          "right": {
+            "target": [
+              0,
+              -0.13,
+              0.63
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.25,
+              0,
+              0.968
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 0.14,
+          "phase": "lift four fingers",
+          "right": {
+            "target": [
+              0,
+              -0.13,
+              0.63
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.25,
+              0,
+              0.968
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 0.29,
+          "phase": "four fingers tap palm centre",
+          "right": {
+            "target": [
+              0,
+              -0.36,
+              0.63
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.25,
+              0,
+              0.968
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 0.38,
+          "phase": "four fingers tap palm centre",
+          "right": {
+            "target": [
+              0,
+              -0.36,
+              0.63
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.25,
+              0,
+              0.968
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 0.53,
+          "phase": "lift four fingers",
+          "right": {
+            "target": [
+              0,
+              -0.13,
+              0.63
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.25,
+              0,
+              0.968
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 0.64,
+          "phase": "lift four fingers",
+          "right": {
+            "target": [
+              0,
+              -0.13,
+              0.63
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.25,
+              0,
+              0.968
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 0.8,
+          "phase": "four fingers tap palm centre",
+          "right": {
+            "target": [
+              0,
+              -0.36,
+              0.63
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.25,
+              0,
+              0.968
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        },
+        {
+          "at": 1,
+          "phase": "four fingers tap palm centre",
+          "right": {
+            "target": [
+              0,
+              -0.36,
+              0.63
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.25,
+              0,
+              0.968
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ],
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                1,
+                1,
+                1
+              ]
+            },
+            "contact": true
+          },
+          "left": {
+            "target": [
+              0,
+              -0.37,
+              0.63
+            ],
+            "palm": [
+              0,
+              1,
+              0
+            ],
+            "point": [
+              0.7,
+              0,
+              0.714
+            ],
+            "elbow": [
+              -0.5,
+              -0.86,
+              0
+            ],
+            "reach": {
+              "palm": 1
+            },
+            "contact": true
+          }
+        }
+      ]
+    },
+    "understand": {
+      "variant": "User-requested fist beside the right side of the head, palm inward; index rises twice with small nods",
+      "references": [],
+      "duration_ms": {
+        "isolated": 2350,
+        "continuous": 2000
+      },
+      "right_handshape": "s",
+      "keyframes": [
+        {
+          "at": 0,
+          "phase": "fist beside head",
+          "right": {
+            "target": [
+              0.48,
+              0.3,
+              0.35
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ]
+          },
+          "right_handshape": "s",
+          "head": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "at": 0.12,
+          "phase": "fist beside head",
+          "right": {
+            "target": [
+              0.48,
+              0.3,
+              0.35
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ]
+          },
+          "right_handshape": "s",
+          "head": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "at": 0.25,
+          "phase": "raise index and nod",
+          "right": {
+            "target": [
+              0.48,
+              0.3,
+              0.35
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ]
+          },
+          "right_handshape": "1",
+          "head": [
+            -0.09,
+            0,
+            0
+          ]
+        },
+        {
+          "at": 0.34,
+          "phase": "raise index and nod",
+          "right": {
+            "target": [
+              0.48,
+              0.3,
+              0.35
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ]
+          },
+          "right_handshape": "1",
+          "head": [
+            -0.09,
+            0,
+            0
+          ]
+        },
+        {
+          "at": 0.46,
+          "phase": "fist beside head",
+          "right": {
+            "target": [
+              0.48,
+              0.3,
+              0.35
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ]
+          },
+          "right_handshape": "s",
+          "head": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "at": 0.57,
+          "phase": "fist beside head",
+          "right": {
+            "target": [
+              0.48,
+              0.3,
+              0.35
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ]
+          },
+          "right_handshape": "s",
+          "head": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "at": 0.7,
+          "phase": "raise index and nod",
+          "right": {
+            "target": [
+              0.48,
+              0.3,
+              0.35
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ]
+          },
+          "right_handshape": "1",
+          "head": [
+            -0.09,
+            0,
+            0
+          ]
+        },
+        {
+          "at": 0.79,
+          "phase": "raise index and nod",
+          "right": {
+            "target": [
+              0.48,
+              0.3,
+              0.35
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ]
+          },
+          "right_handshape": "1",
+          "head": [
+            -0.09,
+            0,
+            0
+          ]
+        },
+        {
+          "at": 0.91,
+          "phase": "fist beside head",
+          "right": {
+            "target": [
+              0.48,
+              0.3,
+              0.35
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ]
+          },
+          "right_handshape": "s",
+          "head": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "at": 1,
+          "phase": "fist beside head",
+          "right": {
+            "target": [
+              0.48,
+              0.3,
+              0.35
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.45,
+              -0.89,
+              0
+            ]
+          },
+          "right_handshape": "s",
+          "head": [
+            0,
+            0,
+            0
+          ]
+        }
+      ]
     }
   },
   "sequences": {

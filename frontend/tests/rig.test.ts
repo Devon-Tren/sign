@@ -201,3 +201,37 @@ test('polite signs keep a straight hello wrist, lower thank-you, and rub the che
   assert.ok(Math.max(...centres.map(p => p[1])) - Math.min(...centres.map(p => p[1])) > .11)
   assert.ok(v(centres[0]).distanceTo(v(centres[4])) < .015, 'circle returns to start')
 })
+
+test('self-point and repeated palm taps reach their targets on the character', async () => {
+  const rig = await loadTestSigner()
+  const v = (a: readonly number[]) => new THREE.Vector3(...a)
+  const settle = (id: string, phase: number) => {
+    const t = clipLengthMs(id, 'continuous') * phase / 1000
+    const pose = motionFor(id, t, { mode: 'continuous', skipOnset: true, skipRelease: true })
+    for (let k = 0; k < 45; k++) applyManualPose(rig, pose, t, 1 / 30)
+    return { pose, snap: rigSnapshot(rig) }
+  }
+  const me = settle('me', .7)
+  assert.ok(v(me.snap.right.tip).distanceTo(v([.1, -.12, .29])) < .05)
+  assert.ok(me.pose.rightHand.fingers[0].curl.every(c => c === 0))
+  assert.ok(me.pose.rightHand.fingers.slice(1).every(f => f.curl[0] > 1))
+  for (const id of ['help', 'again']) {
+    const lifted = settle(id, .10).snap
+    for (const phase of [.33, .9]) {
+      const { snap } = settle(id, phase)
+      assert.ok(snap.left.palm[1] > .98, `${id} left palm faces up`)
+      assert.ok(snap.left.point[2] > .6, `${id} left hand extends outward`)
+      const contact = id === 'help' ? snap.right.distalJoints[3] : snap.right.tip
+      assert.ok(v(contact).distanceTo(v(snap.left.palmCentre)) < .05, `${id} tap reaches palm centre`)
+      assert.ok(lifted.right.wrist[1] - snap.right.wrist[1] > .18, `${id} rises between taps`)
+      if (id === 'help') assert.ok(snap.right.thumbTip[1] > snap.right.wrist[1] + .17, 'thumb stays up')
+    }
+    const secondLift = settle(id, .58).snap
+    assert.ok(Math.abs(secondLift.right.wrist[1] - lifted.right.wrist[1]) < .02, `${id} second lift`)
+  }
+  for (const phase of [.08, .29, .5, .75]) {
+    const { snap } = settle('understand', phase)
+    assert.ok(snap.right.wrist[0] > .4 && snap.right.wrist[1] > .25, 'fist beside right side of head')
+    assert.ok(snap.right.palm[2] < -.98, 'fingers face the signer')
+  }
+})

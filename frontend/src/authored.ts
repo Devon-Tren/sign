@@ -1,7 +1,7 @@
 import data from '../../data/asl_authored_motions.json'
-import type { ArmPose } from './clips'
+import type { ArmPose, Vec3 } from './clips'
 
-export type AuthoredFrame = { at: number; phase: string; right: ArmPose; left?: ArmPose; right_handshape?: string; left_handshape?: string }
+export type AuthoredFrame = { at: number; phase: string; right: ArmPose; left?: ArmPose; right_handshape?: string; left_handshape?: string; head?: Vec3 }
 export type AuthoredClip = {
   variant: string
   references: string[]

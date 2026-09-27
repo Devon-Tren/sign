@@ -115,6 +115,7 @@ export const BASE_FORMS: Record<string, BaseForm> = {
 
   // --- fist family. These differ ONLY in the thumb, which is exactly what
   //     distinguishes them in ASL, so the thumb role carries the contrast. ---
+  thumbsup: { selected: [], thumb: 'extended', unselected: 'FullyClosed' },
   a:  { selected: [], thumb: 'alongside', unselected: 'FullyClosed' },
   s:  { selected: [], thumb: 'across',    unselected: 'FullyClosed' },
   t:  { selected: [], thumb: 'between',   unselected: 'FullyClosed', thumbUnder: 1 },
