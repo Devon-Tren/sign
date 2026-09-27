@@ -116,6 +116,14 @@ export type ArmChain = {
   /** The hand bone's world rotation at rest, and the rest hand basis. */
   handRestWorldQ: THREE.Quaternion
   restBasisQ: THREE.Quaternion
+  /**
+   * Wrist goniometry frame in the forearm's local space: `along` is the
+   * forearm's long axis (anatomical neutral), `palm` and `across` the rest
+   * palm normal and knuckle line squared to it. `hand` is the hand's own
+   * knuckle direction at bind, which is NOT neutral on this model (~13 degrees
+   * sideways and ~15 back from the forearm).
+   */
+  wristRest: { hand: THREE.Vector3; along: THREE.Vector3; palm: THREE.Vector3; across: THREE.Vector3 }
 }
 
 /** Head, spine and face bones, with the rest pose and calibrated world axes. */
@@ -340,6 +348,15 @@ function buildArm(root: THREE.Object3D, side: 'L' | 'R'): ArmChain {
   const restBasisQ = new THREE.Quaternion()
   basisQuaternion(along, palmNormal, restBasisQ)
   const foreRestWorld = fore.getWorldQuaternion(new THREE.Quaternion())
+  const foreRestInv = foreRestWorld.clone().invert()
+  const foreAxis = localAxisToChild(fore)
+  const restPalm = palmNormal.clone().applyQuaternion(foreRestInv)
+  const squaredPalm = restPalm.addScaledVector(foreAxis, -restPalm.dot(foreAxis)).normalize()
+  const restAcross = across.clone().applyQuaternion(foreRestInv)
+  const squaredAcross = new THREE.Vector3().crossVectors(squaredPalm, foreAxis)
+  if (squaredAcross.dot(restAcross) < 0) squaredAcross.negate()
+  const wristRest = { hand: along.clone().applyQuaternion(foreRestInv), along: foreAxis.clone(),
+    palm: squaredPalm, across: squaredAcross }
   const foreBasisInv = basisQuaternion(localAxisToChild(fore),
     palmNormal.clone().applyQuaternion(foreRestWorld.invert()), new THREE.Quaternion()).invert()
 
@@ -359,7 +376,7 @@ function buildArm(root: THREE.Object3D, side: 'L' | 'R'): ArmChain {
       clavicle: clavicle ? localAxisToChild(clavicle) : undefined,
       upper: localAxisToChild(upper), fore: localAxisToChild(fore),
     },
-    palmNormal, across, along,
+    palmNormal, across, along, wristRest,
   }
 }
 
@@ -742,8 +759,9 @@ export function reachOffset(arm: ArmChain, palm: THREE.Vector3, point: THREE.Vec
   arm.hand.updateMatrixWorld(true)
   arm.hand.getWorldPosition(_reachW)
   arm.hand.getWorldQuaternion(_reachInv).invert()
-  desiredHand(arm, palm, point, _reachQ)
-  // current wrist->point vector, into the hand frame, then out at the request
+  achievableHand(arm, palm, point, _reachQ)
+  // current wrist->point vector, into the hand frame, then out at the orientation
+  // the wrist can actually reach (a capped wrist otherwise misses the contact)
   const local = (world: THREE.Vector3) => world.sub(_reachW).applyQuaternion(_reachInv).applyQuaternion(_reachQ)
   if (weights.tip) {
     // The extended fingers make the contact: weight tips by reach from the wrist.
@@ -765,10 +783,32 @@ export function reachOffset(arm: ArmChain, palm: THREE.Vector3, point: THREE.Vec
     arm.fingers[1].bones[0].getWorldPosition(_reachP).lerp(_reachW, 0.45)
     _reachA.copy(arm.palmNormal).applyQuaternion(arm.hand.getWorldQuaternion(_reachQ).multiply(_inv.copy(arm.handRestWorldQ).invert()))
     _reachP.addScaledVector(_reachA, 0.025 * (arm.upperLen + arm.foreLen))
-    desiredHand(arm, palm, point, _reachQ)
+    achievableHand(arm, palm, point, _reachQ)
     out.addScaledVector(local(_reachP), weights.palm)
   }
   return out.multiplyScalar(1 / Math.max(1, total))
+}
+
+/**
+ * Hand world rotation for palm/point after the sideways wrist limit, on the
+ * forearm as last solved (before the first solve, the request itself). Only
+ * deviation is applied: aiming contacts through the overall bend cone too
+ * swung the wrist sideways on poses past it (THANK-YOU lowered to the chest).
+ */
+let _deviationOnly = false
+const CONTACT_REAIM = 6 * Math.PI / 180
+function achievableHand(arm: ArmChain, palm: THREE.Vector3, point: THREE.Vector3, out: THREE.Quaternion) {
+  desiredHand(arm, palm, point, out)
+  if (arm.ikFore.lengthSq() < 1e-8 || arm.ikUpper.lengthSq() < 1e-8) return out
+  const requested = lastRequestedTwist, twist = lastTwist, wrist = _lastWristAngle, dev = _lastDeviationExcess
+  _deviationOnly = true
+  orientAt(arm, arm.ikUpper, arm.ikFore, out, MAX_WRIST_SWING)
+  _deviationOnly = false
+  // A few degrees of trim barely move the contact; re-aiming for them only
+  // shifted the arm (THANK-YOU's chin contact is trimmed 2.7 degrees).
+  if (_lastDeviationExcess > CONTACT_REAIM) out.copy(_foreWorld).multiply(_handLocal)
+  lastRequestedTwist = requested; lastTwist = twist; _lastWristAngle = wrist; _lastDeviationExcess = dev
+  return out
 }
 
 /** World position of the blended hand point (see reachOffset) as the hand is NOW. */
@@ -893,11 +933,47 @@ function orientAt(
     .multiply(_inv.copy(arm.restQ.hand).invert())
   const angle = _identity.angleTo(_handLocal)
   _lastWristAngle = angle
+  const sideways = wristTuning.inSearch ? limitDeviation(arm) : 0
+  _lastDeviationExcess = sideways
   const limit = THREE.MathUtils.clamp(maxWrist, 0.65, 1.22)
-  if (angle > limit) _handLocal.slerp(_identity, 1 - limit / angle)
+  const bent = _identity.angleTo(_handLocal)
+  if (bent > limit && !_deviationOnly) _handLocal.slerp(_identity, 1 - limit / bent)
   _handLocal.multiply(arm.restQ.hand)
-  return Math.max(0, angle - limit)
+  return Math.max(0, bent - limit) + sideways
 }
+
+/**
+ * The wrist bends much less toward the thumb or little finger (radial/ulnar
+ * deviation, ~20-35 degrees) than toward the palm or back (70-85), but the
+ * clamp above is one 55-degree cone. The safety audit found the sideways bend
+ * past 35 degrees in 109 of the first 100 phrases' frames-worth of findings.
+ * Pull the knuckle line back within wristTuning, keeping its flexion; the lost
+ * palm/finger direction shows up as error in chooseElbow and relaxPoint, which
+ * then move the elbow, forearm twist or finger direction to recover it.
+ * Returns the excess in radians.
+ */
+function limitDeviation(arm: ArmChain) {
+  const { hand, along, palm, across } = arm.wristRest
+  _devA.copy(hand).applyQuaternion(_handLocal)
+  // Deviation is the knuckle line's angle out of the flexion plane (flexion
+  // first, then deviation in the hand), as goniometry measures it. The slope
+  // against the forearm (atan of across/along) overstates it on a flexed
+  // wrist: at 55 degrees of flexion a 20-degree deviation reads 32.
+  // `across` runs index -> pinky on both hands, so + is ulnar deviation.
+  _devA.normalize()
+  const dev = Math.asin(THREE.MathUtils.clamp(_devA.dot(across), -1, 1))
+  const max = dev > 0 ? wristTuning.ulnar : wristTuning.radial
+  if (Math.abs(dev) <= max) return 0
+  const flex = Math.atan2(_devA.dot(palm), _devA.dot(along))
+  _devC.copy(along).multiplyScalar(Math.cos(flex)).addScaledVector(palm, Math.sin(flex))
+    .multiplyScalar(Math.cos(max)).addScaledVector(across, Math.sign(dev) * Math.sin(max))
+  _handLocal.premultiply(_devQ.setFromUnitVectors(_devA, _devC))
+  return Math.abs(dev) - max
+}
+/** Sideways wrist bend the solver allows (radians); the audit fails past 35 degrees. */
+export const wristTuning = { ulnar: 33 * Math.PI / 180, radial: 25 * Math.PI / 180, inSearch: false }
+const _devA = new THREE.Vector3(), _devC = new THREE.Vector3(), _devQ = new THREE.Quaternion()
+let _lastDeviationExcess = 0
 const _inv = new THREE.Quaternion(), _twist = new THREE.Quaternion()
 /** Wrist rotation away from bind requested by the last orientAt, before its clamp. */
 let _lastWristAngle = 0
@@ -1045,7 +1121,7 @@ function relaxCost(arm: ArmChain, palm: THREE.Vector3, point: THREE.Vector3, del
   _relaxTry.copy(point).applyAxisAngle(palm, delta)
   desiredHand(arm, palm, _relaxTry, _orientationWant)
   orientAt(arm, arm.ikUpper, arm.ikFore, _orientationWant, maxWrist)
-  return _lastWristAngle + 0.35 * Math.abs(delta)
+  return _lastWristAngle + 2 * _lastDeviationExcess + 0.35 * Math.abs(delta)
 }
 
 /**
@@ -1104,11 +1180,16 @@ export function setHandOrientation(
   arm.fore.getWorldQuaternion(_foreWorld)
   _handLocal.copy(_foreWorld).invert().multiply(_orientationWant)
     .multiply(_inv.copy(arm.restQ.hand).invert())
+  limitDeviation(arm)
   const bend = _identity.angleTo(_handLocal)
   const wristLimit = THREE.MathUtils.clamp(maxWristSwing, 0.65, 1.22)
   if (bend > wristLimit) _handLocal.slerp(_identity, 1 - wristLimit / bend)
   _handLocal.multiply(arm.restQ.hand)
   slerpLimited(arm.hand.quaternion, _handLocal, dt, WRIST_LAMBDA, WRIST_MAX_RAD_S)
+  // The eased path between two in-range wrist settings can leave the range
+  // (measured 55 degrees of deviation mid-transition): limit what is shown.
+  _handLocal.copy(arm.hand.quaternion).multiply(_inv.copy(arm.restQ.hand).invert())
+  if (limitDeviation(arm) > 0) arm.hand.quaternion.copy(_handLocal.multiply(arm.restQ.hand))
   arm.hand.updateMatrixWorld(true)
 }
 

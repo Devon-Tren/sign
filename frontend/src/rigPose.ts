@@ -5,7 +5,7 @@ import { applyHand, applyTorso, handPoint, reachOffset, relaxPoint, resetContinu
 import { breathAt, idlePose, type ArmPose, type Pose, type Vec3 } from './clips'
 import { torsoFrontZ } from './anchors'
 import { bodyMotion } from './body'
-import { bodySurface, cmToWorld, deepestContact } from './bodySurface'
+import { bodySurface, cmToWorld, deepestContact, signedDistance } from './bodySurface'
 
 const target = new THREE.Vector3(), palm = new THREE.Vector3(), point = new THREE.Vector3()
 const elbow = new THREE.Vector3()
@@ -66,6 +66,36 @@ function keepOutOfTorso(rig: SignerRig, wrist: THREE.Vector3, palmContact = 0, e
   const front = torsoFrontZ(y) + bodyTuning.wristClearance * (1 - palmContact) + extraClearance
   if (z < front) wrist.z = mid.z + front * reach
 }
+/**
+ * A contact point authored on the body (chest, chin, forehead) is placed
+ * against anchor profiles, but the real mesh is bumpier: the jacket lapels
+ * stand ~3.5 cm proud of the chest profile beside the midline, and ME, MY,
+ * PLEASE and FEEL put the fingertip 2-7 cm inside it. Move such a point out
+ * along the mesh normal until it sits a fingertip's skin radius outside.
+ * Stateless (no carried push), so it cannot oscillate or snap.
+ */
+function onSkin(rig: SignerRig, point: THREE.Vector3, reach: NonNullable<ArmPose['reach']>) {
+  // Tip and thumb points are extrapolated along the bones, inside the finger;
+  // the palm point (./signerRig reachOffset) is already lifted to the skin.
+  const tips = (reach.tip ?? 0) + (reach.thumb ?? 0), palms = reach.palm ?? 0
+  const cm = (tips * CONTACT_SKIN_CM + palms * PALM_SKIN_CM) / Math.max(1e-6, tips + palms)
+  const margin = cmToWorld(rig, cm)
+  const parts = bodySurface(rig)
+  for (let pass = 0; pass < 3; pass++) {
+    let depth = Infinity
+    for (const part of parts) {
+      const d = signedDistance(part, point, _snapNormal)
+      if (d !== null && d < depth) { depth = d; _snapBest.copy(_snapNormal) }
+    }
+    if (depth >= margin - 1e-6) return
+    point.addScaledVector(_snapBest, margin - depth)
+  }
+}
+/** Skin radius of a fingertip (tests/safety.audit.ts armPoints) plus a hair. */
+const CONTACT_SKIN_CM = 0.9
+const PALM_SKIN_CM = 1.5
+const _snapNormal = new THREE.Vector3(), _snapBest = new THREE.Vector3()
+
 /** How far in front of the torso surface a derived wrist must stay (arm reach). */
 const WRIST_CLEARANCE = 0.05
 /** Exported for the ablations in artifacts/rig-verify. */
@@ -194,6 +224,7 @@ export function applyManualPose(rig: SignerRig, pose: Pose, at: number, dt: numb
         // out of the chest (it may land a little off contact instead).
         bodyToWorld(rig, value.target, target, true, true)
         if (value.attach) followBody(rig, value.attach, target)
+        if (value.contact) { rig.root.updateMatrixWorld(true); onSkin(rig, target, value.reach!) }
         target.sub(reachOffset(arm, palmW, pointW, value.reach!, reachScratch))
         // A palm placed on the chest needs surface contact, not the normal
         // hovering clearance. Blend the allowance with the contact weights.

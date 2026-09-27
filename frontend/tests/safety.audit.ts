@@ -227,13 +227,6 @@ function armPoints(arm: ArmChain): { name: string; p: THREE.Vector3; r: number }
   return out
 }
 
-/** Hand rest axes in the forearm's rest frame, captured in bind pose. */
-const WRIST_REST = Object.fromEntries((['right', 'left'] as const).map(side => {
-  const arm = rig[side], inv = arm.fore.getWorldQuaternion(new THREE.Quaternion()).invert()
-  return [side, { along: arm.along.clone().applyQuaternion(inv), palm: arm.palmNormal.clone().applyQuaternion(inv),
-    across: arm.across.clone().applyQuaternion(inv) }]
-})) as Record<'right' | 'left', { along: THREE.Vector3; palm: THREE.Vector3; across: THREE.Vector3 }>
-
 const faceRight = rig.face.right.clone().normalize()
 const faceForward = rig.face.forward.clone().normalize()
 
@@ -253,16 +246,17 @@ function joints(arm: ArmChain) {
   const neutralPalm = new THREE.Vector3().crossVectors(arm.ikUpper, arm.ikFore).multiplyScalar(arm.side).normalize()
   const forePalm = new THREE.Vector3(0, 0, 1).applyQuaternion(arm.foreBasisInv.clone().invert()).applyQuaternion(foreWorld)
   const twist = -arm.side * Math.atan2(new THREE.Vector3().crossVectors(neutralPalm, forePalm).dot(arm.ikFore), neutralPalm.dot(forePalm))
-  // Wrist: where the knuckle line points relative to the forearm, in the
-  // forearm's rest frame, against the hand's own rest axes (along, palm,
-  // across). Flexion turns it toward the palm, deviation toward the pinky or
-  // thumb side; bind pose is 0/0.
-  const rest = WRIST_REST[arm === rig.right ? 'right' : 'left']
-  const handQ = arm.hand.getWorldQuaternion(new THREE.Quaternion())
-  const along = arm.along.clone().applyQuaternion(handQ.multiply(arm.handRestWorldQ.clone().invert()))
-    .applyQuaternion(foreWorld.clone().invert())
+  // Wrist: where the knuckle line points relative to the forearm's long axis
+  // (anatomical neutral; this model's bind hand is not), in the forearm's own
+  // frame (signerRig wristRest). Flexion turns it toward the palm, deviation
+  // toward the pinky or thumb side.
+  const rest = arm.wristRest
+  const along = rest.hand.clone().applyQuaternion(arm.restQ.hand.clone().invert().premultiply(arm.hand.quaternion))
+  // Deviation: angle out of the flexion plane (as signerRig limitDeviation and
+  // goniometry measure it); a slope against the forearm overstates it when flexed.
+  along.normalize()
   const wristFlex = deg(Math.atan2(along.dot(rest.palm), along.dot(rest.along)))
-  const wristDeviation = deg(Math.atan2(along.dot(rest.across), along.dot(rest.along)))
+  const wristDeviation = deg(Math.asin(THREE.MathUtils.clamp(along.dot(rest.across), -1, 1)))
   // Fingers: signed curl about each joint's own axis; negative = bent backwards.
   let hyper = 0, where = '', thumbHyper = 0
   for (const f of [...arm.fingers, arm.thumb]) {
@@ -319,7 +313,9 @@ function audit(id: string, kind: ItemReport['kind'], timeline: PlaybackTimeline,
     if (trace === id) {
       const fmt = (side: 'right' | 'left') => {
         const d = clearanceDebug.get(rig[side])
-        return d ? `push ${cm(d.push).toFixed(1)}cm contact ${d.depth === null ? '-' : cm(d.depth).toFixed(1) + 'cm ' + d.bone}` : '-'
+        const j = joints(rig[side])
+        const wrist = `dev ${j.wristDeviation.toFixed(0)} flex ${j.wristFlex.toFixed(0)} twist ${j.forearmSupination.toFixed(0)}`
+        return d ? `${wrist} push ${cm(d.push).toFixed(1)}cm contact ${d.depth === null ? '-' : cm(d.depth).toFixed(1) + 'cm ' + d.bone}` : wrist
       }
       console.error(`${String(Math.round(t)).padStart(5)}ms  R ${fmt('right').padEnd(48)} L ${fmt('left')}`)
     }

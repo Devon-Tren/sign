@@ -11,7 +11,11 @@
  *
  *   handshape  knuckle (MCP) and middle-joint (PIP) bend of each finger
  *   path       palm-centre path, 10 samples across the stroke
- *   region     head / torso / low, from the fingertip against the mouth
+ *   region     head or not. ASL-LEX's coded MajorLocation decides for head
+ *              signs; the video's fingertip height alone mislabels ~20
+ *              neutral-space signs (OK, WAIT, WHERE: fingertips up in front
+ *              of the chest) as head signs. A non-head sign fails only when
+ *              ASL-LEX and the video both put it lower than the avatar.
  *   hands      one-handed or two-handed
  *
  * Each phrase then also needs a clean body-safety result for itself
@@ -30,6 +34,7 @@ import fs from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import * as THREE from 'three'
 import bank from '../../data/asl/phrase_bank.json'
+import lex from '../../data/asl_lex_params.json'
 import { loadTestSigner } from './rigFixture'
 import { applyManualPose } from '../src/rigPose'
 import { poseAt, singleSignPlan } from '../src/playback'
@@ -194,8 +199,11 @@ function checkSign(token: string): SignCheck {
   if (path === null) problems.push('signing hand not tracked in the video')
   else if (path > LIMITS.path) problems.push(`hand path off by ${path.toFixed(2)} shoulder widths (limit ${LIMITS.path})`)
   if (shape?.clash.length) problems.push(`handshape: ${shape.clash.join(', ')}`)
-  if (avatar.right.region && video.right.region && avatar.right.region !== video.right.region) {
-    problems.push(`signed at the ${avatar.right.region}, video signs at the ${video.right.region}`)
+  const coded = (lex as { signs: Record<string, { MajorLocation?: string; MinorLocation?: string }> }).signs[id]
+  if (coded?.MajorLocation === 'Head' && avatar.right.region && avatar.right.region !== 'head') {
+    problems.push(`signed at the ${avatar.right.region}; ASL-LEX codes it at the head (${coded.MinorLocation})`)
+  } else if (coded && coded.MajorLocation !== 'Head' && avatar.right.region === 'head' && video.right.region !== 'head') {
+    problems.push(`signed at the head; ASL-LEX (${coded.MajorLocation}) and the video place it lower`)
   }
   const two: [boolean, boolean] = [!!avatar.left.active, !!video.left.active]
   if (two[0] !== two[1]) problems.push(two[1] ? 'video uses both hands, avatar one' : 'avatar uses both hands, video one')
