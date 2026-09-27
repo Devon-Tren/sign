@@ -485,7 +485,7 @@
       "non_dominant_rest": "side"
     },
     "like": {
-      "torso_clearance": 0.045
+      "torso_clearance": 0.12
     },
     "why": {
       "nonmanual": {
