@@ -98,6 +98,7 @@ def test_model_pipeline_and_failure(monkeypatch):
     monkeypatch.setattr('planner.model_output', fake)
     result = asyncio.run(create_plan(PlanRequest(text='Does that make sense?', context=['A lesson'])))
     assert result['mode'] == 'experimental-model'
+    assert result['fallback_reason'] is None
     assert len(calls) == 2 and calls[0]['context'] == ['A lesson']
     assert calls[1]['meaning']['predicate'] == 'understand'
     async def fail(*args):
@@ -106,6 +107,33 @@ def test_model_pipeline_and_failure(monkeypatch):
     result = asyncio.run(create_plan(PlanRequest(text='Unknown')))
     assert result['mode'] == 'fingerspell-fallback'
     assert result['plan']['manual_sequence'][0]['sign_id'] == 'FS:UNKNOWN'
+    assert result['fallback_reason']['code'] == 'model_failed'
+
+
+def test_credit_failure_is_visible_without_exposing_provider_details(monkeypatch):
+    import httpx
+    from openai import RateLimitError
+    monkeypatch.setenv('OPENAI_API_KEY', 'test-not-real')
+    async def exhausted(*args):
+        raise RateLimitError('sensitive provider details', response=httpx.Response(
+            429, request=httpx.Request('POST', 'https://api.openai.com/v1/chat/completions')),
+            body={'code': 'credit_balance_exhausted', 'message': 'sensitive provider details'})
+    monkeypatch.setattr('planner.model_output', exhausted)
+    with TestClient(app) as client:
+        response = client.post('/api/plan', json={'text': 'Unknown', 'fast': False})
+    assert response.status_code == 200
+    result = response.json()
+    assert result['mode'] == 'fingerspell-fallback'
+    assert result['fallback_reason']['code'] == 'api_credit_exhausted'
+    assert 'sensitive provider details' not in response.text
+    assert 'test-not-real' not in response.text
+
+
+def test_missing_key_and_fast_mode_explain_why_model_was_skipped():
+    missing = asyncio.run(create_plan(PlanRequest(text='Unknown')))
+    fast = asyncio.run(create_plan(PlanRequest(text='Unknown', fast=True)))
+    assert missing['fallback_reason']['code'] == 'api_key_missing'
+    assert fast['fallback_reason']['code'] == 'fast_mode'
 
 
 def test_candidate_policy_enables_labelled_live_playback():

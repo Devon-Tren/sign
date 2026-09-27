@@ -50,6 +50,11 @@ calls with `OPENAI_TEXT_MODEL`: meaning extraction, then construction using the
 full catalog. See the [OpenAI structured-output guide](https://developers.openai.com/api/docs/guides/structured-outputs).
 The model can use registered signs or `FS:WORD` tokens for unsupported concepts.
 Model failures fall back to the same visible fingerspelling path.
+The response includes `fallback_reason` with a safe `code` and actionable `message`
+when AI planning is skipped or fails (for example, `api_credit_exhausted`,
+`api_key_missing`, or `api_timeout`). A successful model plan has
+`mode: "experimental-model"` and `fallback_reason: null`; stored examples also
+have no fallback reason because they intentionally bypass the model.
 
 The seed examples and rendered motions are unreviewed. Candidate playback is
 enabled for this hackathon prototype and remains labelled experimental. Set
