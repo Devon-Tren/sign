@@ -97,7 +97,10 @@ def init_catalog_store() -> str:
         return _backend
     try:
         from pymongo import MongoClient, ReplaceOne
-        client = MongoClient(uri, serverSelectionTimeoutMS=1800, connectTimeoutMS=1800)
+        # Atlas SRV discovery can take several seconds on residential or venue
+        # DNS. Keep startup bounded, but do not fall back before DNS has a fair
+        # chance to resolve the cluster.
+        client = MongoClient(uri, serverSelectionTimeoutMS=8000, connectTimeoutMS=8000)
         client.admin.command('ping')
         database = client[os.getenv('MONGODB_DB', 'sign')]
         seed = _seed_catalog()
@@ -126,6 +129,28 @@ def init_catalog_store() -> str:
 
 def catalog_backend() -> str:
     return _backend
+
+
+def get_database():
+    return _database
+
+
+def seed_phrases(conn):
+    from db import get_phrases
+    from pymongo import UpdateOne
+    if _database is not None:
+        _database.phrases.create_index('id', unique=True)
+        _database.phrases.bulk_write([
+            UpdateOne({'id': row['id']}, {'$setOnInsert': row}, upsert=True)
+            for row in get_phrases(conn)
+        ])
+
+
+def stored_phrases(conn):
+    from db import get_phrases
+    if _database is None:
+        return get_phrases(conn)
+    return list(_database.phrases.find({}, {'_id': 0}).sort([('level', 1), ('english', 1)]))
 
 
 def get_catalog() -> dict:

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CircleAlert, FileAudio, Mic2, Send, Square, Waves } from 'lucide-react'
 import Avatar from './Avatar'
+import SavedLectures from './SavedLectures'
+import {useAccount} from '../account'
 import { CLIP_LENGTH_MS } from '../clips'
 import { LOCAL_PHRASES, localInterpret } from '../data'
 import { offlineSelection } from '../offlinePlan'
@@ -9,6 +11,7 @@ import type { Phrase, PlanResult, Segment, SelectedPhrase } from '../types'
 import { useLiveAudio } from '../hooks/useLiveAudio'
 
 export default function Live(){
+  const {user}=useAccount()
   const [phrases,setPhrases]=useState<Phrase[]>(LOCAL_PHRASES)
   const [backend,setBackend]=useState<{status:string,live_configured:boolean,transcription_model:string,catalog_backend:string,phrase_count:number,motion_count:number,catalog_consistent:boolean,catalog_mismatch_count:number}|null>(null)
   const [segments,setSegments]=useState<Segment[]>([])
@@ -202,5 +205,6 @@ export default function Live(){
         <div className="safety-inline"><CircleAlert size={15}/><span>Prototype gestures are not validated ASL and cannot replace a qualified interpreter.</span></div>
       </section>
     </div>
+    <SavedLectures key={user?.id??'guest'} text={segments.map(segment=>segment.text).join('\n')} replay={text=>void handleFinal(text,'text')}/>
   </div>
 }

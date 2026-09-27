@@ -1,0 +1,36 @@
+.home-account{display:flex;justify-content:flex-end;padding:16px 24px;background:var(--surface,#fff)}
+.account-trigger{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.account-dialog{width:min(440px,calc(100% - 32px));max-height:90vh;overflow:auto;padding:32px;border:1px solid #d7dcd8;border-radius:8px;color:#263f34;background:#fff}
+.account-dialog::backdrop{background:#10282088}
+.account-dialog h2{font-size:22px;margin:8px 32px 24px 0;letter-spacing:0}
+.account-close{position:absolute;right:12px;top:12px}
+.account-dialog form{display:grid;gap:18px}
+.account-dialog label{display:grid;gap:8px;font-size:14px;font-weight:600}
+.account-dialog input{width:100%;min-width:0;padding:12px;border:1px solid #aebdb4;border-radius:4px;font:inherit;box-sizing:border-box}
+.account-hint{font-size:12px;line-height:1.6;color:#53645a;margin:0}
+.account-switch{background:none;border:0;color:#285b43;text-decoration:underline;cursor:pointer;padding:8px 0;font:inherit;text-align:left}
+.account-dialog>.account-switch{margin-top:16px;font-size:13px}
+.learning-history{padding:0 0 24px;margin-bottom:24px;border-bottom:1px solid var(--border,#ddd)}
+.history-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.history-heading h2{font-size:20px;letter-spacing:0;margin:0}
+.learning-history h3{font-size:14px;margin:22px 0 10px}
+.learning-history p{font-size:13px;line-height:1.6}
+.learning-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:20px 0}
+.learning-metrics dt{font-size:12px;color:#586459}
+.learning-metrics dd{font-size:26px;font-weight:700;margin:6px 0 0;letter-spacing:0}
+.history-table{overflow-x:auto}
+.history-table table{width:100%;border-collapse:collapse;text-align:left;font-size:12px}
+.history-table th,.history-table td{padding:8px 12px;border-bottom:1px solid var(--border,#ddd)}
+.history-table th:first-child,.history-table td:first-child{padding-left:0}
+.history-improvement{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12px}
+.history-improvement span{display:flex;align-items:center;gap:6px}
+.attempt-save{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:13px;margin-bottom:16px}
+.saved-lectures{margin-top:28px;padding-top:20px;border-top:1px solid var(--border,#ddd)}
+.saved-lectures h2{font-size:20px;letter-spacing:0}
+.lecture-save-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0}
+.lecture-save-row input{padding:12px;border:1px solid #aebdb4;border-radius:4px;min-width:0;max-width:100%;font:inherit}
+.saved-lectures details{padding:14px 0;border-bottom:1px solid var(--border,#ddd)}
+.saved-lectures summary{cursor:pointer;overflow-wrap:anywhere}
+.saved-lectures summary small{margin-left:12px;color:#586459}
+.lecture-text{white-space:pre-wrap;overflow-wrap:anywhere;max-height:320px;overflow:auto;font-size:14px;line-height:1.7}
+@media(max-width:600px){.learning-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.account-trigger{max-width:130px}.account-dialog{padding:24px}.history-table th,.history-table td{padding:8px 6px}.header-right{gap:6px}}

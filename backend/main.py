@@ -20,8 +20,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from websockets.asyncio.client import connect as ws_connect
 
-from db import get_connection, get_phrases, init_db
-from catalog_store import catalog_backend, get_catalog, init_catalog_store
+from db import get_connection, init_db
+from catalog_store import catalog_backend, get_catalog, init_catalog_store, seed_phrases, stored_phrases as get_phrases
+from accounts import router as account_router, init_accounts
 from interpreter import interpret
 from planner import PlanRequest, create_plan
 
@@ -34,14 +35,17 @@ async def lifespan(app: FastAPI):
     init_catalog_store()
     conn = get_connection()
     init_db(conn)
+    seed_phrases(conn)
+    init_accounts()
     app.state.db = conn
     yield
     conn.close()
 
 app = FastAPI(title='Sign API', version='0.1.0', lifespan=lifespan)
+app.include_router(account_router)
 origins = [x.strip() for x in os.getenv('SIGN_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',') if x.strip()]
-app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=False,
-                   allow_methods=['GET', 'POST'], allow_headers=['Content-Type'])
+app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True,
+                   allow_methods=['GET', 'POST'], allow_headers=['Content-Type', 'X-Sign-Client'])
 
 class InterpretationRequest(BaseModel):
     text: str = Field(min_length=1, max_length=3000)

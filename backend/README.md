@@ -60,6 +60,31 @@ and reviewer workflow are described in
 
 ## MongoDB catalog
 
+Atlas also stores the searchable `phrases` collection, accounts (`users`),
+expiring `sessions`, authentication rate limits, `practice_attempts`, and saved
+`lecture_sessions`. Startup copies existing SQLite phrase rows with insert-only
+upserts; later Atlas edits survive restarts. SQLite and bundled JSON remain
+available for guest catalog use when Atlas is not configured. Account writes
+require MongoDB and fail visibly if storage is unavailable.
+
+Sign up or sign in using the account button. Passwords use salted scrypt hashes;
+session tokens are stored as hashes and sent in HTTP-only SameSite=Lax cookies.
+Use HTTPS and `SIGN_COOKIE_SECURE=true` when deploying. Keep frontend and API on
+the same site (Vite's `/api` proxy handles local development). List the exact
+frontend origins in `SIGN_ALLOWED_ORIGINS`. Email verification and password
+recovery are not implemented in this prototype.
+
+Learning attempts store client-measured handshape scores, a held-frame count,
+feedback, and server timestamps. They do not establish full-sign accuracy.
+Progress is derived from saved attempts; browser guest completion is not
+automatically attributed to a newly signed-in account. No camera footage or
+audio is stored. Transcript text is saved only by the Save transcript action.
+The dashboard lists the most recent ten attempts and uses all attempts for
+its summary. The transcript list shows the latest 50 saved lectures.
+
+Run account tests with `pip install -r requirements-dev.txt` and
+`python -m pytest tests/test_accounts.py -q`. They use isolated in-memory data.
+
 The app uses bundled JSON by default. To run a local MongoDB Community catalog:
 
 ```bash

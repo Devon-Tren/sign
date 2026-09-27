@@ -3,6 +3,8 @@ import {ArrowRight,Camera,CameraOff,Check,CheckCircle2,CircleAlert,Eye,Graduatio
 import type {HandLandmarker} from '@mediapipe/tasks-vision'
 import Avatar from './Avatar'
 import {generateFeedback} from '../api'
+import {accountRequest,useAccount,type Progress,type SavedAttempt} from '../account'
+import LearningHistory from './LearningHistory'
 import {LEARNING_ITEMS,LESSONS,learningItem} from '../learning'
 import type {HandshapeTarget,LearningItem} from '../types'
 
@@ -99,8 +101,24 @@ export function assessHands(landmarks:Point[][],target:HandshapeTarget):Handshap
 }
 
 export default function Tutor(){
+  const {user}=useAccount()
+  const [savedProgress,setSavedProgress]=useState<Progress|null>(null)
+  const [historyError,setHistoryError]=useState('')
+  const [saveStatus,setSaveStatus]=useState('')
+  const [pending,setPending]=useState<SavedAttempt[]>([])
+  const refreshHistory=useCallback(async()=>{
+    if(!user)return
+    try {
+      const value=await accountRequest<Progress>('learning/progress')
+      setSavedProgress(value);setCompleted(value.completed);setHistoryError('')
+      const scores:Record<string,number[]>={}
+      for(const attempt of [...value.recent].reverse())scores[attempt.item_id]=[...(scores[attempt.item_id]??[]),attempt.score].slice(-5)
+      setAttempts(scores)
+    }catch(cause){setHistoryError(cause instanceof Error?cause.message:'Could not load progress.')}
+  },[user])
+  useEffect(()=>{void refreshHistory()},[refreshHistory])
   const [selected,setSelected]=useState<LearningItem>(LEARNING_ITEMS[0])
-  const [completed,setCompleted]=useState<string[]>(()=>{try{return JSON.parse(localStorage.getItem(progressKey)||'[]')}catch{return []}})
+  const [completed,setCompleted]=useState<string[]>(()=>{if(user)return [];try{return JSON.parse(localStorage.getItem(progressKey)||'[]')}catch{return []}})
   const [stage,setStage]=useState<Stage>('observe'),[phase,setPhase]=useState<AttemptPhase>('idle')
   const [cameraActive,setCameraActive]=useState(false),[cameraRequested,setCameraRequested]=useState(false),[loading,setLoading]=useState(false),[error,setError]=useState('')
   const [result,setResult]=useState<HandshapeResult|null>(null),[stability,setStability]=useState(0),[handsDetected,setHandsDetected]=useState(0),[countdown,setCountdown]=useState(3)
@@ -121,7 +139,12 @@ export default function Tutor(){
   const selectedIndex=LEARNING_ITEMS.findIndex(item=>item.id===selected.id),nextItem=LEARNING_ITEMS[selectedIndex+1]
   const itemAttempts=attempts[selected.id]??[]
 
-  const persistCompletion=useCallback((id:string)=>setCompleted(previous=>{if(previous.includes(id))return previous;const next=[...previous,id];localStorage.setItem(progressKey,JSON.stringify(next));return next}),[])
+  const persistCompletion=useCallback((id:string)=>setCompleted(previous=>{if(previous.includes(id))return previous;const next=[...previous,id];if(!user)localStorage.setItem(progressKey,JSON.stringify(next));return next}),[user])
+  const saveAttempt=useCallback(async(attempt:SavedAttempt)=>{
+    setSaveStatus('Saving attempt…')
+    try{await accountRequest('learning/attempts',attempt);setPending(values=>values.filter(value=>value.attempt_id!==attempt.attempt_id));setSaveStatus('Attempt saved to your account.');await refreshHistory()}
+    catch(cause){setSaveStatus(cause instanceof Error?cause.message:'Unable to save. Retry before leaving this page.');setPending(values=>values.some(value=>value.attempt_id===attempt.attempt_id)?values:[...values,attempt])}
+  },[refreshHistory])
   const recordAttempt=useCallback((score:number)=>setAttempts(previous=>({...previous,[selectedRef.current.id]:[...(previous[selectedRef.current.id]??[]),score].slice(-5)})),[])
   const resetAttempt=useCallback(()=>{stableRef.current=0;setStability(0);bestRef.current=null;setResult(null);setExplanation('');setError('');setPhase('idle');phaseRef.current='idle'},[])
 
@@ -142,8 +165,9 @@ export default function Tutor(){
   const finishAttempt=useCallback((matched:boolean)=>{
     const best=bestRef.current??{score:0,matched:false,observed:'No hands detected',expected:'A visible handshape',tip:'Keep your whole hand visible during the attempt.',hands:0,fingerStates:[],fingerChecks:[],qualityChecks:[]}
     setResult(best);recordAttempt(best.score);if(matched)persistCompletion(selectedRef.current.id)
+    if(user)void saveAttempt({attempt_id:crypto.randomUUID(),item_id:selectedRef.current.id,score:best.score,matched,hold_frames:stableRef.current,feedback:best.tip})
     setPhase('idle');phaseRef.current='idle';setStage('results');releaseCamera()
-  },[persistCompletion,recordAttempt,releaseCamera])
+  },[persistCompletion,recordAttempt,releaseCamera,user,saveAttempt])
 
   const processFrame=useCallback((landmarks:Point[][],now:number)=>{
     setHandsDetected(landmarks.length)
@@ -222,6 +246,8 @@ export default function Tutor(){
   const camera=<div className="camera-view"><div className="view-label"><ScanLine size={16}/> YOUR CAMERA {cameraActive&&<span className="camera-live"><span className="pulse-dot"/> LIVE</span>}</div><video ref={videoRef} muted playsInline autoPlay className={`camera-video ${cameraActive?'visible':''}`}/><canvas ref={canvasRef} className={`camera-overlay ${cameraActive?'visible':''}`}/>{!cameraActive&&<div className="camera-empty"><div className="camera-outline"><Camera size={34}/></div><strong>{loading?'Requesting camera access...':'Camera needed for rehearsal'}</strong><span>{loading?'Use the browser prompt to allow camera access.':'Try camera access again when your browser permission is ready.'}</span>{!loading&&<button className="secondary-button" onClick={()=>{setError('');setCameraRequested(true)}}><Camera size={16}/> Try camera</button>}</div>}{cameraActive&&<><div className="camera-corner" aria-live="polite"><span>{trackingLabel}</span></div>{stage==='attempt'&&phase==='tracking'&&<div className="hold-counter" aria-live="polite"><strong>{stability}</strong><span>/ 12 frames</span></div>}{phase==='countdown'&&<div className="practice-countdown" aria-live="assertive">{countdown}</div>}</>}</div>
 
   return <div className="page-content tutor-page">
+    <LearningHistory progress={savedProgress} error={historyError} refresh={()=>void refreshHistory()} choose={id=>choose(learningItem(id))}/>
+    {saveStatus&&<div className="attempt-save" role="status">{saveStatus}{pending.length>0&&<><span> {pending.length} unsaved attempt(s). Retry before leaving this page.</span><button className="secondary-button" onClick={()=>{for(const attempt of pending)void saveAttempt(attempt)}}>Retry save</button></>}</div>}
     <div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/> LEARNING STUDIO</div><h1>Learn it. Practice it. Keep going<span className="heading-period">.</span></h1><p>Observe the reference, rehearse beside it, then complete a focused handshape attempt.</p></div><div className="lesson-total" aria-label={`${completedEnabled} of ${enabledItems.length} practice items completed`}><GraduationCap size={19}/><span><strong>{completedEnabled} / {enabledItems.length}</strong> practice items</span></div></div>
     <div className="lesson-layout"><aside className="lesson-sidebar"><div className="lesson-side-header"><span>YOUR LEARNING PATH</span><strong>{progress}%</strong></div><div className="progress-rail" role="progressbar" aria-label="Learning path progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span style={{width:`${progress}%`}}/></div>
       {LESSONS.map(lesson=><div className="level-group" key={lesson.id}><div className="level-label"><span>{lesson.subtitle.toUpperCase()}</span><span>{lesson.title}</span></div>{lesson.items.map(id=>{const item=learningItem(id),done=completed.includes(id);return <button key={id} className={`lesson-select ${selected.id===id?'selected':''}`} onClick={()=>choose(item)}><span className="lesson-no">{done?<Check size={16}/>:String(LEARNING_ITEMS.findIndex(entry=>entry.id===id)+1).padStart(2,'0')}</span><span className="lesson-select-title">{item.name}<small>{item.practice.scopeLabel}</small></span>{done?<CheckCircle2 size={16} className="completed-icon"/>:!item.practice.enabled?<span className="demo-badge">DEMO</span>:null}</button>})}</div>)}
