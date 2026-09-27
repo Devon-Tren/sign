@@ -3,12 +3,14 @@ from copy import deepcopy
 import pytest
 from fastapi.testclient import TestClient
 from main import app
-from planner import Construction, Meaning, PlanRequest, catalog, create_plan, validate_plan
+from planner import Construction, Meaning, PlanRequest, catalog, configured_text_provider, create_plan, validate_plan
 
 
 @pytest.fixture(autouse=True)
 def offline(monkeypatch):
     monkeypatch.setenv('OPENAI_API_KEY', '')
+    monkeypatch.setenv('GEMINI_API_KEY', '')
+    monkeypatch.delenv('SIGN_TEXT_MODEL_PROVIDER', raising=False)
     monkeypatch.setenv('SIGN_PLAYBACK_POLICY', 'candidate')
 
 
@@ -97,10 +99,10 @@ def test_model_pipeline_and_failure(monkeypatch):
         return schema.model_validate(e['meaning'] if schema is Meaning else e['construction'])
     monkeypatch.setattr('planner.model_output', fake)
     result = asyncio.run(create_plan(PlanRequest(text='Does that make sense?', context=['A lesson'])))
-    assert result['mode'] == 'experimental-model'
+    assert result['mode'] == 'experimental-openai'
     assert result['fallback_reason'] is None
     assert len(calls) == 2 and calls[0]['context'] == ['A lesson']
-    assert calls[1]['meaning']['predicate'] == 'understand'
+    assert calls[1]['meaning']['predicate'] == catalog()['examples'][0]['meaning']['predicate']
     async def fail(*args):
         raise ValueError('invalid schema or refusal')
     monkeypatch.setattr('planner.model_output', fail)
@@ -134,6 +136,23 @@ def test_missing_key_and_fast_mode_explain_why_model_was_skipped():
     fast = asyncio.run(create_plan(PlanRequest(text='Unknown', fast=True)))
     assert missing['fallback_reason']['code'] == 'api_key_missing'
     assert fast['fallback_reason']['code'] == 'fast_mode'
+
+
+def test_gemini_provider_is_preferred_for_planning(monkeypatch):
+    monkeypatch.setenv('OPENAI_API_KEY', 'test-openai-not-used')
+    monkeypatch.setenv('GEMINI_API_KEY', 'test-gemini-not-real')
+    calls = []
+    async def fake(client, schema, instruction, payload):
+        calls.append((client, payload))
+        e = catalog()['examples'][0]
+        return schema.model_validate(e['meaning'] if schema is Meaning else e['construction'])
+    monkeypatch.setattr('planner.model_output', fake)
+    result = asyncio.run(create_plan(PlanRequest(text='Does that make sense?', context=['A lesson'])))
+    assert configured_text_provider() == 'gemini'
+    assert result['mode'] == 'experimental-gemini'
+    assert len(calls) == 2
+    assert calls[0][0].model == 'gemini-3.5-flash-lite'
+    assert calls[1][1]['meaning']['predicate'] == catalog()['examples'][0]['meaning']['predicate']
 
 
 def test_candidate_policy_enables_labelled_live_playback():
@@ -209,6 +228,7 @@ def test_arbitrary_phrase_fingerspells_unknown_concepts():
 
 def test_fast_plan_never_waits_for_model(monkeypatch):
     monkeypatch.setenv('OPENAI_API_KEY', 'configured-but-not-called')
+    monkeypatch.setenv('GEMINI_API_KEY', 'configured-but-not-called')
     async def should_not_run(*args, **kwargs):
         raise AssertionError('fast planning called the model')
     monkeypatch.setattr('planner.model_output', should_not_run)

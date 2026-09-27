@@ -89,7 +89,7 @@ export type Lesson = {
 
 export type PlanResult = {
   source_text: string
-  mode: 'catalog-example' | 'catalog-composed' | 'experimental-model' | 'fingerspell-fallback' | 'unavailable'
+  mode: 'catalog-example' | 'catalog-composed' | 'experimental-model' | 'experimental-openai' | 'experimental-gemini' | 'fingerspell-fallback' | 'unavailable'
   review_status: 'candidate' | 'reviewed'
   playback: PlaybackTimeline | null
   rehearsal: PlaybackTimeline | null

@@ -5,7 +5,7 @@ cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env  # optional: set OPENAI_API_KEY
+cp .env.example .env  # optional: set OPENAI_API_KEY or GEMINI_API_KEY
 uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
@@ -45,9 +45,13 @@ planner preserves them rather than silently changing meaning. Fully covered inpu
 is reported as `catalog-composed`; only remaining unsupported content is fingerspelled.
 This fallback is not grammatical ASL translation.
 
-With a server-side `OPENAI_API_KEY`, other messages use two structured-output
-calls with `OPENAI_TEXT_MODEL`: meaning extraction, then construction using the
-full catalog. See the [OpenAI structured-output guide](https://developers.openai.com/api/docs/guides/structured-outputs).
+With a server-side `GEMINI_API_KEY` or `OPENAI_API_KEY`, other messages use two
+structured-output calls: meaning extraction, then construction using the full
+catalog. Gemini is preferred when `GEMINI_API_KEY` is set; set
+`SIGN_TEXT_MODEL_PROVIDER=openai` or `SIGN_TEXT_MODEL_PROVIDER=gemini` to choose
+explicitly. `GEMINI_TEXT_MODEL` defaults to `gemini-3.5-flash-lite`, and
+`OPENAI_TEXT_MODEL` defaults to `gpt-4.1`. Realtime microphone transcription
+still uses the OpenAI realtime path.
 The model can use registered signs or `FS:WORD` tokens for unsupported concepts.
 Model failures fall back to the same visible fingerspelling path.
 The response includes `fallback_reason` with a safe `code` and actionable `message`
