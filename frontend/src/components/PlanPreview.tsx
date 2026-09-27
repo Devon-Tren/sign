@@ -17,6 +17,12 @@ export default function PlanPreview() {
     catch { setError('Planning unavailable. Start the backend and try again.') }
     finally { setBusy(false) }
   }
+  const modeLabel = (result: PlanResult) =>
+    result.mode === 'catalog-example' ? (result.review_status === 'reviewed' ? 'Approved catalog example' : 'Catalog candidate') :
+    result.mode === 'catalog-composed' ? 'Composed from known signs' :
+    result.mode === 'experimental-gemini' ? 'Gemini-generated gloss' :
+    result.mode === 'experimental-openai' || result.mode === 'experimental-model' ? 'Model-generated gloss' :
+    result.mode === 'fingerspell-fallback' ? 'Known signs with fingerspelling' : 'Unavailable'
   return <section className="plan-preview" aria-labelledby="plan-title">
     <h2 id="plan-title">Classroom ASL plan</h2>
     <p>Preview the same experimental gloss and motion sequence used by typed text and finalized speech. The 48 target demo inputs are available as suggestions. Candidate signing still needs ASL review.</p>
@@ -29,7 +35,7 @@ export default function PlanPreview() {
     <div aria-live="polite">
       {error && <p role="alert">{error}</p>}
       {result && <>
-        <p><strong>{result.review_status === 'reviewed' ? 'Reviewed' : 'Experimental'} · {result.mode === 'catalog-example' ? (result.review_status === 'reviewed' ? 'Approved catalog example' : 'Catalog candidate') : result.mode === 'catalog-composed' ? 'Composed from known signs' : result.mode === 'experimental-model' ? 'Model-generated gloss' : result.mode === 'fingerspell-fallback' ? 'Known signs with fingerspelling' : 'Unavailable'}</strong></p>
+        <p><strong>{result.review_status === 'reviewed' ? 'Reviewed' : 'Experimental'} · {modeLabel(result)}</strong></p>
         {result.plan && <>
           <p>Intent: {result.plan.meaning.intent} · Action: {result.plan.meaning.predicate} · {result.plan.meaning.negated ? 'Negated' : 'Not negated'}</p>
           <div className="matched-chips">{result.plan.manual_sequence.map((s,i) => <span className="phrase-tag" key={i}>{s.sign_id}</span>)}</div>

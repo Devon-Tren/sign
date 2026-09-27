@@ -6,7 +6,7 @@ import { playbackPlan, poseAt } from '../playback'
 import { offlinePlan } from '../offlinePlan'
 import { authoredClipFor } from '../authored'
 import { phonoPriorFor } from '../phono'
-import type { PlaybackTimeline } from '../types'
+import type { PlanResult, PlaybackTimeline } from '../types'
 import type { RigSnapshot } from '../rigPose'
 
 export default function MotionInspector() {
@@ -19,6 +19,7 @@ export default function MotionInspector() {
   const [view, setView] = useState<'front' | 'side' | 'hands'>('front')
   const [rig, setRig] = useState<RigSnapshot | null>(null)
   const [busy, setBusy] = useState(false)
+  const [lastPlan, setLastPlan] = useState<PlanResult | null>(null)
   const onRig = useCallback((value: RigSnapshot) => setRig(value), [])
   const active = timeline.clips.find(c => time >= c.start_ms && time < c.end_ms)
   const clipId = active?.clip_id ?? 'idle'
@@ -53,10 +54,12 @@ export default function MotionInspector() {
     setPlaying(false); setBusy(true)
     try {
       const result = await planASL(text, [])
+      setLastPlan(result)
       const next = result.rehearsal ?? result.playback
-      if (!next) throw new Error('No playable plan')
-      setTimeline(playbackPlan(next)); setSource(`Backend · ${result.mode}`); setTime(0)
+      setSource(`Backend · ${result.mode}${next ? '' : ' · no playable rehearsal'}`)
+      if (next) { setTimeline(playbackPlan(next)); setTime(0) }
     } catch {
+      setLastPlan(null)
       const next = offlinePlan(text)
       if (next) { setTimeline(playbackPlan(next.timeline)); setSource('Local catalog · backend unavailable'); setTime(0) }
       else setSource('No playable signs found')
@@ -73,6 +76,12 @@ export default function MotionInspector() {
       <button disabled={busy || !text.trim()}>{busy ? 'Planning…' : 'Inspect sentence'}</button>
     </form>
     <p>{source} · {timeline.clips.map(c => c.sign_id).join(' → ')}</p>
+    {lastPlan && <div className="plan-status" aria-live="polite">
+      <strong>Planner mode: {lastPlan.mode}</strong>
+      <span>{lastPlan.validation?.executable ? 'Playable plan' : 'Playback blocked by validation'}</span>
+      {!!lastPlan.unresolved.length && <span>Unresolved: {lastPlan.unresolved.join(', ')}</span>}
+      {!!lastPlan.validation?.issues.length && <span>Issues: {lastPlan.validation.issues.join('; ')}</span>}
+    </div>}
     <div className="inspector-layout">
       <div>
         <div className="inspector-avatar"><Avatar clipId="inspection" timeline={timeline} paused={!playing}

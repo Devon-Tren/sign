@@ -35,8 +35,9 @@ Open http://localhost:5173 (if it doesn't load, use http://127.0.0.1:5173). Clic
 
 The backend planner produces a candidate gloss, intended meaning, expression
 spans, and animation timeline. Unknown concepts are fingerspelled; with
-`OPENAI_API_KEY`, a two-stage model can first extract meaning and then construct
-a gloss from playable signs. The live screen calls the deterministic fast path
+`GEMINI_API_KEY` or `OPENAI_API_KEY`, a two-stage model can first extract
+meaning and then construct a gloss from playable signs. Gemini is preferred for
+text planning when configured. The live screen calls the deterministic fast path
 so typing does not wait for a model round trip.
 
 These are unreviewed fixtures, not verified translations. Live typed text and

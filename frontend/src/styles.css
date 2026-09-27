@@ -35,6 +35,9 @@
 .plan-preview button { margin-top: 12px; }
 .plan-preview details { margin-top: 16px; }
 .plan-preview pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 420px; overflow: auto; font-size: 12px; }
+.plan-status{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px;align-items:center}
+.plan-status strong,.plan-status span{border:1px solid var(--border,#dce2e0);background:#fffdf6;padding:7px 9px;font-size:11px}
+.plan-status strong{background:var(--accent,#f1bd47);color:var(--foreground,#2d2921)}
 .plan-json { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 300px; overflow: auto; font-size: 12px; }
 .stage-guidance{right:64px;max-width:calc(100% - 90px)}
 .stage-guidance strong{max-width:100%;font-size:clamp(16px,2vw,23px);line-height:1.18;overflow-wrap:anywhere;word-break:break-word}
