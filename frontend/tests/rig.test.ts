@@ -124,3 +124,33 @@ test('his points forward with an open elbow and T thumb emerges between index an
   const knuckles = index.clone().add(middle).multiplyScalar(.5)
   assert.ok(tip.y > knuckles.y, 'thumb must emerge above the folded knuckles')
 })
+
+
+test('greetings keep middle fingers toward chest and perform each fine contact', async () => {
+  const rig = await loadTestSigner()
+  const settle = (id: string, phase: number) => {
+    const t = clipLengthMs(id, 'continuous') * phase / 1000
+    const pose = motionFor(id, t, { mode: 'continuous', skipOnset: true, skipRelease: true })
+    for (let k = 0; k < 45; k++) applyManualPose(rig, pose, t, 1 / 30)
+    return rigSnapshot(rig)
+  }
+  const start = settle('whats_up', .15), end = settle('whats_up', .85)
+  for (const snap of [start, end]) {
+    for (const side of ['right', 'left'] as const) {
+      const a = snap[side]
+      const upper = new THREE.Vector3(...a.elbow).sub(new THREE.Vector3(...a.shoulder))
+      const angle = upper.angleTo(new THREE.Vector3(0, -1, 0)) * 180 / Math.PI
+      assert.ok(angle > 20 && angle < 40, `${side} armpit angle ${angle}`)
+      assert.ok(a.fingerDirections[1][2] < -.85, `${side} middle finger toward chest`)
+    }
+  }
+  for (const side of ['right', 'left'] as const) {
+    assert.ok(end[side].wrist[2] - start[side].wrist[2] > .25)
+  }
+  for (const phase of [.10, .90]) {
+    const a = settle('im_fine', phase).right
+    assert.ok(Math.hypot(a.tip[0] - .1, a.tip[1] + .12, a.tip[2] - .29) < .07, `index contact ${a.tip}`)
+  }
+  const thumb = settle('im_fine', .60).right.thumbTip
+  assert.ok(Math.hypot(thumb[0] - .1, thumb[1] + .12, thumb[2] - .29) < .07, `thumb contact ${thumb}`)
+})

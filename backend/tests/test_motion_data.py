@@ -200,6 +200,14 @@ def test_connected_durations_stay_inside_the_corpus_band():
         continuous = motion_data.clip_duration_ms(clip_id, 'continuous')
         isolated = motion_data.clip_duration_ms(clip_id, 'isolated')
         components = motion_data.clip_sequence(clip_id)
+        authored = motion_data.authored_motions()['clips'].get(clip_id)
+        if authored:
+            # Authored windows can contain a whole phrase with several gestures.
+            # Preserve their explicit timing instead of clipping to one sign.
+            assert continuous == authored['duration_ms']['continuous']
+            assert isolated == authored['duration_ms']['isolated']
+            assert 0 < continuous < isolated
+            continue
         assert (motion_data.CONTINUOUS_MIN_MS * len(components)
                 <= continuous
                 <= motion_data.CONTINUOUS_MAX_MS * len(components))

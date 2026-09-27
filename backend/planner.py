@@ -6,6 +6,7 @@ import re
 from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field
 from catalog_store import get_catalog
+from motion_data import authored_motions
 from playback import approved, compile_timeline, review_digest
 
 
@@ -164,6 +165,8 @@ def lexical_steps(source_words: list[str], refs: dict) -> list[Sign]:
             if tokens:
                 expressions[tokens] = sign['id']
     expressions.update({('i',): 'ME', ('my',): 'MY', ('mine',): 'MY', ('your',): 'YOU'})
+    for expression, clip_id in authored_motions().get('aliases', {}).items():
+        expressions[tuple(re.findall(r'[a-z0-9]+', expression.casefold()))] = clip_id.upper()
     max_span = max((len(key) for key in expressions), default=1)
     # English function words that ASL does not lexicalise. Spelling one letter by
     # letter is worse than omitting it: F-S-O-N asserts a lexical item that is

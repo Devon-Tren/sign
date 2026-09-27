@@ -1003,6 +1003,523 @@
           }
         }
       ]
+    },
+    "whats_up": {
+      "variant": "User-requested bent middle fingers toward chest, both hands move forward",
+      "references": [],
+      "duration_ms": {
+        "isolated": 1900,
+        "continuous": 1550
+      },
+      "right_handshape": "middlehook",
+      "left_handshape": "middlehook",
+      "keyframes": [
+        {
+          "at": 0,
+          "phase": "middle fingers toward chest",
+          "right": {
+            "target": [
+              0.29,
+              -0.24,
+              0.4
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "left": {
+            "target": [
+              -0.29,
+              -0.24,
+              0.4
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              -0.5,
+              -0.866,
+              0
+            ]
+          }
+        },
+        {
+          "at": 0.22,
+          "phase": "middle fingers toward chest",
+          "right": {
+            "target": [
+              0.29,
+              -0.24,
+              0.4
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "left": {
+            "target": [
+              -0.29,
+              -0.24,
+              0.4
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              -0.5,
+              -0.866,
+              0
+            ]
+          }
+        },
+        {
+          "at": 0.78,
+          "phase": "move both hands forward",
+          "right": {
+            "target": [
+              0.29,
+              -0.24,
+              0.7
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "left": {
+            "target": [
+              -0.29,
+              -0.24,
+              0.7
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              -0.5,
+              -0.866,
+              0
+            ]
+          }
+        },
+        {
+          "at": 1,
+          "phase": "move both hands forward",
+          "right": {
+            "target": [
+              0.29,
+              -0.24,
+              0.7
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.5,
+              -0.866,
+              0
+            ]
+          },
+          "left": {
+            "target": [
+              -0.29,
+              -0.24,
+              0.7
+            ],
+            "palm": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              -0.5,
+              -0.866,
+              0
+            ]
+          }
+        }
+      ]
+    },
+    "im_fine": {
+      "variant": "User-requested index to chest, small forward movement, thumb to chest, index to chest again",
+      "references": [],
+      "duration_ms": {
+        "isolated": 3100,
+        "continuous": 2750
+      },
+      "right_handshape": "1",
+      "keyframes": [
+        {
+          "at": 0,
+          "phase": "index to chest",
+          "right": {
+            "target": [
+              0.1,
+              -0.12,
+              0.29
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.94,
+              0,
+              -0.342
+            ],
+            "elbow": [
+              0.8,
+              -0.6,
+              0
+            ],
+            "contact": true,
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                0,
+                0,
+                0
+              ]
+            },
+            "attach": {
+              "torso": 1
+            }
+          },
+          "right_handshape": "1"
+        },
+        {
+          "at": 0.16,
+          "phase": "hold index contact",
+          "right": {
+            "target": [
+              0.1,
+              -0.12,
+              0.29
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.94,
+              0,
+              -0.342
+            ],
+            "elbow": [
+              0.8,
+              -0.6,
+              0
+            ],
+            "contact": true,
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                0,
+                0,
+                0
+              ]
+            },
+            "attach": {
+              "torso": 1
+            }
+          },
+          "right_handshape": "1"
+        },
+        {
+          "at": 0.3,
+          "phase": "move hand forward",
+          "right": {
+            "target": [
+              0.1,
+              -0.12,
+              0.43
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.94,
+              0,
+              -0.342
+            ],
+            "elbow": [
+              0.8,
+              -0.6,
+              0
+            ],
+            "contact": false,
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                0,
+                0,
+                0
+              ]
+            },
+            "attach": {
+              "torso": 0
+            }
+          },
+          "right_handshape": "1"
+        },
+        {
+          "at": 0.43,
+          "phase": "prepare thumb",
+          "right": {
+            "target": [
+              0.1,
+              -0.12,
+              0.43
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.6,
+              -0.8,
+              0
+            ],
+            "contact": false,
+            "reach": {
+              "thumb": 1
+            },
+            "attach": {
+              "torso": 0
+            }
+          },
+          "right_handshape": "5"
+        },
+        {
+          "at": 0.56,
+          "phase": "thumb to chest",
+          "right": {
+            "target": [
+              0.1,
+              -0.12,
+              0.29
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.6,
+              -0.8,
+              0
+            ],
+            "contact": true,
+            "reach": {
+              "thumb": 1
+            },
+            "attach": {
+              "torso": 1
+            }
+          },
+          "right_handshape": "5"
+        },
+        {
+          "at": 0.69,
+          "phase": "hold thumb contact",
+          "right": {
+            "target": [
+              0.1,
+              -0.12,
+              0.29
+            ],
+            "palm": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              1,
+              0
+            ],
+            "elbow": [
+              0.6,
+              -0.8,
+              0
+            ],
+            "contact": true,
+            "reach": {
+              "thumb": 1
+            },
+            "attach": {
+              "torso": 1
+            }
+          },
+          "right_handshape": "5"
+        },
+        {
+          "at": 0.82,
+          "phase": "index to chest again",
+          "right": {
+            "target": [
+              0.1,
+              -0.12,
+              0.29
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.94,
+              0,
+              -0.342
+            ],
+            "elbow": [
+              0.8,
+              -0.6,
+              0
+            ],
+            "contact": true,
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                0,
+                0,
+                0
+              ]
+            },
+            "attach": {
+              "torso": 1
+            }
+          },
+          "right_handshape": "1"
+        },
+        {
+          "at": 1,
+          "phase": "hold index contact",
+          "right": {
+            "target": [
+              0.1,
+              -0.12,
+              0.29
+            ],
+            "palm": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              -0.94,
+              0,
+              -0.342
+            ],
+            "elbow": [
+              0.8,
+              -0.6,
+              0
+            ],
+            "contact": true,
+            "reach": {
+              "tip": 1,
+              "tipFinger": [
+                1,
+                0,
+                0,
+                0
+              ]
+            },
+            "attach": {
+              "torso": 1
+            }
+          },
+          "right_handshape": "1"
+        }
+      ]
     }
   },
   "sequences": {
@@ -1015,6 +1532,20 @@
         "https://www.lifeprint.com/asl101/pages-signs/sentences/goodmorning.htm"
       ],
       "variant": "GOOD followed by the two-handed MORNING variant"
+    },
+    "her": {
+      "clips": [
+        "his"
+      ],
+      "variant": "Same forward index point as HIS, as requested",
+      "references": []
     }
+  },
+  "aliases": {
+    "what's up": "whats_up",
+    "whats up": "whats_up",
+    "what is up": "whats_up",
+    "I'm fine": "im_fine",
+    "I am fine": "im_fine"
   }
 }

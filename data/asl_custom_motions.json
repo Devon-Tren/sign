@@ -100,6 +100,42 @@
       "SecondMinorLocation": "Neutral",
       "NonDominantHandshape": "flat_b",
       "mapping_note": "Application-authored sequence: GOOD then MORNING. See asl_authored_motions.json."
+    },
+    "her": {
+      "duration_ms": 1500,
+      "Handshape": "1",
+      "SignType": "OneHanded",
+      "Movement": "Straight",
+      "RepeatedMovement": "0",
+      "MajorLocation": "Neutral",
+      "MinorLocation": "Neutral",
+      "SecondMinorLocation": "Neutral",
+      "NonDominantHandshape": "NA",
+      "app_authored": true
+    },
+    "whats_up": {
+      "duration_ms": 1500,
+      "Handshape": "middlehook",
+      "SignType": "SymmetricalOrAlternating",
+      "Movement": "Straight",
+      "RepeatedMovement": "0",
+      "MajorLocation": "Neutral",
+      "MinorLocation": "Neutral",
+      "SecondMinorLocation": "Neutral",
+      "NonDominantHandshape": "middlehook",
+      "app_authored": true
+    },
+    "im_fine": {
+      "duration_ms": 1500,
+      "Handshape": "1",
+      "SignType": "OneHanded",
+      "Movement": "Straight",
+      "RepeatedMovement": "0",
+      "MajorLocation": "Neutral",
+      "MinorLocation": "Neutral",
+      "SecondMinorLocation": "Neutral",
+      "NonDominantHandshape": "NA",
+      "app_authored": true
     }
   },
   "augment": {

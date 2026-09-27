@@ -275,3 +275,19 @@ test('his introduction keeps the requested forward point before NAME and HECTOR'
   assert.deepEqual(pose.rightHand, handshapeFor('1'))
   assert.deepEqual(pose.rightArm!.point, [0, 0, 1])
 })
+
+
+test('new greeting expressions select complete authored motions offline', () => {
+  for (const text of ["what's up", 'What’s up?', 'whats up', 'what is up']) {
+    assert.deepEqual(offlinePlan(text)!.timeline.clips.map(c => c.clip_id), ['whats_up'])
+  }
+  for (const text of ["I'm fine", 'I’m fine.', 'I am fine']) {
+    assert.deepEqual(offlinePlan(text)!.timeline.clips.map(c => c.clip_id), ['im_fine'])
+  }
+  assert.deepEqual(offlinePlan('Her name is Hector.')!.timeline.clips.map(c => c.clip_id), ['his', 'name', 'fs:hector'])
+  const clip = authoredClipFor('im_fine')!
+  for (const frame of clip.keyframes) {
+    const pose = motionFor('im_fine', frame.at * 2.75, { mode: 'continuous', skipOnset: true, skipRelease: true })
+    if (frame.at < 1) assert.deepEqual(pose.rightHand, handshapeFor(frame.right_handshape))
+  }
+})

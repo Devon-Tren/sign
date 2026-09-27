@@ -256,3 +256,14 @@ def test_hector_introduction_uses_possessive_chest_touch_and_fingerspelling():
 def test_his_name_introduction():
     result = asyncio.run(create_plan(PlanRequest(text='His name is Hector.', fast=True)))
     assert [c['clip_id'] for c in result['playback']['clips']] == ['his', 'name', 'fs:HECTOR']
+
+
+@pytest.mark.parametrize('text, clips', [
+    ("what's up", ['whats_up']), ('What’s up?', ['whats_up']),
+    ('whats up', ['whats_up']), ('what is up', ['whats_up']),
+    ("I'm fine", ['im_fine']), ('I’m fine.', ['im_fine']), ('I am fine', ['im_fine']),
+    ('Her name is Hector.', ['his', 'name', 'fs:HECTOR']),
+])
+def test_authored_greetings(text, clips):
+    result = asyncio.run(create_plan(PlanRequest(text=text, fast=True)))
+    assert [c['clip_id'] for c in result['playback']['clips']] == clips

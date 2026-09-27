@@ -80,6 +80,7 @@ export type ThumbRole = keyof typeof THUMB
 // imp / r).
 // ---------------------------------------------------------------------------
 type BaseForm = {
+  middleHook?: boolean
   selected: readonly FingerIndex[]
   thumb: ThumbRole
   /** Default flexion for the selected fingers. */
@@ -105,6 +106,7 @@ const ALL: readonly FingerIndex[] = [0, 1, 2, 3]
 export const BASE_FORMS: Record<string, BaseForm> = {
   // --- all four fingers ---------------------------------------------------
   b:  { selected: ALL, thumb: 'closed', flexion: 'FullyOpen', spread: 0 },
+  middlehook: { selected: ALL, thumb: 'extended', flexion: 'FullyOpen', spread: 0.2, middleHook: true },
   '5': { selected: ALL, thumb: 'extended', flexion: 'FullyOpen', spread: 0.30 },
   '4': { selected: ALL, thumb: 'tucked', flexion: 'FullyOpen', spread: 0.26 },
   e:  { selected: ALL, thumb: 'opposed', flexion: 'Bent', spread: 0, contact: 0 },
@@ -324,6 +326,7 @@ export function composeHandshape(
       else if (isSelected) curl = [Math.max(curl[0], 0.62), Math.max(curl[1], 0.78), Math.max(curl[2], 0.30)] as Curl
       else curl = [0.62, 0.78, 0.30]
     }
+    if (form.middleHook && i === 1) curl = [Math.PI / 2, 0, 0]
     let spread = spreadOf(selected, magnitude, i) + (magnitude === 0 ? REST_FAN[i] : 0)
     // T needs a small channel for the thumb between the folded index/middle.
     if (form.thumbUnder === 1 && i < 2) spread = i === 0 ? -0.10 : 0.08

@@ -14,7 +14,7 @@
  * a fingerspelling fallback so nothing here is presented as a translation.
  */
 import { CONTINUOUS_LENGTH_MS, allSignIds } from './clips'
-import { authoredSequenceFor } from './authored'
+import { authoredAliases, authoredSequenceFor } from './authored'
 import type { PlaybackTimeline, SelectedPhrase } from './types'
 
 /** Words that carry no separate sign in the catalog and are dropped, not spelled.
@@ -25,12 +25,13 @@ const FUNCTION_WORDS = new Set([
   'of', 'to', 'and', 'that', 'this', 'it', 'its', "it's",
 ])
 
-const norm = (text: string) => text.toLowerCase().replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim()
+const norm = (text: string) => text.toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim()
 
 /** Catalog ids that a single English word maps to, longest phrase first. */
 function catalogIndex(): Map<string, string> {
   const index = new Map<string, string>()
   for (const id of allSignIds()) index.set(id.replace(/_/g, ' '), id)
+  for (const [expression, id] of Object.entries(authoredAliases)) index.set(norm(expression), id)
   return index
 }
 

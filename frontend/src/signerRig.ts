@@ -1114,7 +1114,8 @@ export function setHandOrientation(
 
 export type FingerTarget = { curl: readonly [number, number, number]; spread: number }
 
-const FINGER_JOINT_MAX = [1.34, 1.48, 1.02]
+// A right-angle MCP bend is needed for the authored middle-finger hook.
+const FINGER_JOINT_MAX = [Math.PI / 2, 1.48, 1.02]
 
 /**
  * Anatomical joint limits, enforced here rather than trusted from the pose data.
