@@ -291,3 +291,12 @@ test('new greeting expressions select complete authored motions offline', () => 
     if (frame.at < 1) assert.deepEqual(pose.rightHand, handshapeFor(frame.right_handshape))
   }
 })
+
+test('hello keeps its original salute path and timing after wrist correction', () => {
+  const hello = authoredClipFor('hello')!
+  assert.deepEqual(hello.duration_ms, { isolated: 1600, continuous: 1150 })
+  assert.deepEqual(hello.keyframes.map(f => [f.at, f.right.target]), [
+    [0, [.34, .25, .17]], [.22, [.34, .25, .17]],
+    [.72, [.54, .28, .4]], [1, [.54, .28, .4]],
+  ])
+})

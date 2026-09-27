@@ -154,3 +154,50 @@ test('greetings keep middle fingers toward chest and perform each fine contact',
   const thumb = settle('im_fine', .60).right.thumbTip
   assert.ok(Math.hypot(thumb[0] - .1, thumb[1] + .12, thumb[2] - .29) < .07, `thumb contact ${thumb}`)
 })
+
+test('polite signs keep a straight hello wrist, lower thank-you, and rub the chest', async () => {
+  const rig = await loadTestSigner()
+  const v = (a: readonly number[]) => new THREE.Vector3(...a)
+  const settle = (id: string, phase: number) => {
+    const t = clipLengthMs(id, 'continuous') * phase / 1000
+    const pose = motionFor(id, t, { mode: 'continuous', skipOnset: true, skipRelease: true })
+    for (let k = 0; k < 45; k++) applyManualPose(rig, pose, t, 1 / 30)
+    return { pose, snap: rigSnapshot(rig) }
+  }
+  for (const phase of [.1, .5, .85]) {
+    const { snap } = settle('hello', phase)
+    const arm = rig.right
+    const fore = arm.fore.getWorldPosition(new THREE.Vector3())
+    const wrist = arm.hand.getWorldPosition(new THREE.Vector3())
+    const knuckle = arm.fingers[1].bones[0].getWorldPosition(new THREE.Vector3())
+    const bend = wrist.clone().sub(fore).angleTo(knuckle.sub(wrist)) * 180 / Math.PI
+    assert.ok(bend < 20, `hello wrist bend ${bend}`)
+    assert.ok(snap.right.wrist[1] > .24)
+  }
+  const start = settle('thank_you', .1).snap
+  assert.ok(v(start.right.tip).distanceTo(v([.02, .26, .245])) < .04, `chin contact ${start.right.tip}`)
+  let previousY = start.right.wrist[1]
+  for (const phase of [.3, .5, .7, .9]) {
+    const { snap } = settle('thank_you', phase)
+    assert.ok(snap.left.wrist[1] < -.75, 'left hand stays lowered')
+    assert.ok(snap.right.palm[2] < -.85, 'palm stays facing the signer')
+    assert.ok(snap.right.wrist[1] <= previousY + .001, 'hand moves down')
+    assert.ok(Math.abs(snap.right.wrist[0] - start.right.wrist[0]) < .025, 'no sideways sweep')
+    previousY = snap.right.wrist[1]
+    if (phase === .9) {
+      const a = snap.right
+      const elbow = v(a.shoulder).sub(v(a.elbow)).angleTo(v(a.wrist).sub(v(a.elbow))) * 180 / Math.PI
+      assert.ok(elbow >= 70 && elbow <= 80, `thank-you elbow ${elbow}`)
+    }
+  }
+  const centres: number[][] = []
+  for (const phase of [0, .125, .25, .375, .5, .625, .75, .875]) {
+    const { pose, snap } = settle('please', phase)
+    assert.ok(snap.right.palm[2] < -.98, 'palm parallel to chest')
+    assert.ok(v(snap.right.palmCentre).distanceTo(v(pose.rightArm!.target)) < .04, 'palm stays on chest')
+    centres.push(snap.right.palmCentre)
+  }
+  assert.ok(Math.max(...centres.map(p => p[0])) - Math.min(...centres.map(p => p[0])) > .12)
+  assert.ok(Math.max(...centres.map(p => p[1])) - Math.min(...centres.map(p => p[1])) > .11)
+  assert.ok(v(centres[0]).distanceTo(v(centres[4])) < .015, 'circle returns to start')
+})
