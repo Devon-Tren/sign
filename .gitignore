@@ -18,3 +18,7 @@ artifacts/
 signavatars/
 *.pkl
 *.npz
+
+# Local Vercel project metadata and pulled environment values
+.vercel/
+.env.local
